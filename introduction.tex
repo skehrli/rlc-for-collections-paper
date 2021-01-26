@@ -1,3 +1,53 @@
 \section{Introduction}
+\label{sec:intro}
 
-The introduction.
+Resource leaks are a classic problem, and extant approaches to preventing
+them are either too expensive or unsound.
+
+An ideal tool for preventing resource leaks would be fast, sound, and precise.
+
+Extant approaches fail at least one of these: bug finders like the analysis
+in ecj are unsound; complex analyses based on typestate are either too slow
+(cite the Eurosys 2019 paper, with numbers on run time), imprecise, or both.
+
+Our key insight is that the resource leak problem is an accumulation
+problem~\cite{kellogg20verifying}.
+
+This insight allows us to build a novel static analysis, based on a standard
+type system without whole-program alias analysis, that is at least as good
+as prior approaches along the three relevant dimensions (fast, sound, precise).
+
+In particular, it beats bug finders in soundness, while still being reasonably
+fast and precise. It beats typestate analysis on speed, while matching on
+soundness and precision.
+
+To achieve the necessary precision in practice, we needed two innovations
+beyond our key insight:
+\begin{itemize}
+\item a lightweight, heuristic ownership transfer system.
+\item the concept of \emph{accumulation frames}, which allow us to
+  soundly reset the accumulation status of a single program element
+  after showing that its requirements have been fulfilled. \todo{This
+    description sucks!}
+\end{itemize}
+
+Our contributions are:
+\begin{itemize}
+\item the insight that the resource leak problem is an accumulation problem,
+  and a type system designed to take advantage of this fact (\cref{sec:base-type-systems}).
+\item a novel lightweight ownership tracking system (\cref{sec:lightweight-ownership}).
+\item a novel extension to accumulation analysis (\cref{sec:reset-must-call}).
+\item an implementation of our type system as an extension to Java,
+  augmented with these two innovations (\cref{sec:implementation}).
+\item case studies that demonstrate that our implementation finds real
+  bugs and has few false positives (\cref{sec:case-studies}).
+\item an ablation study that demonstrates the contributions of
+  lightweight ownership and accumulation frames to the low false
+  positive rate of our approach (\cref{sec:ablation}).
+\item a comparison to alternative approaches to resource leak
+  checking, that demonstrates that our approach occupies a unique
+  point in the design space: faster and more usable than heavy-weight
+  typestate systems, but sound and able to find even subtle bugs,
+  unlike heuristic bug-finders (\cref{sec:compare}).
+\end{itemize}
+  

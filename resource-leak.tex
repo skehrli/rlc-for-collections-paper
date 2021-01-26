@@ -69,9 +69,14 @@
 %% the next command will enable that style.
 %%\citestyle{acmauthoryear}
 
+% cref command
+\usepackage{cleveref}
+
 %%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
+
+\input{macros}
 
 %%
 %% The "title" command has an optional parameter,
@@ -183,6 +188,14 @@
 \maketitle
 
 \input{introduction}
+
+\input{types}
+
+\input{ownership}
+
+\input{accumulation-frames}
+
+\input{implementation}
 
 \input{evaluation}
 
