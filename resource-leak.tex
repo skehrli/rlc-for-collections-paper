@@ -98,9 +98,33 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  Resource leaks remain a significant software quality issue and a key cause of problems like slowdowns and crashes.  Many techniques have been developed to prevent resource leaks, but existing techniques have a variety of drawbacks.  Language constructs can prevent certain classes of leaks, but they often have restricted applicability.  Other techniques frame resource leak detection as a typestate problem, and apply techniques from typestate verification to perform detection.  Typestate-based techniques require sophisticated reasoning about pointer aliasing, and hence suffer from either scalability issues or a high annotation burden for developers.  We desire a method for preventing resource leaks that is both lightweight, with a minimal annotation burden, and modular, to enable scalability.
+  Resource leaks remain a significant software quality issue and a key
+  cause of problems like slowdowns and crashes.  Many techniques have
+  been developed to prevent resource leaks, but existing techniques
+  have a variety of drawbacks.  Language constructs can prevent
+  certain classes of leaks, but they often have restricted
+  applicability.  Other techniques frame resource leak detection as a
+  typestate problem, and apply techniques from typestate verification
+  to perform detection.  Typestate-based techniques require
+  sophisticated reasoning about pointer aliasing, and hence suffer
+  from either scalability issues or a high annotation burden for
+  developers.  We desire a method for preventing resource leaks that
+  is both lightweight, with a minimal annotation burden, and modular,
+  to enable scalability.
 
-  We observe that resource leak detection is an instance of an \emph{accumulation problem}, a class of typestate problems amenable to sound checking \emph{with no alias analysis}.  We developed a baseline sound and modular leak checker via this approach, but found that it suffered from an excess of false positives.  To reduce false positives, we introduce \emph{lightweight ownership tracking}, a technique to help determine which alias is responsible for releasing a resource.  Since our goal is only to prevent resource leaks, our ownership tracking avoids many of the heavyweight aliasing restrictions associated with other ownership type systems.  We implemented our techniques in a tool XXX for Java, and show that it scales well, finds real bugs with a low false positive rate, and imposes only a low additional annotation burden for developers.
+  We observe that resource leak detection is an instance of an
+  \emph{accumulation problem}, a class of typestate problems amenable
+  to sound checking \emph{with no alias analysis}.  We developed a
+  baseline sound and modular leak checker via this approach, but found
+  that it suffered from an excess of false positives.  To reduce false
+  positives, we introduce \emph{lightweight ownership tracking}, a
+  technique to help determine which alias is responsible for releasing
+  a resource.  Since our goal is only to prevent resource leaks, our
+  ownership tracking avoids many of the heavyweight aliasing
+  restrictions associated with other ownership type systems.  We
+  implemented our techniques in a tool XXX for Java, and show that it
+  scales well, finds real bugs with a low false positive rate, and
+  imposes only a low additional annotation burden for developers.
 \end{abstract}
 
 %%
@@ -158,12 +182,11 @@
 %% information and builds the first part of the formatted document.
 \maketitle
 
-\section{Introduction}
-The intro.
+\input{introduction}
 
-\section{Related Work}
+\input{evaluation}
 
-Object construction verification of course~\cite{kellogg20verifying}.
+\input{relatedwork}
 
 \section{Conclusions}
 
