@@ -8,18 +8,17 @@ An ideal tool for preventing resource leaks would be fast, sound, and precise.
 
 Extant approaches fail at least one of these: bug finders like the analysis
 in ecj are unsound; complex analyses based on typestate are either too slow
-(cite the Eurosys 2019 paper, with numbers on run time), imprecise, or both.
+(cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
 
 Our key insight is that the resource leak problem is an accumulation
 problem~\cite{kellogg20verifying}.
 
 This insight allows us to build a novel static analysis, based on a standard
-type system without whole-program alias analysis, that is at least as good
-as prior approaches along the three relevant dimensions (fast, sound, precise).
+type system without whole-program alias analysis, that is sound while retaining
+acceptable speed and precision.
 
 In particular, it beats bug finders in soundness, while still being reasonably
-fast and precise. It beats typestate analysis on speed, while matching on
-soundness and precision.
+fast and precise. It beats typestate analysis on speed and soundness, while losing on precision.
 
 To achieve the necessary precision in practice, we needed two innovations
 beyond our key insight:

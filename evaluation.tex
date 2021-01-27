@@ -113,3 +113,21 @@ compared to \emph{FULL}.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
+
+Our approach represents a novel point in the design space of a resource leak checker.
+
+We compared our approach with two other tools that purport to detect resource leaks:
+\begin{itemize}
+\item an analysis built into the Eclipse Compiler for Java (ecj).
+\item Grapple~\cite{}, an unsound, typestate-based analysis that represents a significant, recent
+  improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
+\end{itemize}
+
+The Grapple paper already evaluated on earlier versions of \todo{some of?} the case study programs in \cref{sec:case-studies}.
+
+We also ran our analysis and ecj's on these versions of the case study programs.
+
+The results presumably show that our tool is faster than grapple and finds more bugs, but has more false positives.
+Compared to ecj, we expect to be slower, find more bugs, and have similar numbers of false positives.
+
+\todo{would we present these results as a table?}
