@@ -1,7 +1,64 @@
 \section{Evaluation}
 
+Our evaluation has three parts:
+\begin{itemize}
+\item case studies on open-source projects, which show that our approach
+  scales to realistic programs and finds real bugs (\cref{sec:case-studies}).
+\item an ablation study that demonstrates the contributions of
+  lightweight ownership system (\cref{sec:lightweight-ownership}) and
+  accumulation frames (\cref{sec:reset-must-call}) to the false positive
+  rate on the case studies in \cref{sec:case-studies}.
+\item a comparison study that shows the advantages of our approach against
+  two traditional approaches: heuristic bug-finders and heavy-weight
+  typestate analysis.
+\end{itemize}
+
 \subsection{Case studies on open-source projects}
 \label{sec:case-studies}
+
+We selected \todo{3} popular open-source projects with significant
+usage of resources (and thus high danger of resource leaks), by
+convenience.  We modified the build system of each project to run our
+analysis. We manually annotated each program with must-call,
+called-methods, and ownership annotations. We also
+made small changes to the programs, where possible, to avoid
+common false positives of our analysis. We then examined all
+remaining warnings, and categorized them as either true
+positives---real resource leaks---or false positives---code that our
+system was insufficiently precise to prove correct. We submitted bug
+reports and patches to the projects describing each true positive.
+We also measured the number of possible resource leaks in each project.
+
+% a line in tab:case-studies
+% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs
+\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
+
+\begin{table*}
+  \caption{Verifying the absence of resource leaks in case studies.
+    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
+    ``Resources'' is the number of resources created by the program.
+    ``Diff size'' is the difference in LoC between the original and
+    annotated programs, counting both annotations and modified code.
+    ``Annos.'' is number of manually-written annotations to specify
+    existing methods.
+    ``TPs'' is true positives. ``Conf'' is confirmed true positives. 
+    ``FPs'' is false positives, where the our analysis could not
+  guarantee that the call was safe, but manual analysis revealed that no
+  run-time failure was possible.}
+  \label{tab:case-studies}
+
+  \begin{tabular}{@{}lrr|rr|rrr@{}}
+    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs      \\
+    \hline
+    \osstablerow{apache/zookeeper}              {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
+    \osstablerow{apache/hfds}                   {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
+    \osstablerow{\todo{what was the last one?}} {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
+  \end{tabular}
+\end{table*}
+
+\Cref{tab:case-studies} summarizes the results.
+
+\todo{Describe some examples of true and false positives.}
 
 \subsection{Ablating lightweight ownership and accumulation frames}
 \label{sec:ablation}
