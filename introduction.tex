@@ -18,7 +18,7 @@ type system without whole-program alias analysis, that is sound while retaining
 acceptable speed and precision.
 
 In particular, it beats bug finders in soundness, while still being reasonably
-fast and precise. It beats typestate analysis on speed and soundness, while losing on precision.
+fast and precise. It beats typestate analysis on speed and soundness, while losing on precision. \todo{Maybe also want to compare against more "heavyweight" systems like Rust ownership or fancier type systems.  We are more lightweight while still sound for detecting leaks.}
 
 To achieve the necessary precision in practice, we needed two innovations
 beyond our key insight:
@@ -42,7 +42,7 @@ Our contributions are:
   bugs and has few false positives (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of
   lightweight ownership and accumulation frames to the low false
-  positive rate of our approach (\cref{sec:ablation}).
+  positive rate of our approach (\cref{sec:ablation}). \todo{this sounds great!  we need to be sure we can implement these experiments.}
 \item a comparison to alternative approaches to resource leak
   checking, that demonstrates that our approach occupies a unique
   point in the design space: faster and more usable than heavy-weight
