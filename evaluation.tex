@@ -1,5 +1,61 @@
 \section{Evaluation}
 
+% TODO: if this table is after tab:case-studies, then it doesn't appear? WTF
+
+% a line in tab:ablation
+% note that the FULL column is always zero, so it's not included here
+% arguments: project name, NONE, LO-ONLY, AF-ONLY
+\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4 & 0}
+
+\begin{table}
+  \caption{An ablation study on the contribution of the lightweight
+    ownership (\emph{LO-ONLY}) and accumulation frames (\emph{AF-ONLY})
+    features in reducing false positives. Each entry is the number of extra
+    false positive warnings reported by that variant on the given project.}
+  \label{tab:ablation}
+  
+  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
+    Project                              &      \emph{NONE} & \emph{LO-ONLY} & \emph{AF-ONLY} & \emph{FULL}      \\
+    \hline
+    \abltablerow{apache/zookeeper}              {?}            {?}             {?}                               \\
+    \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
+    \abltablerow{\todo{what was the last one?}} {?}            {?}             {?}                               \\
+    \hline
+    \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
+  \end{tabularx}
+\end{table}
+
+
+% a line in tab:case-studies
+% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
+\newcommand{\osstablerow}[9]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8 & #9 s}
+
+\begin{table*}
+  \caption{Verifying the absence of resource leaks in case studies.
+    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
+    ``Resources'' is the number of resources created by the program.
+    ``Diff size'' is the difference in LoC between the original and
+    annotated programs, counting both annotations and modified code.
+    ``Annos.'' is number of manually-written annotations to specify
+    existing methods.
+    ``TPs'' is true positives. ``Conf'' is confirmed true positives. 
+    ``FPs'' is false positives, where the our analysis could not
+  guarantee that the call was safe, but manual analysis revealed that no
+  run-time failure was possible.
+    ``RT(s)'' is the wall-clock run time of our analysis in seconds.}
+  \label{tab:case-studies}
+
+  \begin{tabular}{@{}lrr|rr|rrrr@{}}
+    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs & RT(s)      \\
+    \hline
+    \osstablerow{apache/zookeeper}              {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
+    \osstablerow{apache/hfds}                   {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
+    \osstablerow{\todo{what was the last one?}} {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
+    \hline
+    \osstablerow{\textbf{Total}}                {?}        {?}            {?}          {?}        {?}     {?}      {?}   {-}        \\
+  \end{tabular}
+\end{table*}
+
 Our evaluation has three parts:
 \begin{itemize}
 \item case studies on open-source projects, which show that our approach
@@ -7,10 +63,10 @@ Our evaluation has three parts:
 \item an ablation study that demonstrates the contributions of
   lightweight ownership system (\cref{sec:lightweight-ownership}) and
   accumulation frames (\cref{sec:reset-must-call}) to the false positive
-  rate on the case studies in \cref{sec:case-studies}.
+  rate on the case studies in \cref{sec:case-studies} (\cref{sec:ablation}).
 \item a comparison study that shows the advantages of our approach against
   two traditional approaches: heuristic bug-finders and heavy-weight
-  typestate analysis.
+  typestate analysis (\cref{sec:compare}).
 \end{itemize}
 
 \subsection{Case studies on open-source projects}
@@ -29,39 +85,31 @@ system was insufficiently precise to prove correct. We submitted bug
 reports and patches to the projects describing each true positive.
 We also measured the number of possible resource leaks in each project.
 
-% a line in tab:case-studies
-% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs
-\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
-
-\begin{table*}
-  \caption{Verifying the absence of resource leaks in case studies.
-    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
-    ``Resources'' is the number of resources created by the program.
-    ``Diff size'' is the difference in LoC between the original and
-    annotated programs, counting both annotations and modified code.
-    ``Annos.'' is number of manually-written annotations to specify
-    existing methods.
-    ``TPs'' is true positives. ``Conf'' is confirmed true positives. 
-    ``FPs'' is false positives, where the our analysis could not
-  guarantee that the call was safe, but manual analysis revealed that no
-  run-time failure was possible.}
-  \label{tab:case-studies}
-
-  \begin{tabular}{@{}lrr|rr|rrr@{}}
-    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs      \\
-    \hline
-    \osstablerow{apache/zookeeper}              {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
-    \osstablerow{apache/hfds}                   {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
-    \osstablerow{\todo{what was the last one?}} {?}        {?}            {?}          {?}        {?}     {?}      {?}      \\
-  \end{tabular}
-\end{table*}
-
 \Cref{tab:case-studies} summarizes the results.
 
 \todo{Describe some examples of true and false positives.}
 
 \subsection{Ablating lightweight ownership and accumulation frames}
 \label{sec:ablation}
+
+Without the lightweight ownership system (\cref{sec:lightweight-ownership}) and
+accumulation frames (\cref{sec:reset-must-call}), our analysis produces significantly
+more false positives. To show the contribution of each to our tool's precision,
+we performed an ablation study on the same programs we used as case studies in
+\cref{sec:case-studies} by building four versions of our tool: one with both
+features disabled (\emph{NONE}), one with lightweight ownership but without
+accumulation frames (\emph{LO-ONLY}), one with accumulation frames but not
+lightweight ownership (\emph{AF-ONLY}), and one with both enabled (\emph{FULL}).
+We re-ran the experiments in \cref{sec:case-studies} using each variant, and
+recorded the change in the number of warnings. Since our analysis has no false
+negatives, the difference between the total number of warnings (i.e. the sum of
+the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by the \emph{FULL}
+variant and the total number of false positives produced by each variant is
+the number of false positives that are prevented by each feature.
+
+\Cref{tab:ablation} has an entry for each variant on each case study project,
+which is the number of extra warnings that that variant reported on the project,
+compared to \emph{FULL}.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
