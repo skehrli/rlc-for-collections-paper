@@ -3,3 +3,26 @@
 %% Comment out one of these two definitions.
 %\newcommand{\todo}[1]{\relax}
 \newcommand{\todo}[1]{{\color{red}\bfseries [[#1]]}}
+
+%% The anonymized name of the tool
+%% TODO: come up with a name. For now, use RLC (Resource Leak Checker)
+\newcommand{\toolanon}{RLC}
+%% The name of the tool to use
+\newcommand{\tool}{\toolanon}
+
+% \|name| or \mathid{name} denotes identifiers and slots in formulas
+\def\|#1|{\mathid{#1}}
+\newcommand{\mathid}[1]{\ensuremath{\mathit{#1}}}
+% \<name> or \codeid{name} denotes computer code identifiers
+\def\<#1>{\codeid{#1}}
+\protected\def\codeid#1{\ifmmode{\mbox{\sf{#1}}}\else{\sf #1}\fi}
+\protected\def\codeid#1{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+\protected\def\codeid#1{\ifmmode{\mbox{\smaller\ttfamily{#1}}}\else{\smaller\ttfamily #1}\fi}
+
+% "trule" stands for ``type rule''
+\newcommand{\trule}[2]{\[\frac{#1}{#2}\]}
+\newcommand{\truleinline}[2]{\ensuremath{#1\mathrel{\vdash}#2}}
+\newcommand{\hastype}[1]{\mathbin{:}\trtext{#1}}
+\newcommand{\trcode}[1]{\codeid{\smaller\smaller #1}}
+\newcommand{\trtext}[1]{\mbox{\smaller\smaller #1}}
+\newcommand{\trquoted}[1]{\trcode{"}#1\trcode{"}}

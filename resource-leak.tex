@@ -76,6 +76,10 @@
 \usepackage{tabularx}
 \usepackage{booktabs}
 
+% Graphics
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata,positioning}
+
 % Change font and line spacing for figure captions
 \usepackage{setspace,caption}
 \captionsetup{labelfont={small,bf}, textfont={small,bf,stretch=0.8}, labelsep=colon, margin=0pt}
@@ -137,7 +141,7 @@
   a resource.  Since our goal is only to prevent resource leaks, our
   ownership tracking avoids many of the heavyweight aliasing
   restrictions associated with other ownership type systems.  We
-  implemented our techniques in a tool XXX for Java, and show that it
+  implemented our techniques in a tool, called \tool, for Java, and show that it
   scales well, finds real bugs with a low false positive rate, and
   imposes only a low additional annotation burden for developers.
 \end{abstract}
@@ -218,7 +222,7 @@ Conclusions.
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{temp}
+\bibliography{temp,bib/types,bib/cross-refs}
 
 %%
 %% If your work has an appendix, this is the place to put it.

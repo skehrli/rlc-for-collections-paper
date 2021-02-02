@@ -4,8 +4,113 @@
 \section{Accumulation type systems for resource leak detection}
 \label{sec:base-type-systems}
 
+\tool is composed of two cooperating type systems---a taint tracking
+type system tracking which methods must be called (the Must Call
+Checker of \cref{sec:must-call}) and an accumulation type system
+tracking which methods have been called (the Called Methods Checker of
+\cref{sec:called-methods})---and a dataflow analysis that tracks
+owning pointers and compares the results of the two type systems when
+an owning pointer goes out of scope (the Ownership Checker of
+\cref{sec:must-call-invoked}). This section describes the basics of
+these analyses; further details on novel features are provided in
+\cref{sec:lightweight-ownership} and \cref{sec:reset-must-call}.
+
+These analyses work in three stages:
+\begin{enumerate}
+\item the Must Call Checker (\cref{sec:must-call}) computes a conservative
+  \emph{overapproximation} of the set of methods that might need to be called
+  on each expression in the program.
+\item the Called Methods Checker (\cref{sec:called-methods}) computes
+  a conservative \emph{underapproximation} of the set of methods that are
+  actually called on each expression in the program.
+\item the Ownership Checker (\cref{sec:must-call-invoked}) computes a set
+  of owning pointers that contains at least one element for every resource.
+  For each owning pointer, the Ownership Checker compares the results
+  of the Must Call Checker and the Called Methods Checker at each program
+  point at which the pointer might go out of scope, and issues an error
+  if any method reported by the Must Call Checker was not reported as
+  definitely called by the Called Methods Checker.
+\end{enumerate}
+
+\subsection{Background on type qualifiers}
+\label{sec:background}
+
+Both the Must Call Checker and the Called Methods Checker are
+\emph{pluggable type systems}~\cite{FosterFFA99}---specialized type
+systems that are layered on top of the type system of the host
+language.  Types in a pluggable type system are composed of two parts:
+a \emph{type qualifier} and a base type. The type qualifier is the
+part of the type that is unique to the pluggable type system; the base
+type is a type from the host language. Our implementation is in Java
+(see \cref{sec:implementation}), so we use the Java syntax for type
+qualifiers: an \<@> symbol before a type indicates that it is a type
+qualifier (a type without an \<@> symbol is a base type).
+
 \subsection{A type system for must-call obligations}
 \label{sec:must-call}
+
+\begin{figure}
+
+\begin{tikzpicture}[->, shorten >= 1pt, auto, node distance=0.3cm]
+  \tikzstyle{every state}=[fill=none,draw=none,text=black, minimum size = 0.5cm, shape = rectangle]
+  
+  \node[state]        (TOP)                                   {\parbox{4cm}  {\centering \small \<@MustCallUnknown> $= \top$}};
+  \node[state]         (MCAB)      [below   = of TOP]        {\parbox{4cm}  {\centering \small \<@MustCall(\{"a", "b"\})>}};
+  \node[state]         (MCA)    [below  = of MCAB, xshift=-2.2cm]         {\parbox{4cm} {\centering \small \<@MustCall(\{"a"\})>}};
+  \node[state]         (MCB)    [below  = of MCAB, xshift=2.2cm]         {\parbox{4cm} {\centering \small \<@MustCall(\{"b"\})>}};
+  \node[state]         (BOT)     [below      = of MCAB, yshift=-0.8cm]       {\parbox{4cm}  {\centering \small \<@MustCall(\{\})> $= \bot$}};
+
+  \path
+
+  (MCAB)        edge        node {} (TOP)
+  
+  (MCA)         edge        node {} (MCAB)
+  (MCB)         edge        node {} (MCAB)
+  
+  (BOT)         edge        node {} (MCA)
+  (BOT)         edge        node {} (MCB)
+
+  ;
+
+\end{tikzpicture}
+%\precaptionspace
+%\vspace{0.25cm}
+\caption{Part of the type hierarchy for representing which methods must be
+  called.
+  If an expression's type has qualifier \<@Must\-Call(\{"a", "b"\})>, then
+  the methods ``\<a>'' and ``\<b>'' might need to be called before the
+  expression is deallocated.
+  Arrows represent
+  subtyping relationships.
+  The diagram shows a part of the type hierarchy; the full hierarchy is a
+  lattice of arbitrary size. 
+}
+\label{fig:must-call-hierarchy}
+\end{figure}
+
+This checker tracks the methods that an object should call before it
+is deallocated. It produces a conservative overapproximation of the
+set of methods that might actually need to be called on an object.
+
+For example, an object whose type is \<java.io.OutputStream> might
+have an obligation to call the \<close()> method, to release an
+underlying file resource. Or, such an \<OutputStream> might not have
+such an obligation, if the underlying resource is, for example, a byte
+array. Either of these obligations can be represented by the static
+type \<@MustCall(\{"close"\}) OutputStream>, which can be read as "an
+OutputStream that might need to call close before it is deallocated".
+
+The MustCall Checker supports two qualifiers: \<@MustCall> and
+\<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
+methods that the annotated type should call. The type
+\<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
+deallocated, \<obj.a()> should be called.
+
+Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
+All types are subtypes of \<@MustCallUnknown>.
+The subtyping relationship is for two \<@MustCall> types with sets
+of required methods A and B is:
+\trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
 
 \subsection{A type system for called methods}
 \label{sec:called-methods}
