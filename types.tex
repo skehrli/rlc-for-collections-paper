@@ -109,14 +109,52 @@ deallocated, \<obj.a()> should be called.
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \<@MustCallUnknown>.
 The subtyping relationship is for two \<@MustCall> types with sets
-of required methods A and B is:
+of required methods $A$ and $B$ is:
 \trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
+
+The default type qualifier for raw base types is \<@MustCall(\{\})>.
+By writing another type qualifier on the declaration of a class, a
+user can specify a different default for raw types of that class.
+Using this mechanism, the qualified type of the expression \<new
+java.net.Socket()> is \<@MustCall({"close"}) Socket>.
 
 \subsection{A type system for called methods}
 \label{sec:called-methods}
 
-We re-used the accumulation type system for called methods from
-prior work~\cite{kellogg20verifying}. \todo{Describe it!}
+Our Called Methods type system is an extension of a similar system
+from prior work~\cite{kellogg20verifying}. We made some bugfixes and
+small enchancements to that system; the primary difference in our
+version is that methods are considered called even if they throw an exception
+(in the prior work, a method was only considered ``called'' when it terminated
+successfully). The remainder of this section is a brief explanation
+of the Called Methods type system; see~\cite{kellogg20verifying} for
+a more full description.
+
+The Called Methods Checker is an \emph{accumulation analysis}: a special case
+of typestate analysis~\cite{StromY86} in which:
+\begin{enumerate}
+\item the order in which operations are performed cannot affect what is
+  subsequently permitted, and
+\item executing more operations does not add restrictions.
+\end{enumerate}
+This special case of typestate analysis is useful because it does not
+require a whole-program alias analysis for soundness, and instead
+can be implemented as a standard pluggable type system.
+
+The checker supports two qualifiers: \<@CalledMethods>
+and \<@CalledMethodsBottom>. The type \<@CalledMethods(>$A$\<) Object>
+represents an object on which the methods in the set $A$ have definitely
+been called (other methods not in $A$ might also have been called).
+\<@CalledMethodsBottom> is a subtype of every other type; the subtyping
+rule between any two \<@CalledMethods> annotations with method sets $A$
+and $B$ is:
+\trule{B \subseteq A}{\<@CalledMethods(A)> \sqsubseteq \<@CalledMethods(B)>}
+The resulting lattice has \<@CalledMethods(\{\})> as its top type.
+
+Called Methods type are inferred within method bodies---when a method
+\<foo()> is called on an object \<obj>, <obj>'s type is refined to a
+set including \<"foo"> in the remainder of the method body (or until
+it might be side-effected).
 
 \subsection{A worklist algorithm for comparing the results of these two type systems}
 \label{sec:must-call-invoked}
