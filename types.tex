@@ -116,7 +116,23 @@ The default type qualifier for raw base types is \<@MustCall(\{\})>.
 By writing another type qualifier on the declaration of a class, a
 user can specify a different default for raw types of that class.
 Using this mechanism, the qualified type of the expression \<new
-java.net.Socket()> is \<@MustCall({"close"}) Socket>.
+java.net.Socket()> is \<@MustCall(\{"close"\}) Socket>. Our implementation
+also provides an ``inheritable'' version of the \<@MustCall> annotation,
+which allows us to annotate a class (or interface) and all of its subtypes.
+For example, we use such an annotation on \<java.io.Closeable> to indicate
+that all \<Closeable> objects must have the \<close()> method called before
+they are deallocated.
+
+A benefit of using a type system for tracking must-call obligations is
+that \tool can use local type inference to refine the obligations of
+a particular variable. For example, a \<java.io.InputStream>
+defaults to having an \<@MustCall(\{"close"\})> obligation. If the only
+assignment to a local variable of this type has a right-hand side with
+the type \<@MustCall(\{\})>, however---for instance, if it is a new
+\<java.io.StringReader>, which only wraps a string stored in memory
+and not a resource that must be closed---then local type inference can
+infer that that particular \<InputStream>'s type is also \<@MustCall(\{\})>,
+preventing a false positive.
 
 \subsection{A type system for called methods}
 \label{sec:called-methods}

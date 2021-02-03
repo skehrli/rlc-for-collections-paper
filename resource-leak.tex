@@ -76,6 +76,28 @@
 \usepackage{tabularx}
 \usepackage{booktabs}
 
+% lstlisting command
+\usepackage{listings}
+\usepackage[scaled]{beramono}
+\newcommand*\LSTfont{\Small\fontencoding{T1}\ttfamily\SetTracking{encoding=*}{-60}\lsstyle}
+\lstset{language=Java,
+  frame=none,
+  aboveskip=1.5pt,
+  belowskip=0pt,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle=\LSTfont,
+  numbers=none,
+  numberstyle=\tiny\color{black},
+  keywordstyle=\color{black},
+  commentstyle=\color{black},
+  stringstyle=\color{black},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3,
+  %emph={@NonNegative,@Positive,@GTENegativeOne,@LTLengthOf,@LTEqLengthOf,@IndexFor,@IndexOrHigh,@IndexOrLow,@HasSubsequence,@LessThan,@SameLen,@SearchIndexFor,@MinLen,@ArrayLen,@IntVal,@IntRange,@LengthOf,@UpperBoundUnknown,@LowerBoundUnknown,int,double,List,Map,Object,SerialDate,Long,Integer,DefaultPolarItemRenderer,LegendItem,PolarPlot,XYDataset,long,T,String,string,byte,InputStream,CategoryDataset,DatasetRenderingOrder,ArrayList,Entry,Values,Number,ValuesContract,ImmutableIntArray,Dataset,XYZDataset}, emphstyle=\color{blue}
+}
+
 % Graphics
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata,positioning}

@@ -1,2 +1,101 @@
 \section{Lightweight ownership tracking}
 \label{sec:lightweight-ownership}
+
+We developed two novel approaches for tracking whether a pointer is
+owning: a lightweight ownership transfer approach using annotations
+that does not depend on the annotations' correctness---that is, adding
+ownership annotations can only reduce false positives, not false
+negatives (\cref{sec:ownership-transfer})---and a lightweight, local
+alias analysis for dealing with wrapper objects
+(\cref{sec:must-call-choice}).
+
+\subsection{Ownership transfer}
+\label{sec:ownership-transfer}
+
+\todo{Write about @Owning and @NotOwning, and show how they can only
+  reduce false positives.}
+
+\subsection{Lightweight alias analysis for wrapper types}
+\label{sec:must-call-choice}
+
+The Java standard library contains a number of \emph{wrapper types}:
+classes that wrap a resource variable that might contain a resource.
+For example, consider the class \<java.io.BufferedOutputStream>.  The
+must-call obligation for an arbitrary \<BufferedOutputStream> is
+\<@MustCall(\{``close''\})>---the stream might be writing to a file,
+for example.  \<BufferedOutputStream>'s constructors all have a
+parameter which is another \<OutputStream>. When \<close()> is called
+on the resulting \<BufferedOutputStream>, the implementation calls
+\<close()> on the wrapped \<OutputStream>. Since there are no
+additional resources allocated by the \<BufferedOutputStream> that
+were not part of the \<OutputStream> passed to the constructor,
+calling \<close()> on either stream is equally correct (though most
+Java style guides suggest calling \<close()> on the outermost
+wrapper \todo{cite that claim?}).
+
+Code that uses these streams usually calls \<close()> on only one
+of the streams---either the wrapper stream or the wrapped stream.
+A tool that reported an error for one stream if the other was closed
+would report too many false positives to be usable in practice.
+Prior work uses a pre-determined list of wrapper classes, built into
+the tool, to handle this issue~\cite{TorlakC10}. \todo{Also cite ecj here?
+  I think it also uses the same scheme...}
+
+Our approach is more general. We introduce a new type qualifier,
+\<@MustCallChoice>, to represent the wrapper relationship. \<@MustCallChoice>
+qualifiers must always appear in pairs---one on a parameter of a method,
+and another on its return type.
+
+A pair of \<@MustCallChoice> annotations has two effects, in different
+checkers:
+\begin{itemize}
+\item the Must Call Checker treats the annotated elements as polymorphic---the
+  must-call obligations of the parameter are copied to the return type.
+  Therefore, if the wrapped type has no must-call obligations (such as
+  for a stream definitely wrapping a byte array), the wrapper will not
+  have must-call obligations, either.
+\item the Ownership Checker will treat the pair of streams as aliases,
+  for the purposes of resolving must-call obligations. Therefore, calling
+  \<close()> on one stream will be treated as calling \<close()> on both.
+\end{itemize}
+
+A pair of \<@MustCallChoice> annotations can be verified (though our current
+implementation does not do so, since almost all appear in the standard
+library rather than checked code) \todo{fix this!}. There are two
+procedures to check
+that a pair of \<@MustCallChoice> annotations on a method \<m>'s return type
+and its parameter \<p>:
+\begin{enumerate}
+\item if \<p> is passed to another method or constructor in an
+  \<@MustCallChoice> position, and \<m> returns the result of that method
+  (or the method is a \<super()> constructor call appropriately annotated
+  with \<@MustCallChoice>), then the code can be verified.
+\item if \<p> is stored in an \<@Owning> field of the class, and the
+  class declaration has an \<@MustCall(>$A$\<)> annotation for some set
+  of methods $A$, and at least one of the methods in $A$ has an
+  \<@EnsuresCalledMethods> annotation naming at least the
+  must-call obligations of \<p>'s static type, then the code can be verified.
+\end{enumerate}
+
+Using \<@MustCallChoice> has another benefit: must-call obligations
+can be shared even by objects that cannot possibly fulfill the
+obligation. For example, consider the method
+\<java.io.RandomAccessFile\#getFd()>, which returns a file descriptor
+object for the file owned by the \<RandomAccessFile>. This file
+descriptor cannot be closed directly---it has no \<close()> method.
+However, it can be passed to a wrapper stream, such as
+\<java.io.FileOutputStream>---which can be closed, fulfilling
+the original must-call obligation. By creating a chain of \<@MustCallChoice>
+annotations, we can verify code like the below:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  RandomAccessFile file = new RandomAccessFile(myFile, "rws");
+  FileInputStream in = null;
+  try {
+    in = new FileInputStream(file.getFD());
+    // do something with in  
+    in.close();
+  } catch (IOException e){
+    file.close();
+  }
+\end{lstlisting}
