@@ -161,3 +161,40 @@ it might be side-effected).
 
 \todo{The section title needs work...}
 
+\todo{This section is currently an outline.}
+
+The Ownership Checker is a simple worklist algorithm that operates over the CFG.
+It maintains a set of owning pointers to objects, using a set of simple
+ownership rules:
+\begin{itemize}
+\item a newly-allocated object is owned
+\item the value returned by any method called is owned
+\end{itemize}
+
+These rules guarantee that there is at least one owning pointer to each
+object that might contain a resource. \Cref{sec:lightweight-ownership}
+gives more details on how ownership is transferred.
+
+When an owning pointer goes out of scope, the Ownership Checker
+compares the types computed by the Must Call Checker and the Called
+Methods Checker to determine if the requirements on the expression
+going out of scope have been fulfilled using the following process,
+supposing that some expression \<expr> is going out of scope at
+program point $P$:
+\begin{enumerate}
+  \item The Ownership Checker requests a Must Call type from the Must
+    Call Checker for \<expr> at $P$. Suppose this type is
+    \<@MustCall(>$A$\<)> for some set of methods $A$ (if the type is
+    \<@MustCallUnknown>, the Ownership Checker always issues an
+    error).
+  \item The Ownership Checker requests a Called Methods type from the
+    Called Methods Checker for \<expr> at $P$. Suppose this type is
+    \<@CalledMethods(>$B$\<)> for some set of methods $B$.
+  \item The Ownership Checker compares the sets $A$ and $B$. If
+    $A \supset B$, the Ownership Checker issues an error.
+\end{enumerate}
+
+The Ownership Checker also does a simple, intra-procedural must-alias
+analysis, to avoid issuing duplicate errors for e.g. constructor
+invocations that are assigned to local variables. At most one error
+for each must-alias set is ever issued. 
