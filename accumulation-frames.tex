@@ -1,2 +1,125 @@
 \section{Accumulation frames}
 \label{sec:reset-must-call}
+
+\subsection{Non-final, owning fields}
+\label{sec:non-final-owning}
+
+The analyses we have described so far assume that a single program
+element will control at most one resource while it is in scope.
+In practice, however, this is not true. Consider, for example,
+the following code:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  class SocketContainer {
+    private @Owning Socket sock;
+    public SocketContainer() { sock = ...; } 
+    void close() { sock.close() };
+    void reconnect() { sock.close(); sock = ...; }
+  }
+\end{lstlisting}
+
+In the lifetime of a \<SocketContainer> object, it might control any
+number of resources, depending on the number of calls to
+\<reconnect()>. In order to verify the code above (and uses of the
+class), we need \emph{accumulation frames}---regions of the program in
+which a program element can be treated as the subject of an
+accumulation analysis. The important distinction between an analysis
+with accumulation frames and a standard accumulation analysis is that
+in the former a single program element can be treated as going out of
+scope multiple times.
+
+For example, consider the following use of the \<SocketContainer> class
+above:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  SocketContainer sc = ...;
+  sc.close();
+  // frame boundary: sc treated as going out of scope
+  sc.reconnect();
+  sc.close();
+\end{lstlisting}
+
+This code contains two accumulation frames: the first extends from the
+constructor call to the first call to \<close()>, and the second
+extends from the call to \<reconnect()> (which creates another
+obligation) to the end of the block. In effect, we can treat \<sc> as
+two different entirely separate program elements---one for each
+accumulation frame.
+
+We introduce a new annotation, called \<@ResetMustCall>, to delineate
+an accumulation frame. \<@ResetMustCall> is written on a method
+declaration, and takes one argument (the \emph{target}), which
+indicates to which in-scope program element the frame applies. The
+definition for \<reconnect()> above would then become:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  class SocketContainer {
+    ...
+    @ResetMustCall("this")
+    void reconnect() { sock.close(); sock = ...; }
+  }
+\end{lstlisting}
+
+When an \<@ResetMustCall> method is invoked, the Must Call Checker and
+the Called Methods remove any inferred information about the target, and
+restore it to the default value for its type in their respective hierarchies
+\footnote{Note that according to the rules in
+  \cref{sec:owning-fields}, a class with an owning field must have a
+  \<@MustCall> annotation corresponding to a method that ensures the
+  field's must-call obligations are fulfilled.}.
+\todo{Should I mention here that it is an error if that default type is not
+  top in the CM hierarchy?}
+
+The Ownership Checker also enforces three new rules, to ensure that
+re-assignments to non-final, owning fields like \<sock> in the example
+above are sound:
+\begin{itemize}
+\item any method that re-assigns a non-final, owning field of an object
+  must be annotated with an \<@ResetMustCall> that targets that object.
+\item when a non-final, owning field is re-assigned, it is checked
+  using the procedure defined in \cref{sec:must-call-invoked} as if it
+  is going out of scope.
+\item methods annotated with \<@ResetMustCall> are only called targetting
+  owning pointers, or within a method with another \<@ResetMustCall> annotation
+  with the same target.
+\end{itemize}
+
+\noindent
+Together, these rules guarantee that any re-assignment to a non-final, owning
+field (1) ends the current accumulation frame with the obligation fulfilled,
+and (2) starts a new accumulation frame, with the obligation re-imposed on
+an owning pointer.
+
+\subsection{Unconnected sockets}
+\label{sec:unconnected-sockets}
+Accumulation frames can also handle cases where an object, when created,
+does not actually allocate a resource---but it will allocate a resource
+later in its lifecycle. Consider, for example, the no-argument constructor
+to \<java.net.Socket>. This constructor does not actually allocate an
+operating system-level socket, but instead just creates the container
+object, which permits the programmer to e.g. set options which will be used
+when creating the physical socket. When such a \<Socket> is created, it
+initally has no must-call obligation; it is only when the \<Socket> is
+actually connected that the must-call obligation is created.
+
+Our analysis initially naively assumed that all \<Socket>s are
+\<@MustCall(\{"close"\})>. This assumption causes false positives
+in code such as the below, which operates on an unconnected socket
+(simplified from real code in Apache Zookeeper~\todo{cite}):
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  static Socket createSocket() {
+    Socket sock = new Socket();
+    sock.setSoTimeout(...);
+    return sock;
+  }
+\end{lstlisting}
+
+The call to \<setSoTimeout> can throw a \<SocketException> if the
+socket is actually connected when it is called, so without an
+accumulation frame our analysis would report a possible leak along
+that path. 
+However, we can use an accumulation frame \emph{without an obligation}
+that extends from the constructor call to a method that connects the
+socket (such as \<connect()> or \<bind()>) to avoid this false positive,
+by annotating those methods as \<@ResetMustCall("this")>.
