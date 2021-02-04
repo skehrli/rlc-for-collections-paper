@@ -1,3 +1,56 @@
 \section{Related Work}
+\label{sec:relatedwork}
 
-Object construction verification of course~\cite{kellogg20verifying}.
+\subsection{Resource leak detection}
+\label{sec:rw-resource-leaks}
+
+\todo{Do a literature search on this topic, and add anything pertinent to
+  the below.}
+
+\todo{Re-organize and edit the below in a way that makes sense.}
+
+Tracker~\cite{TorlakC10} uses a dataflow analysis over the control-flow
+graph to reason about resource leaks, while avoiding the problem of
+whole-program alias analysis using an access-path approach. Like our tool,
+it scales to large Java programs; unlike \tool, however, it is unsound.
+
+Grapple~\cite{zuo2019grapple} models alias and dataflow analyses as
+dynamic transitive-closure computation of graph representations of
+the target programs, enabling extraordinary precision with a whole-program
+alias analysis. Compared to \tool, it is more precise but suffers
+from unsoundness and an order of magnitude longer run times.
+
+The Eclipse Compiler for Java includes a simple dataflow-based bug-finder
+for resource leaks~\cite{ecj-resource-leak}. Their analysis uses a fixed
+set of ownership heuristics and a fixed list of wrapper classes; unlike
+\tool, it is also unsound. It is fast and \todo{possibly} precise.
+
+Weimer and Necula~\cite{WeimerN04} proposed a language feature called
+a compensation stack to avoid resource leak problems in Java.
+
+\subsection{Ownership tracking}
+
+\todo{Manu: Describe relationship to rust's borrow checker.}
+
+\todo{Is there other relevant related work? Find out.}
+
+\subsection{Typestate analysis}
+\label{sec:rw-typestate}
+
+\tool relies on an accumulation
+analysis~\cite{kellogg20verifying,FahndrichLeino03} to avoid the need
+for a whole-program alias analysis, while retaining soundness.  We
+build on the core analysis described in~\cite{kellogg20verifying},
+adding the concept of accumulation frames.
+
+Accumulation analysis is a special-case of typestate analysis~\cite{StromY86}.
+In general, a typestate analysis requires a whole-program alias analysis
+for soundness, making them impractical for resource leak detection
+in industrial-size Java programs. \todo{However, people have probably tried
+  so go figure that out.}
+
+An alternative to applying a typestate analysis to an existing program
+is to rewrite the program in a typestate-oriented programming
+language~\cite{AldrichSSS2009}. \todo{Aldrich's group probably has a
+  paper about doing resource leak detection in Plaid, so find and cite
+  that here.}
