@@ -34,9 +34,10 @@ PMD~\cite{pmd-resource-leak}, Infer~\cite{infer-resource-leak}, and others.
 Weimer and Necula~\cite{WeimerN04} proposed a language feature called
 a compensation stack to avoid resource leak problems in Java.
 
-Relda~\cite{guo2013characterizing} is an unsound resource-leak
-detection approach that is augmented with a call graph to model the
-Android framework's use of callbacks for releasing resources.
+Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
+resource-leak detection approaches that are augmented with call graphs
+to model the Android framework's use of callbacks for releasing
+resources.
 
 The DroidLeaks benchmark~\cite{liu2019droidleaks} is a set of Android
 apps with known resource leak bugs. Unfortunately, it includes only
@@ -61,6 +62,15 @@ unreachable. When a given resource (such as file descriptors) is close
 to exhaustion, the runtime runs Resco to clean up any resources of
 that type that are unreachable.  With a static approach such as ours,
 a tool like Resco becomes unnecessary---leaks become impossible.
+
+Automated test generation can also be used to try to detect resource
+leaks. For example, leaks in Android applications can be found by
+repeatedly running neutral---eventually returning to the same
+state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
+Other techniques focus on taking advantage of common misuse of
+the Android activity lifecycle~\cite{amalfitano2020memories}.
+Testing can only show the presence of bugs, not their absence;
+\tool verifies that no resource leaks are present.
 
 \subsection{Ownership tracking}
 
