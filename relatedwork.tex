@@ -9,6 +9,8 @@
 
 \todo{Re-organize and edit the below in a way that makes sense.}
 
+\subsubsection{Static analysis}
+
 Tracker~\cite{TorlakC10} uses a dataflow analysis over the control-flow
 graph to reason about resource leaks, while avoiding the problem of
 whole-program alias analysis using an access-path approach. Like our tool,
@@ -20,13 +22,45 @@ the target programs, enabling extraordinary precision with a whole-program
 alias analysis. Compared to \tool, it is more precise but suffers
 from unsoundness and an order of magnitude longer run times.
 
-The Eclipse Compiler for Java includes a simple dataflow-based bug-finder
-for resource leaks~\cite{ecj-resource-leak}. Their analysis uses a fixed
-set of ownership heuristics and a fixed list of wrapper classes; unlike
-\tool, it is also unsound. It is fast and \todo{possibly} precise.
+The Eclipse Compiler for Java includes a simple dataflow-based
+bug-finder for resource leaks~\cite{ecj-resource-leak}. Their analysis
+uses a fixed set of ownership heuristics and a fixed list of wrapper
+classes; unlike \tool, it is also unsound. It is fast and
+\todo{possibly} precise.  Similar analyses---with similar trade-offs
+compared to \tool---are present in other heuristic bug-finding tools,
+including SpotBugs~\cite{spotbugs-resource-leak},
+PMD~\cite{pmd-resource-leak}, Infer~\cite{infer-resource-leak}, and others.
 
 Weimer and Necula~\cite{WeimerN04} proposed a language feature called
 a compensation stack to avoid resource leak problems in Java.
+
+Relda~\cite{guo2013characterizing} is an unsound resource-leak
+detection approach that is augmented with a call graph to model the
+Android framework's use of callbacks for releasing resources.
+
+The DroidLeaks benchmark~\cite{liu2019droidleaks} is a set of Android
+apps with known resource leak bugs. Unfortunately, it includes only
+the compiled apps, not the source code, so we were unable to run \tool
+on its contents (\tool requires source code as its input).
+
+The CLOSER~\cite{dillig2008closer} automatically inserts Java code to
+dispose of resources when they are no longer ``live'' according to its
+dataflow analysis, but requires an expensive alias analysis for
+soundness, as well as manually-provided aliasing specifications for
+linked libraries.
+
+\todo{This~\cite{ghanavati2020memory} is a recent study on what kinds
+  of resource and memory leak bugs happen in large Java projects. I'm
+  sure we can use it somewhere.}
+
+\subsubsection{Dynamic analysis}
+
+Resco~\cite{dai2013resco} operates similarly to a garbage collector,
+tracking resources whose program elements have become
+unreachable. When a given resource (such as file descriptors) is close
+to exhaustion, the runtime runs Resco to clean up any resources of
+that type that are unreachable.  With a static approach such as ours,
+a tool like Resco becomes unnecessary---leaks become impossible.
 
 \subsection{Ownership tracking}
 
