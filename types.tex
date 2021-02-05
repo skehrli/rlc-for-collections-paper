@@ -180,7 +180,10 @@ it might be side-effected).
 \todo{This section is currently an outline.}
 
 \begin{algorithm}[t]
-  \caption{Finding missed calls.  Work in progress.  Does not yet handle ownership transfer, MustCallChoice, or ResetMustCall.}
+  \caption{Finding missed calls.  Work in progress.
+  Does not yet handle any ownership transfer, MustCallChoice, 
+  or ResetMustCall.  Assumes all statements are in a three-address form.
+  Structured like pseudocode in~\cite{TorlakC10}.}
   \label{alg:find-copies}
   \begin{algorithmic}[1]
   \Procedure{FindMissedCalls}{$CFG$}
@@ -188,13 +191,14 @@ it might be side-effected).
   \State // \textit{where $P$ is a set of locals and $s'$ is a call statement}
   \State // \textit{or constructor call with a must-call obligation}
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{Statement} \}$
+  \State // \textit{initialize from all calls with a must-call obligation}
   \For{$s \in \mathit{Statement}$}
     \State // \textit{constructor calls elided}
     \If{$s$ is \lstinline{p = foo()} and \textsc{HasNonEmptyMustCall}(foo)}
     \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{p\}, s \rangle$
     \EndIf
   \EndFor
-  \State // \textit{elide worklist for simplicity}
+  \State // \textit{elide worklist stuff for clarity}
   \While{$D$ is not at fixed point}
     \State $s \gets \textsc{ChooseFrom}(\mathit{Statement})$
     \State $\langle P, s' \rangle \gets \textsc{ChooseFrom}(D(s))$
