@@ -1,43 +1,80 @@
 \section{Introduction}
 \label{sec:intro}
 
-Resource leaks are a classic problem, and extant approaches to preventing
-them are either too expensive or unsound.
+%% Resource leaks are a classic problem, and extant approaches to preventing
+%% them are either too expensive or unsound.
 
-An ideal tool for preventing resource leaks would be fast, sound, and precise.
+A resource leak occurs when some finite resource managed by the
+programmer is not explicitly disposed of. In an unmanaged language
+like C, that explicit resource might be memory; in a managed language
+like Java, it might be a file descriptor, a socket, or a database
+connection.  Resource leaks continue to cause severe bugs, even in
+modern, heavily-used Java applications~\cite{ghanavati2020memory};
+this state-of-the-practice does not differ much from two decades
+ago~\cite{WeimerN04}.  A survey of Microsoft engineers in 2015 found
+that they consider resource leak bugs to be one of the most
+significant challenges for modern developers~\cite{LoNZ2015}.  That
+resource leaks remain such a serious problem despite decades of
+research and improvements in languages and tooling shows that
+preventing resource leaks remains an urgent, difficult, open problem.
 
-Extant approaches fail at least one of these: bug finders like the analysis
-in ecj are unsound; complex analyses based on typestate are either too slow
-(cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
+%% An ideal tool for preventing resource leaks would be fast, sound, and precise.
 
-Our key insight is that the resource leak problem is an accumulation
-problem~\cite{kellogg20verifying}.  \todo{Maybe say ``an extended version of an
-accumulation problem'', to accommodate accumulation frames?}
-
-This insight allows us to build a novel static analysis, based on a standard
-type system without whole-program alias analysis, that is sound while retaining
-acceptable speed and precision.
-
-In particular, it beats bug finders in soundness, while still being reasonably
-fast and precise. It beats typestate analysis on speed and soundness, while losing on precision. \todo{Maybe also want to compare against more "heavyweight" systems like Rust ownership or fancier type systems.  We are more lightweight while still sound for detecting leaks.}
-
-To achieve the necessary precision in practice, we needed two innovations
-beyond our key insight:
+Ideally, a tool for preventing resource leaks would be:
 \begin{itemize}
-\item a lightweight, heuristic ownership transfer system.
-\item the concept of \emph{accumulation frames}, which allow us to
-  soundly reset the accumulation status of a single program element
-  after showing that its requirements have been fulfilled. \todo{This
-    description sucks!}
+\item \emph{fast}, so that it scales to real-world programs and
+  developers can use it regularly;
+\item \emph{sound}, so that undetected resource leaks do not slip into
+  the program; and
+\item \emph{precise}, so that developers are not bothered by false positive
+  warnings.
 \end{itemize}
 
-Our contributions are:
+%% Extant approaches fail at least one of these: bug finders like the analysis
+%% in ecj are unsound; complex analyses based on typestate are either too slow
+%% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
+
+Extant approaches fail at least one of these criteria. The most common
+approach encountered by developers, built into Java IDEs including
+Eclipse~\cite{ecj-resource-leak} and IntelliJ
+IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
+are fast and precise---but only report the most obvious of
+errors. State-of-the-art typestate or dataflow analyses such as
+Grapple~\cite{zuo2019grapple} achieve more precise results---and
+can find more subtle bugs than bug-finders, though they remain unsound---but
+requires hours to analyze even a single real-world Java program, due
+to their reliance on expensive whole-program alias analyses.
+
+Our key insight is that the resource leak problem is an extended
+version of an accumulation problem~\cite{kellogg20verifying}. An
+accumulation problem is a special-case of typestate problem which does
+not require a whole-program alias analysis for soundness.  This
+insight allows us to build a novel static analysis, based on a
+standard type system without a whole-program alias analysis, that is
+both sound---meaning it can find many more bugs than heuristic-based
+approaches---and much faster than extant typestate-based approaches.
+Compared to existing sound approaches, our accumulation-based system
+is faster and more precise \todo{Flesh this out with a more direct
+  comparison to compare against more "heavyweight" systems like Rust
+  ownership or fancier type systems}.
+
+To achieve a competitive level of precision in practice, we needed two
+innovations beyond our key insight:
+\begin{itemize}
+\item a lightweight, heuristic ownership transfer system.
+\item \emph{accumulation frames}, an extension to the theory of
+  accumulation analysis which allow a single program element to
+  soundly have an accumulation analysis applied to it multiple times.
+\end{itemize}
+
+Our contributions are \todo{line these up with what we actually did,
+  experiments-wise}:
 \begin{itemize}
 \item the insight that the resource leak problem is an accumulation problem,
-  and a type system designed to take advantage of this fact (\cref{sec:base-type-systems}).
+  and a set of type systems designed to take advantage of this fact (\cref{sec:base-type-systems}).
 \item a novel lightweight ownership tracking system (\cref{sec:lightweight-ownership}).
 \item a novel extension to accumulation analysis (\cref{sec:reset-must-call}).
-\item an implementation of our type system as an extension to Java,
+\item an implementation of our type systems as an extension to Java,
   augmented with these two innovations (\cref{sec:implementation}).
 \item case studies that demonstrate that our implementation finds real
   bugs and has few false positives (\cref{sec:case-studies}).
