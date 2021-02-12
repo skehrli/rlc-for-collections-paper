@@ -180,23 +180,20 @@ it might be side-effected).
 \todo{This section is currently an outline.}
 
 \begin{algorithm}[t]
-  \caption{Finding missed calls.  Work in progress.
-  Does not yet handle any ownership transfer, MustCallChoice, 
-  or ResetMustCall.  Assumes all statements are in a three-address form.
-  Structured like pseudocode in~\cite{TorlakC10}.}
+  \caption{Finding missed calls.  Structured like pseudocode in~\cite{TorlakC10}.}
   \label{alg:find-copies}
   \begin{algorithmic}[1]
   \Procedure{FindMissedCalls}{$CFG$}
   \State // \textit{elements of D(s) are of the form} $\langle P, s' \rangle$,
-  \State // \textit{where $P$ is a set of locals and $s'$ is a call statement}
-  \State // \textit{or constructor call with a must-call obligation}
+  \State // \textit{where $P$ is a set of locals and $s'$ is a statement}
+  \State // \textit{with a must-call obligation}
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{Statement} \}$
   \State // \textit{initialize from all calls with a must-call obligation}
   \For{$s \in \mathit{Statement}$}
-    \State // \textit{constructor calls elided}
-    \If{$s$ is \lstinline{p = foo()} and \textsc{HasNonEmptyMustCall}(foo)}
-    \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{p\}, s \rangle$
-    \EndIf
+    \For{$v \in \textsc{MCObligations}(s)$}
+%    \If{$s$ is \lstinline{p = foo()} and \textsc{HasNonEmptyMustCall}(foo)}
+      \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{v\}, s \rangle$
+    \EndFor
   \EndFor
   \State // \textit{elide worklist stuff for clarity}
   \While{$D$ is not at fixed point}
@@ -204,28 +201,59 @@ it might be side-effected).
     \State $\langle P, s' \rangle \gets \textsc{ChooseFrom}(D(s))$
     \State // \textit{Is the must-call obligation for some var in } $P$
     \State // \textit{satisfied either before }$s$\textit{ or by } $s$\textit{?}
-    \If{\textsc{MustCallSatisfied}(P,s)}
+    \If{\textsc{MCSatisfied}(P,s)}
     \State // \textit{don't propagate to successors}
     \State \textbf{continue} 
     \EndIf
-    \If{$s$ is the exit}
-    \State // \textit{must call not satisfied so we have a leak}
-    \State report a leak of $s'$
-    \EndIf
+    \If{\textsc{MCMustBeSat}(P,s)}
+      \State // \textit{must call not satisfied, so we have a leak}
+      \State report a leak of $s'$
+    \Else
     \State $kill \gets \textsc{LeftHandSide}(s)$
-    \State $gen \gets \emptyset$
-    \If{$s$ is \lstinline{p = q} and $q \in P$}
-    \State $gen \gets \{p\}$
-    \EndIf
+    \State $gen \gets \textsc{MCAliases}(P,s)$
+    % \If{$s$ is \lstinline{p = q} and $q \in P$}
+    % \State $gen \gets \{p\}$
+    % \EndIf
     \State // $N$ \textit{gets propagated to successors}
-    \State $N \gets P - kill \cup gen$
+    \State $N \gets (P - kill) \cup gen$
     \State // \textit{we even propagate }$\emptyset$\textit{; error reported at exit}
     \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle N, s' \rangle$
+    \EndIf
   \EndWhile \label{li:alg-loop-end}
   \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}
+  \caption{Basic helper functions for \Cref{alg:find-copies}.}
+  \begin{algorithmic}[1]
+  \State // \textit{what must-call obligations does s introduce?}
+  \Procedure{MCObligations}{$s$}
+  \If{$s$ is \lstinline{p = foo(...)} and \textsc{HasMCReturn}(\lstinline{foo})}
+    \State \Return $\{ p \}$
+  \Else
+    \State \Return $\emptyset$
+  \EndIf
+  \EndProcedure
+  \State // \textit{Is the must-call obligation for some variable in P satisfied either before s or by s?}
+  \Procedure{MCSatisfied}{$P,s$}
+  \State \Return $\exists p \in P .\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}$
+  \EndProcedure
+  \State // \textit{Is the must-call obligation for P required to be satisfied before s?}
+  \Procedure{MCMustBeSat}{$P,s$}
+  \State \Return \textsc{IsExit}$(s)$
+  \EndProcedure
+  \State // \textit{What new must-call aliases for P are introduced by s?}
+  \Procedure{MCAliases}{$P,s$}
+  \If{$s$ is \lstinline{p = q} and $q \in P$}
+    \State \Return $\{ p \}$
+  \Else
+    \State \Return $\emptyset$
+  \EndIf
+  \EndProcedure
+  \end{algorithmic}
+
+\end{algorithm}
 
 The Ownership Checker is a simple worklist algorithm that operates over the CFG.
 It maintains a set of owning pointers to objects, using a set of simple
