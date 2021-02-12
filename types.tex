@@ -172,16 +172,12 @@ Called Methods type are inferred within method bodies---when a method
 set including \<"foo"> in the remainder of the method body (or until
 it might be side-effected).
 
-\subsection{A worklist algorithm for comparing the results of these two type systems}
+\subsection{Consistency checking}
 \label{sec:must-call-invoked}
-
-\todo{The section title needs work...}
-
-\todo{This section is currently an outline.}
 
 \begin{algorithm}[t]
   \caption{Finding missed calls.  Structured like pseudocode in~\cite{TorlakC10}.}
-  \label{alg:find-copies}
+  \label{alg:consistency-checker}
   \begin{algorithmic}[1]
   \Procedure{FindMissedCalls}{$CFG$}
   \State // \textit{elements of D(s) are of the form} $\langle P, s' \rangle$,
@@ -189,35 +185,35 @@ it might be side-effected).
   \State // \textit{with a must-call obligation}
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{Statement} \}$
   \State // \textit{initialize from all calls with a must-call obligation}
-  \For{$s \in \mathit{Statement}$}
+  \For{$s \in \mathit{Statement}$} \label{li:start-init}
     \For{$v \in \textsc{MCObligations}(s)$}
 %    \If{$s$ is \lstinline{p = foo()} and \textsc{HasNonEmptyMustCall}(foo)}
       \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{v\}, s \rangle$
-    \EndFor
+    \EndFor \label{li:end-init}
   \EndFor
-  \State // \textit{elide worklist stuff for clarity}
   \While{$D$ is not at fixed point}
     \State $s \gets \textsc{ChooseFrom}(\mathit{Statement})$
     \State $\langle P, s' \rangle \gets \textsc{ChooseFrom}(D(s))$
     \State // \textit{Is the must-call obligation for some var in } $P$
     \State // \textit{satisfied either before }$s$\textit{ or by } $s$\textit{?}
-    \If{\textsc{MCSatisfied}(P,s)}
+    \If{\textsc{MCSatisfied}(P,s)} \label{li:check-satisfied}
     \State // \textit{don't propagate to successors}
     \State \textbf{continue} 
     \EndIf
-    \If{\textsc{MCMustBeSat}(P,s)}
+    \If{\textsc{EndOfScope}(P,s)} \label{li:end-scope}
       \State // \textit{must call not satisfied, so we have a leak}
-      \State report a leak of $s'$
+      \State report a must-call violation for $s'$
     \Else
-    \State $kill \gets \textsc{LeftHandSide}(s)$
-    \State $gen \gets \textsc{MCAliases}(P,s)$
+    \State $kill \gets \textsc{LeftHandSide}(s)$ \label{li:compute-kill}
+    \State $gen \gets \textsc{MCAliases}(P,s)$ \label{li:compute-gen}
     % \If{$s$ is \lstinline{p = q} and $q \in P$}
     % \State $gen \gets \{p\}$
     % \EndIf
     \State // $N$ \textit{gets propagated to successors}
-    \State $N \gets (P - kill) \cup gen$
+    \State $N \gets (P - kill) \cup gen$ \label{li:compute-new-mc-aliases}
     \State // \textit{we even propagate }$\emptyset$\textit{; error reported at exit}
-    \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle N, s' \rangle$
+    \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle
+    N, s' \rangle$ \label{li:prop-to-succs}
     \EndIf
   \EndWhile \label{li:alg-loop-end}
   \EndProcedure
@@ -225,7 +221,8 @@ it might be side-effected).
 \end{algorithm}
 
 \begin{algorithm}
-  \caption{Basic helper functions for \Cref{alg:find-copies}.}
+  \caption{Basic helper functions for \Cref{alg:consistency-checker}.}
+  \label{alg:helpers}
   \begin{algorithmic}[1]
   \State // \textit{what must-call obligations does s introduce?}
   \Procedure{MCObligations}{$s$}
@@ -239,8 +236,9 @@ it might be side-effected).
   \Procedure{MCSatisfied}{$P,s$}
   \State \Return $\exists p \in P .\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}$
   \EndProcedure
-  \State // \textit{Is the must-call obligation for P required to be satisfied before s?}
-  \Procedure{MCMustBeSat}{$P,s$}
+  \State // \textit{Does s end the scope in which P's must-call obligation can
+  be satisfied?}
+  \Procedure{EndOfScope}{$P,s$}
   \State \Return \textsc{IsExit}$(s)$
   \EndProcedure
   \State // \textit{What new must-call aliases for P are introduced by s?}
@@ -255,38 +253,94 @@ it might be side-effected).
 
 \end{algorithm}
 
-The Ownership Checker is a simple worklist algorithm that operates over the CFG.
-It maintains a set of owning pointers to objects, using a set of simple
-ownership rules:
-\begin{itemize}
-\item a newly-allocated object is owned
-\item the value returned by any method called is owned
-\end{itemize}
+Given inferred \<@MustCall> obligations and \<@CalledMethods> types, the Must
+Call Consistency Checker ensures that the \<@MustCall> methods for each object
+are always invoked before the object becomes unreachable.  Pseudocode for an
+basic version of this checker appears in \Cref{alg:consistency-checker}, with
+helper functions in \Cref{alg:helpers}.  In subsequent sections we will describe
+various enhancements to this basic approach.
 
-These rules guarantee that there is at least one owning pointer to each
-object that might contain a resource. \Cref{sec:lightweight-ownership}
-gives more details on how ownership is transferred.
+The checker performs an intra-procedural dataflow analysis over a control-flow
+graph with nodes from a set $\mathit{Statement}$ of statements and a
+$\mathit{succ}$ relation capturing control flow.  For simplicity, the pseudocode
+assumes statements are normalized to a three-address form, with all intermediate
+results stored in temporary variables.  \todo{give a list of all types of
+statements: assignment, method call, return, field write?}
 
-When an owning pointer goes out of scope, the Ownership Checker
-compares the types computed by the Must Call Checker and the Called
-Methods Checker to determine if the requirements on the expression
-going out of scope have been fulfilled using the following process,
-supposing that some expression \<expr> is going out of scope at
-program point $P$:
-\begin{enumerate}
-  \item The Ownership Checker requests a Must Call type from the Must
-    Call Checker for \<expr> at $P$. Suppose this type is
-    \<@MustCall(>$A$\<)> for some set of methods $A$ (if the type is
-    \<@MustCallUnknown>, the Ownership Checker always issues an
-    error).
-  \item The Ownership Checker requests a Called Methods type from the
-    Called Methods Checker for \<expr> at $P$. Suppose this type is
-    \<@CalledMethods(>$B$\<)> for some set of methods $B$.
-  \item The Ownership Checker compares the sets $A$ and $B$. If
-    $A \supset B$, the Ownership Checker issues an error.
-\end{enumerate}
+The analysis computes a set of facts $D(s)$ holding before each statement $s$.
+A fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables
+and $s'$ is a statement containing a call with a non-empty \<@MustCall>
+obligation. The variables in $P$ are \emph{must-call aliases} for $s'$:
+satisfying the \<@MustCall> obligation for \emph{any} variable in $P$ is
+sufficient to satisfy the obligation for $s'$.  If the analysis discovers a fact
+$\langle P, s' \rangle$ reaching the method exit, then the \<@MustCall>
+obligation for $s'$ may not be satisfied, and an error is reported.
 
-The Ownership Checker also does a simple, intra-procedural must-alias
-analysis, to avoid issuing duplicate errors for e.g. constructor
-invocations that are assigned to local variables. At most one error
-for each must-alias set is ever issued. 
+\Cref{alg:consistency-checker} proceeds as follows.
+Lines~\ref{li:start-init}--\ref{li:end-init} initialize $D$ by scanning for
+statements that introduce \<@MustCall> obligations.  In the basic checker, such
+statements include any method call (or constructor call) returning an object
+with a non-empty \<@MustCall> type (see \textsc{MCObligations} in
+\Cref{alg:helpers}).  The fixed-point loop then proceeds by choosing some fact
+$\langle P, s' \rangle$ from some $D(s)$ (our implementation uses a worklist for
+efficiency).  If the \<@MustCall> obligation for $s'$ is satisfied before $s$
+(\Cref{li:check-satisfied}), the fact is not propagated further.
+For the basic checker, \textsc{MCSatisfied} in \Cref{alg:helpers} checks whether
+there is some variable $p \in P$ such that the inferred \<@MustCall> type for
+$p$ before $s$ ($\textsc{MCBefore}(p,s)$)is contained in its \<@CalledMethods>
+type ($\textsc{CMBefore}(p,s)$), i.e., all
+\<@MustCall> methods have been invoked.  Otherwise, if $s$ marks the end of the
+scope in which the obligation can be met (\Cref{li:end-scope}), a violation is
+reported, as some \<@MustCall> method may not have been invoked.
+
+If neither of these cases hold, the algorithm propagates a modified fact to
+successors, with an updated set $N$ of must-call aliases.  $N$ is computed in a
+standard gen-kill style on
+lines~\ref{li:compute-kill}--\ref{li:compute-new-mc-aliases}.  The kill set
+simply consists of whatever variable (if any) appears on the left-hand side of
+$s$.  The gen set is computed using a \textsc{MCAliases} routine.  The basic
+version of \textsc{MCAliases} (\cref{alg:helpers}) adds a new alias $p$
+if $s$ copies from $q$ to $p$ (making $p$ and $q$ must-aliases) and $q \in P$.
+Finally, \Cref{li:prop-to-succs} propagates the new fact to successors.  The
+process continues until $D$ reaches a fixed point.  \todo{Tie this into a
+running example?}
+
+At this point, we have described a sound checker for \<@MustCall> obligations.
+But for real code, this checker emits far too many false positives.  Subsequent
+sections will detail techniques to make the checker more precise.
+
+% The Ownership Checker is a simple worklist algorithm that operates over the CFG.
+% It maintains a set of owning pointers to objects, using a set of simple
+% ownership rules:
+% \begin{itemize}
+% \item a newly-allocated object is owned
+% \item the value returned by any method called is owned
+% \end{itemize}
+
+% These rules guarantee that there is at least one owning pointer to each
+% object that might contain a resource. \Cref{sec:lightweight-ownership}
+% gives more details on how ownership is transferred.
+
+% When an owning pointer goes out of scope, the Ownership Checker
+% compares the types computed by the Must Call Checker and the Called
+% Methods Checker to determine if the requirements on the expression
+% going out of scope have been fulfilled using the following process,
+% supposing that some expression \<expr> is going out of scope at
+% program point $P$:
+% \begin{enumerate}
+%   \item The Ownership Checker requests a Must Call type from the Must
+%     Call Checker for \<expr> at $P$. Suppose this type is
+%     \<@MustCall(>$A$\<)> for some set of methods $A$ (if the type is
+%     \<@MustCallUnknown>, the Ownership Checker always issues an
+%     error).
+%   \item The Ownership Checker requests a Called Methods type from the
+%     Called Methods Checker for \<expr> at $P$. Suppose this type is
+%     \<@CalledMethods(>$B$\<)> for some set of methods $B$.
+%   \item The Ownership Checker compares the sets $A$ and $B$. If
+%     $A \supset B$, the Ownership Checker issues an error.
+% \end{enumerate}
+
+% The Ownership Checker also does a simple, intra-procedural must-alias
+% analysis, to avoid issuing duplicate errors for e.g. constructor
+% invocations that are assigned to local variables. At most one error
+% for each must-alias set is ever issued. 
