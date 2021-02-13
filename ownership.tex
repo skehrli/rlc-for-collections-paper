@@ -1,19 +1,78 @@
 \section{Lightweight ownership tracking}
 \label{sec:lightweight-ownership}
 
-We developed two novel approaches for tracking whether a pointer is
-owning: a lightweight ownership transfer approach using annotations
-that does not depend on the annotations' correctness---that is, adding
-ownership annotations can only reduce false positives, not false
-negatives (\cref{sec:ownership-transfer})---and a lightweight, local
-alias analysis for dealing with wrapper objects
-(\cref{sec:must-call-choice}).
+For the basic technique described in \Cref{sec:base-type-systems}, false
+positives are often caused by cases where a \<@MustCall> obligation is satisfied
+in another procedure, via parameter passing, return values, or object fields.
+Here, we describe a \emph{lightweight ownership tracking} technique for reducing
+false positives in such cases.  With lightweight ownership, programmer
+annotations \emph{cannot} introduce any checker unsoundness; they can only to
+reduce false positives.  Further, unlike other ownership type systems,
+lightweight ownership imposes no restriction on what operations can be performed
+through an alias, and hence has a minimal impact on the programming model.
+
+% We developed two novel approaches for tracking whether a pointer is
+% owning: a lightweight ownership transfer approach using annotations
+% that does not depend on the annotations' correctness---that is, adding
+% ownership annotations can only reduce false positives, not false
+% negatives (\cref{sec:ownership-transfer})---and a lightweight, local
+% alias analysis for dealing with wrapper objects
+% (\cref{sec:must-call-choice}).
+
+\todo{maybe \<@MustCallChoice> belongs in its own section?  no longer sure it fits with ownership}
+We also describe a lightweight, local alias analysis for dealing with wrapper
+objects (\cref{sec:must-call-choice}).
 
 \subsection{Ownership transfer}
 \label{sec:ownership-transfer}
 
-\todo{Write about @Owning and @NotOwning, and show how they can only
-  reduce false positives.}
+% \todo{Write about @Owning and @NotOwning, and show how they can only
+%   reduce false positives.}
+
+With lightweight ownership, a parameter, return, or field type may be annotated
+as either \<@Owning> or \<@NotOwning> (we shall discuss defaults shortly).  In
+the Must Call Consistency Checker (\Cref{sec:must-call-invoked}), if a tracked
+variable $p$ is assigned to such an \<@Owning> location $l$, we \emph{transfer}
+ownership to $l$, and $p$'s \<@MustCall> obligation
+is treated as satisfied. Specifically, the condition checked by
+\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is modified as follows
+\todo{sloppy, make it better}:
+
+\begin{align*}
+  \exists p \in P &.\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}\\
+                  &\vee (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \mathrm{method\ return\ type\ is\ } \mathtt{@Owning})\\
+                  &\vee (s \mathrm{\ is\ } \mathtt{q\ =\ foo(...,p,...)} \wedge \mathrm{param\ type\ is\ } \mathtt{@Owning})\\
+                  &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
+\end{align*}
+
+To ensure soundness, any \<@Owning> location must be tracked to ensure its
+\<@MustCall> obligation is satisfied.  We shall discuss checking of \<@Owning>
+fields in \Cref{sec:owning-fields}.  For \<@Owning> method returns, we need only
+update the \textsc{HasMCReturn} routine used in \Cref{alg:helpers} to check that
+the return type both has a non-empty \<@MustCall> obligation \emph{and} is
+\<@Owning>.  For \<@Owning> parameters, the loop at
+Lines~\ref{li:start-init}--\ref{li:end-init} in \Cref{alg:consistency-checker}
+must be extended to also add each \<@Owning> formal parameter as a dataflow
+fact at the entry node of the CFG.  These relatively simple changes are all that
+is required to add lightweight ownership tracking to our technique.
+
+By default, our checker assumes that unannotated return types are \<@Owning>,
+but that parameter and field types are \<@NotOwning>.  These assumptions
+coincide well with coding patterns we observed in practice, reducing the
+programmer annotation burden.  Further, this treatment of parameter and return
+types ensures sound handling of unannotated third-party libraries: any object
+returned from such a library will be tracked by default, and the checker never
+assumes that passing an object to a library will satisfy its obligation.
+
+Programmers can override defaults by writing explicit \<@Owning> and
+\<@NotOwning> annotations.  Such explicit annotations can \emph{never}
+compromise soundness.  If such an annotation is incorrect (e.g., an \<@Owning>
+annotation on a reference that does not satisfy an obligation), it can only lead
+to false positives, not false negatives.  Due to this design, there is great
+scope for creating inference techniques for lightweight ownership, to further
+reduce annotation burden; we plan to pursue such techniques in future work.
+
+\todo{Add a para comparing to Rust ownership and the like?}
 
 \subsubsection{Owning fields}
 \label{sec:owning-fields}
