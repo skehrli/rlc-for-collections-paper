@@ -21,7 +21,7 @@ through an alias, and hence has a minimal impact on the programming model.
 
 \todo{maybe \<@MustCallChoice> belongs in its own section?  no longer sure it fits with ownership}
 We also describe a lightweight, local alias analysis for dealing with wrapper
-objects (\cref{sec:must-call-choice}).
+objects (\Cref{sec:must-call-choice}).
 
 \subsection{Ownership transfer}
 \label{sec:ownership-transfer}
@@ -74,12 +74,39 @@ reduce annotation burden; we plan to pursue such techniques in future work.
 
 \todo{Add a para comparing to Rust ownership and the like?}
 
-\subsubsection{Owning fields}
+\subsubsection{Final owning fields}
 \label{sec:owning-fields}
 
 \todo{This section should cover the rules for final owning fields. Non-final
   owning fields are covered by \cref{sec:reset-must-call}, and this
   section is referred to from there.}
+
+  Additional class-level checking is required for \<@Owning> fields, as the code
+  satisfying their \<@MustCall> obligations nearly always spans multiple
+  procedures.  We first discuss the case of final fields,\footnote{We only
+  consider instance fields in this paper; we have not observed resource leaks
+  through static fields in our benchmarks, and we leave their handling to future
+  work.} which cannot be overwritten after initialization of the enclosing
+  object.  Consider a final \<@Owning> field $f$ declared in class $C$, where
+  $f$ has type \<@MustCall("m")>.  To
+  verify that $f$'s \<@MustCall> obligation is satisfied, we check the following
+  conditions:
+  \begin{enumerate}
+    \item $C$ objects must have a type \<@MustCall("n")> for some method $C.n$.
+    \item $C.n$ must always invoke \<this.f.m()>, thereby satisfying $f$'s
+    \<@MustCall> obligation.
+  \end{enumerate}
+  In this manner, we compositionally verify the usage of $f$, by imposing
+  a \<@MustCall> obligation on clients using the $C$ class.  Condition 2 can be
+  checked by requiring an appropriate \<@EnsuresCalledMethods> annotation on
+  $C.n$, which is then enforced by the Called Methods
+  Checker~\cite{kellogg20verifying}.  \todo{this all needs an example...}
+
+  While this scheme suffices for verifying final fields, we observed many cases
+  in our benchmarks of non-final fields with \<@MustCall> obligations.  Checking
+  non-final fields requires additional techniques, as the checker must ensure
+  that overwriting the field does not lead to a \<@MustCall> violation.  We
+  describe our novel handling of non-final fields in \Cref{sec:reset-must-call}.
 
 \subsection{Lightweight alias analysis for wrapper types}
 \label{sec:must-call-choice}
