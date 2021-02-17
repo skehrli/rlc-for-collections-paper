@@ -19,6 +19,9 @@
 \protected\def\codeid#1{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
 \protected\def\codeid#1{\ifmmode{\mbox{\smaller\ttfamily{#1}}}\else{\smaller\ttfamily #1}\fi}
 
+% name for must-call-choice annotation
+\newcommand{\mccannot}{\codeid{@MustCallAlias}\xspace}
+
 % "trule" stands for ``type rule''
 \newcommand{\trule}[2]{\[\frac{#1}{#2}\]}
 \newcommand{\truleinline}[2]{\ensuremath{#1\mathrel{\vdash}#2}}

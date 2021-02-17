@@ -19,7 +19,7 @@ through an alias, and hence has a minimal impact on the programming model.
 % alias analysis for dealing with wrapper objects
 % (\cref{sec:must-call-choice}).
 
-\todo{maybe \<@MustCallChoice> belongs in its own section?  no longer sure it fits with ownership}
+\todo{maybe \mccannot belongs in its own section?  no longer sure it fits with ownership}
 We also describe a lightweight, local alias analysis for dealing with wrapper
 objects (\Cref{sec:must-call-choice}).
 
@@ -77,10 +77,6 @@ reduce annotation burden; we plan to pursue such techniques in future work.
 \subsubsection{Final owning fields}
 \label{sec:owning-fields}
 
-\todo{This section should cover the rules for final owning fields. Non-final
-  owning fields are covered by \cref{sec:reset-must-call}, and this
-  section is referred to from there.}
-
   Additional class-level checking is required for \<@Owning> fields, as the code
   satisfying their \<@MustCall> obligations nearly always spans multiple
   procedures.  We first discuss the case of final fields,\footnote{We only
@@ -108,61 +104,92 @@ reduce annotation burden; we plan to pursue such techniques in future work.
   that overwriting the field does not lead to a \<@MustCall> violation.  We
   describe our novel handling of non-final fields in \Cref{sec:reset-must-call}.
 
-\subsection{Lightweight alias analysis for wrapper types}
+\subsection{Wrapper types and must-call aliases}
 \label{sec:must-call-choice}
 
-The Java standard library contains a number of \emph{wrapper types}:
-classes that wrap a resource variable that might contain a resource.
-For example, consider the class \<java.io.BufferedOutputStream>.  The
-must-call obligation for an arbitrary \<BufferedOutputStream> is
-\<@MustCall(\{``close''\})>---the stream might be writing to a file,
-for example.  \<BufferedOutputStream>'s constructors all have a
-parameter which is another \<OutputStream>. When \<close()> is called
-on the resulting \<BufferedOutputStream>, the implementation calls
-\<close()> on the wrapped \<OutputStream>. Since there are no
-additional resources allocated by the \<BufferedOutputStream> that
-were not part of the \<OutputStream> passed to the constructor,
-calling \<close()> on either stream is equally correct (though most
-Java style guides suggest calling \<close()> on the outermost
-wrapper \todo{cite that claim?}).
+Precise leak detection for Java requires reasoning about \emph{wrapper types},
+which wrap another variable that may contain a resource.  Wrapper types
+introduce two additional complexities for \<@MustCall> checking:
+\begin{enumerate}
+  \item If a wrapped object has no \<@MustCall> obligation, the corresponding
+  wrapper object should also have no obligation.
+  \item Satisfying the obligation of \emph{either} the wrapped object or the
+  wrapper object is sufficient.
+\end{enumerate}
+For example, consider \<java.io.BufferedOutputStream>, a wrapper type which adds
+buffering to some other \<OutputStream>.  If a \<BufferedOutputStream> $b$ wraps
+a stream with no underlying resource (e.g., a \<ByteArrayOutputStream>), $b$ can
+have an empty \<@MustCall> obligation, since $b$ has no resource of its own.  On
+the other hand, if $b$ wraps a stream managing a resource like a
+\<FileOutputStream> $f$, then \<close()> must be invoked on either $b$ or $f$.
+(Calling \<close()> on $b$ is sufficient since it then calls \<close()> on its
+wrapped stream.)
 
-Code that uses these streams usually calls \<close()> on only one
-of the streams---either the wrapper stream or the wrapped stream.
-A tool that reported an error for one stream if the other was closed
-would report too many false positives to be usable in practice.
-Prior work uses a pre-determined list of wrapper classes, built into
-the tool, to handle this issue~\cite{TorlakC10}. \todo{Also cite ecj here?
-  I think it also uses the same scheme...}
+Previous work has shown that a reasoning about wrapper types is required to
+avoid excessive false positive and duplicate reports~\cite{TorlakC10} \todo{cite
+ECJ}.  Wrapper types in this work were handled with hard-coded specifications of
+which library types are wrappers and also, in the work of Torlak and
+Chandra~\cite{TorlakC10}, a clustering technique to group warnings involving a
+resource and its wrappers.  
 
-Our approach is more general. We introduce a new type qualifier,
-\<@MustCallChoice>, to represent the wrapper relationship. \<@MustCallChoice>
-qualifiers must always appear in pairs---one on a parameter of a method,
-and another on its return type.
+Our technique handles wrapper types more generally by tracking \emph{must-call
+aliases} during analysis.  Two references $r_1$ and $r_2$ are must-call aliases
+if satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
+obligation, and vice-versa.  If $r_1$ and $r_2$ are must-aliased pointers, then
+clearly they are also must-call aliases.  We also introduce a new type
+qualifier \mccannot to indicate where an API method creates a must-call-alias
+relationship between distinct objects, e.g., a wrapper and the wrapped resource.
+E.g., the \<BufferedOutputStream> constructor is annotated as follows:
+\begin{lstlisting}
+@MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
+\end{lstlisting}
 
-A pair of \<@MustCallChoice> annotations has two effects, in different
-checkers:
-\begin{itemize}
-\item the Must Call Checker treats the annotated elements as polymorphic---the
-  must-call obligations of the parameter are copied to the return type.
-  Therefore, if the wrapped type has no must-call obligations (such as
-  for a stream definitely wrapping a byte array), the wrapper will not
-  have must-call obligations, either.
-\item the Ownership Checker will treat the pair of streams as aliases,
-  for the purposes of resolving must-call obligations. Therefore, calling
-  \<close()> on one stream will be treated as calling \<close()> on both.
-\end{itemize}
+\mccannot qualifiers must always appear in pairs---one on a parameter of a
+method, and another on its return type.  A pair of \mccannot annotations has two
+effects on our inference and checking.  First, must-call obligation inference
+treats the annotated elements as polymorphic---the must-call obligations of the
+parameter are copied to the return type. Therefore, if the wrapped type has no
+must-call obligations (such as for a stream definitely wrapping a byte array),
+the wrapper will not have must-call obligations, either.
 
-A pair of \<@MustCallChoice> annotations can be verified (though our current
+Second, at call sites, the Must Call Consistency Checker will treat the actual
+parameter and return as aliases, for the purposes of resolving must-call
+obligations.  Specifically, the \textsc{MCAliases} routine in \cref{alg:helpers}
+is modified as follows \todo{better notation!}:
+\begin{algorithmic}
+  \Procedure{MCAliases}{$P,s$}
+    \If{$s$ is \lstinline{p = q} and $q \in P$ \newline
+         \hspace*{2.5em} $\vee$ $(s$ is \lstinline{p = foo(p1, p2, ...)} \newline
+         \hspace*{4em} $\wedge\ \exists p_i \in P.\ q_i$ is
+         \lstinline{@MustCallAlias} in \lstinline{foo}
+    }
+    \State \Return $\{p\}$
+    \EndIf
+    \State \Return $\emptyset$
+    \EndProcedure
+\end{algorithmic}
+The routine treats the assigned variable $p$ of a call statement as a new
+must-call alias if a tracked variable in $P$ is passed to some \mccannot
+parameter.  It also handles simple must-aliasing between local variables
+introduced via copy statements \lstinline{p = q}.  As shown in
+\cref{alg:consistency-checker}, the returned set is added to the set of tracked
+variables for a resource (\cref{li:compute-new-mc-aliases}), and the algorithm
+treats satisfaction of the \<@MustCall> obligation for any variable in the set
+as satisfying all the others.\todo{need another pass on this prose...}
+
+
+
+A pair of \mccannot annotations can be verified (though our current
 implementation does not do so, since almost all appear in the standard
 library rather than checked code) \todo{fix this!}. There are two
 procedures to check
-that a pair of \<@MustCallChoice> annotations on a method \<m>'s return type
+that a pair of \mccannot annotations on a method \<m>'s return type
 and its parameter \<p>:
 \begin{enumerate}
 \item if \<p> is passed to another method or constructor in an
-  \<@MustCallChoice> position, and \<m> returns the result of that method
+  \mccannot position, and \<m> returns the result of that method
   (or the method is a \<super()> constructor call appropriately annotated
-  with \<@MustCallChoice>), then the code can be verified.
+  with \mccannot), then the code can be verified.
 \item if \<p> is stored in an \<@Owning> field of the class, and the
   class declaration has an \<@MustCall(>$A$\<)> annotation for some set
   of methods $A$, and at least one of the methods in $A$ has an
@@ -170,7 +197,7 @@ and its parameter \<p>:
   must-call obligations of \<p>'s static type, then the code can be verified.
 \end{enumerate}
 
-Using \<@MustCallChoice> has another benefit: must-call obligations
+Using \mccannot has another benefit: must-call obligations
 can be shared even by objects that cannot possibly fulfill the
 obligation. For example, consider the method
 \<java.io.RandomAccessFile\#getFd()>, which returns a file descriptor
@@ -178,7 +205,7 @@ object for the file owned by the \<RandomAccessFile>. This file
 descriptor cannot be closed directly---it has no \<close()> method.
 However, it can be passed to a wrapper stream, such as
 \<java.io.FileOutputStream>---which can be closed, fulfilling
-the original must-call obligation. By creating a chain of \<@MustCallChoice>
+the original must-call obligation. By creating a chain of \mccannot
 annotations, we can verify code like the below:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
@@ -192,3 +219,25 @@ annotations, we can verify code like the below:
     file.close();
   }
 \end{lstlisting}
+
+% As noted in previous work, p
+% The
+% must-call obligation for an arbitrary \<BufferedOutputStream> is
+% \<@MustCall(\{``close''\})>---the stream might be writing to a file,
+% for example.  \<BufferedOutputStream>'s constructors all have a
+% parameter which is another \<OutputStream>. When \<close()> is called
+% on the resulting \<BufferedOutputStream>, the implementation calls
+% \<close()> on the wrapped \<OutputStream>. Since there are no
+% additional resources allocated by the \<BufferedOutputStream> that
+% were not part of the \<OutputStream> passed to the constructor,
+% calling \<close()> on either stream is equally correct (though most
+% Java style guides suggest calling \<close()> on the outermost
+% wrapper \todo{cite that claim?}).
+
+% Code that uses these streams usually calls \<close()> on only one
+% of the streams---either the wrapper stream or the wrapped stream.
+% A tool that reported an error for one stream if the other was closed
+% would report too many false positives to be usable in practice.
+% Prior work uses a pre-determined list of wrapper classes, built into
+% the tool, to handle this issue~\cite{TorlakC10}. \todo{Also cite ecj here?
+%   I think it also uses the same scheme...}
