@@ -30,12 +30,13 @@ objects (\Cref{sec:must-call-choice}).
 %   reduce false positives.}
 
 With lightweight ownership, a parameter, return, or field type may be annotated
-as either \<@Owning> or \<@NotOwning> (we shall discuss defaults shortly).  In
+as either \<@Owning> or \<@NotOwning> (we shall discuss default assumptions for
+these annotations shortly).  In
 the Must Call Consistency Checker (\Cref{sec:must-call-invoked}), if a tracked
 variable $p$ is assigned to such an \<@Owning> location $l$, we \emph{transfer}
 ownership to $l$, and $p$'s \<@MustCall> obligation
 is treated as satisfied. Specifically, the condition checked by
-\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is modified as follows
+\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is enhanced as follows
 \todo{sloppy, make it better}:
 
 \begin{align*}
@@ -45,24 +46,25 @@ is treated as satisfied. Specifically, the condition checked by
                   &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
 \end{align*}
 
-To ensure soundness, any \<@Owning> location must be tracked to ensure its
-\<@MustCall> obligation is satisfied.  We shall discuss checking of \<@Owning>
+To ensure soundness, the analysis must ensure that the \<@MustCall> obligation
+of any \<@Owning> location is satisfied.  We discuss checking of \<@Owning>
 fields in \Cref{sec:owning-fields}.  For \<@Owning> method returns, we need only
-update the \textsc{HasMCReturn} routine used in \Cref{alg:helpers} to check that
+update the \textsc{Has\-MCReturn} routine used in \Cref{alg:helpers} to check that
 the return type both has a non-empty \<@MustCall> obligation \emph{and} is
 \<@Owning>.  For \<@Owning> parameters, the loop at
 Lines~\ref{li:start-init}--\ref{li:end-init} in \Cref{alg:consistency-checker}
 must be extended to also add each \<@Owning> formal parameter as a dataflow
 fact at the entry node of the CFG.  These relatively simple changes are all that
-is required to add lightweight ownership tracking to our technique.
+is required to add lightweight ownership tracking to our technique.\todo{but we
+didn't discuss fields yet...}
 
 By default, our checker assumes that unannotated return types are \<@Owning>,
 but that parameter and field types are \<@NotOwning>.  These assumptions
 coincide well with coding patterns we observed in practice, reducing the
-programmer annotation burden.  Further, this treatment of parameter and return
-types ensures sound handling of unannotated third-party libraries: any object
-returned from such a library will be tracked by default, and the checker never
-assumes that passing an object to a library will satisfy its obligation.
+annotation burden for programmers.  Further, this treatment of parameter and
+return types ensures sound handling of unannotated third-party libraries: any
+object returned from such a library will be tracked by default, and the checker
+never assumes that passing an object to a library will satisfy its obligation.
 
 Programmers can override defaults by writing explicit \<@Owning> and
 \<@NotOwning> annotations.  Such explicit annotations can \emph{never}
@@ -71,6 +73,7 @@ annotation on a reference that does not satisfy an obligation), it can only lead
 to false positives, not false negatives.  Due to this design, there is great
 scope for creating inference techniques for lightweight ownership, to further
 reduce annotation burden; we plan to pursue such techniques in future work.
+\todo{pointer to further discussion in evaluation?}
 
 \todo{Add a para comparing to Rust ownership and the like?}
 
@@ -88,7 +91,7 @@ reduce annotation burden; we plan to pursue such techniques in future work.
   verify that $f$'s \<@MustCall> obligation is satisfied, we check the following
   conditions:
   \begin{enumerate}
-    \item $C$ objects must have a type \<@MustCall("n")> for some method $C.n$.
+    \item All $C$ objects must have a type \<@MustCall("n")> for some method $C.n$.
     \item $C.n$ must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \<@MustCall> obligation.
   \end{enumerate}
@@ -108,7 +111,9 @@ reduce annotation burden; we plan to pursue such techniques in future work.
 \label{sec:must-call-choice}
 
 Precise leak detection for Java requires reasoning about \emph{wrapper types},
-which wrap another variable that may contain a resource.  Wrapper types
+which wrap another type that may contain a resource.  For example, the Java
+\<BufferedOutputStream> type adds buffering to some other \<OutputStream>, which
+may or may not represent a resource that needs closing.  Wrapper types
 introduce two additional complexities for \<@MustCall> checking:
 \begin{enumerate}
   \item If a wrapped object has no \<@MustCall> obligation, the corresponding
@@ -116,18 +121,16 @@ introduce two additional complexities for \<@MustCall> checking:
   \item Satisfying the obligation of \emph{either} the wrapped object or the
   wrapper object is sufficient.
 \end{enumerate}
-For example, consider \<java.io.BufferedOutputStream>, a wrapper type which adds
-buffering to some other \<OutputStream>.  If a \<BufferedOutputStream> $b$ wraps
-a stream with no underlying resource (e.g., a \<ByteArrayOutputStream>), $b$ can
-have an empty \<@MustCall> obligation, since $b$ has no resource of its own.  On
-the other hand, if $b$ wraps a stream managing a resource like a
-\<FileOutputStream> $f$, then \<close()> must be invoked on either $b$ or $f$.
-(Calling \<close()> on $b$ is sufficient since it then calls \<close()> on its
-wrapped stream.)
+For example, if a \<BufferedOutputStream> $b$ wraps a stream with no underlying
+resource (e.g., a \<ByteArrayOutputStream>), $b$ should have an empty
+\<@MustCall> obligation, since $b$ has no resource of its own.  On the other
+hand, if $b$ wraps a stream managing a resource, like a \<FileOutputStream> $f$,
+then \<close()> must be invoked on \emph{either} $b$ or $f$. Calling \<close()> on $b$
+is sufficient since $b$\<.close()> invokes \<close()> on its wrapped stream $f$.
 
 Previous work has shown that a reasoning about wrapper types is required to
 avoid excessive false positive and duplicate reports~\cite{TorlakC10} \todo{cite
-ECJ}.  Wrapper types in this work were handled with hard-coded specifications of
+ECJ}.  Wrapper types in earlier work were handled with hard-coded specifications of
 which library types are wrappers and also, in the work of Torlak and
 Chandra~\cite{TorlakC10}, a clustering technique to group warnings involving a
 resource and its wrappers.  
@@ -138,48 +141,71 @@ if satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
 obligation, and vice-versa.  If $r_1$ and $r_2$ are must-aliased pointers, then
 clearly they are also must-call aliases.  We also introduce a new type
 qualifier \mccannot to indicate where an API method creates a must-call-alias
-relationship between distinct objects, e.g., a wrapper and the wrapped resource.
-E.g., the \<BufferedOutputStream> constructor is annotated as follows:
+relationship between distinct objects, like a wrapper and the wrapped resource.
+\mccannot can be used to annotate a \<BufferedOutputStream> constructor as follows:
 \begin{lstlisting}
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
 \end{lstlisting}
 
 \mccannot qualifiers must always appear in pairs---one on a parameter of a
 method, and another on its return type.  A pair of \mccannot annotations has two
-effects on our inference and checking.  First, must-call obligation inference
+effects on our inference and checking.  First, must-call obligation inference (\Cref{sec:must-call})
 treats the annotated elements as polymorphic---the must-call obligations of the
 parameter are copied to the return type. Therefore, if the wrapped type has no
-must-call obligations (such as for a stream definitely wrapping a byte array),
+must-call obligations (like a \<ByteArrayOutputStream>),
 the wrapper will not have must-call obligations, either.
 
-Second, at call sites, the Must Call Consistency Checker will treat the actual
-parameter and return as aliases, for the purposes of resolving must-call
-obligations.  Specifically, the \textsc{MCAliases} routine in \cref{alg:helpers}
-is modified as follows \todo{better notation!}:
+Second, at call sites, the Must Call Consistency Checker
+(\Cref{sec:must-call-choice}) treats the \mccannot parameter and return as
+aliases.  Specifically, the \textsc{CreatesAlias} routine in \cref{alg:helpers} is
+modified as follows \todo{better notation!}:
 \begin{algorithmic}
-  \Procedure{MCAliases}{$P,s$}
-    \If{$s$ is \lstinline{p = q} and $q \in P$ \newline
-         \hspace*{2.5em} $\vee$ $(s$ is \lstinline{p = foo(p1, p2, ...)} \newline
-         \hspace*{4em} $\wedge\ \exists p_i \in P.\ q_i$ is
-         \lstinline{@MustCallAlias} in \lstinline{foo}
-    }
-    \State \Return $\{p\}$
-    \EndIf
-    \State \Return $\emptyset$
+  \Procedure{CreatesAlias}{$P,s$}
+    \State \Return $s$ is \lstinline{p = q} $\wedge\ q \in P$ \newline
+         \hspace*{4.5em} $\vee$ $(s$ is \lstinline{p = foo(p1, p2, ...)} \newline
+         \hspace*{6em} $\wedge\ \exists p_i \in P.\ q_i$ is
+         \lstinline{@MustCallAlias} in \lstinline{foo})
     \EndProcedure
 \end{algorithmic}
-The routine treats the assigned variable $p$ of a call statement as a new
-must-call alias if a tracked variable in $P$ is passed to some \mccannot
-parameter.  It also handles simple must-aliasing between local variables
-introduced via copy statements \lstinline{p = q}.  As shown in
-\cref{alg:consistency-checker}, the returned set is added to the set of tracked
-variables for a resource (\cref{li:compute-new-mc-aliases}), and the algorithm
-treats satisfaction of the \<@MustCall> obligation for any variable in the set
-as satisfying all the others.\todo{need another pass on this prose...}
+Beyond must-aliasing between local variables, the routine now treats the
+assigned variable $p$ of a call statement as a new must-call alias if a tracked
+variable in $P$ is passed to some \mccannot parameter.
+With this change, \Cref{alg:consistency-checker} will treat the case of a
+must-call alias exactly the same as a standard must alias.
+% As shown in
+% \cref{alg:consistency-checker}, the returned set is added to the set of tracked
+% variables for a resource (\cref{li:compute-new-mc-aliases}), and the algorithm
+% treats satisfaction of the \<@MustCall> obligation for any variable in the set
+% as satisfying all the others.\todo{need another pass on this prose...}
 
+\mccannot can also be employed in scenarios beyond direct wrapper types, a
+capability not present in previous work.  In certain cases, a resource gets
+shared between objects via an intermediate object that cannot directly close the
+resource.  For example, \<java.io.RandomAccessFile> (which must be closed) has
+a method \<getFd()> that returns a \<FileDescriptor>
+object for the file. This file
+descriptor cannot be closed directly---it has no \<close()> method.
+However, the descriptor can be passed to a wrapper stream such as
+\<FileOutputStream>, which if closed satisifies the original must-call
+obligation.  By adding \mccannot annotations to the \<getFd()> method, our
+technique can verify code like the below:
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  RandomAccessFile file = new RandomAccessFile(myFile, "rws");
+  FileInputStream in = null;
+  try {
+    in = new FileInputStream(file.getFD());
+    // do something with in  
+    in.close();
+  } catch (IOException e){
+    file.close();
+  }
+\end{lstlisting}
+We assign \<FileDescriptor> a special \<@MustCall(?)> type \todo{should we use
+$\top$?} that cannot be satisfied by any calls.  We found this capability to be
+useful for verifying multiple code patterns in our case studies.
 
-
-A pair of \mccannot annotations can be verified (though our current
+\paragraph{Verification of \mccannot} \todo{another pass on this once we figure out if we can
+implement} A pair of \mccannot annotations can be verified (though our current
 implementation does not do so, since almost all appear in the standard
 library rather than checked code) \todo{fix this!}. There are two
 procedures to check
@@ -196,29 +222,6 @@ and its parameter \<p>:
   \<@EnsuresCalledMethods> annotation naming at least the
   must-call obligations of \<p>'s static type, then the code can be verified.
 \end{enumerate}
-
-Using \mccannot has another benefit: must-call obligations
-can be shared even by objects that cannot possibly fulfill the
-obligation. For example, consider the method
-\<java.io.RandomAccessFile\#getFd()>, which returns a file descriptor
-object for the file owned by the \<RandomAccessFile>. This file
-descriptor cannot be closed directly---it has no \<close()> method.
-However, it can be passed to a wrapper stream, such as
-\<java.io.FileOutputStream>---which can be closed, fulfilling
-the original must-call obligation. By creating a chain of \mccannot
-annotations, we can verify code like the below:
-
-\begin{lstlisting}[frame=tb,belowskip=3mm]
-  RandomAccessFile file = new RandomAccessFile(myFile, "rws");
-  FileInputStream in = null;
-  try {
-    in = new FileInputStream(file.getFD());
-    // do something with in  
-    in.close();
-  } catch (IOException e){
-    file.close();
-  }
-\end{lstlisting}
 
 % As noted in previous work, p
 % The
