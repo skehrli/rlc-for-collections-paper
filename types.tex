@@ -204,12 +204,11 @@ it might be side-effected).
       \State // \textit{must call not satisfied, so we have a leak}
       \State report a must-call violation for $s'$
     \Else
-    \State $kill \gets \textsc{LeftHandSide}(s)$ \label{li:compute-kill}
-    \State $gen \gets \textsc{MCAliases}(P,s)$ \label{li:compute-gen}
+    \State $kill \gets \{\textsc{LHS}(s)\}$ \label{li:compute-kill}
+    \State $gen \gets$ \textsc{CreatesAlias}(P,s) ? $\{\textsc{LHS}(s)\}$ : $\emptyset$ \label{li:compute-gen} 
     % \If{$s$ is \lstinline{p = q} and $q \in P$}
     % \State $gen \gets \{p\}$
     % \EndIf
-    \State // $N$ \textit{gets propagated to successors}
     \State $N \gets (P - kill) \cup gen$ \label{li:compute-new-mc-aliases}
     \State // \textit{we even propagate }$\emptyset$\textit{; error reported at exit}
     \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle
@@ -241,17 +240,17 @@ it might be side-effected).
   \Procedure{EndOfScope}{$P,s$}
   \State \Return \textsc{IsExit}$(s)$
   \EndProcedure
-  \State // \textit{What new must-call aliases for P are introduced by s?}
-  \Procedure{MCAliases}{$P,s$}
-    \State \Return $\emptyset$
+  \State // \textit{Does s introduce a must alias for a var in P?}
+  \Procedure{CreatesAlias}{$P,s$}
+    \State \Return $s$ is \lstinline{p = q} $\wedge\ q \in P$
   \EndProcedure
   \end{algorithmic}
 
 \end{algorithm}
 
 Given inferred \<@MustCall> obligations and \<@CalledMethods> types, the Must
-Call Consistency Checker ensures that the \<@MustCall> methods for each object
-are always invoked before the object becomes unreachable.  Pseudocode for an
+Call Consistency Checker ensures that \<@MustCall> methods for each object
+are always invoked before the object becomes unreachable.  Pseudocode for a
 basic version of this checker appears in \Cref{alg:consistency-checker}, with
 helper functions in \Cref{alg:helpers}.  In subsequent sections we will describe
 various enhancements to this basic approach.
@@ -263,14 +262,15 @@ assumes statements are normalized to a three-address form, with all intermediate
 results stored in temporary variables.  \todo{give a list of all types of
 statements: assignment, method call, return, field write?}
 
-The analysis computes a set of facts $D(s)$ holding before each statement $s$.
-A fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables
-and $s'$ is a statement containing a call with a non-empty \<@MustCall>
-obligation. The variables in $P$ are \emph{must-call aliases} for $s'$:
-satisfying the \<@MustCall> obligation for \emph{any} variable in $P$ is
-sufficient to satisfy the obligation for $s'$.  If the analysis discovers a fact
-$\langle P, s' \rangle$ reaching the method exit, then the \<@MustCall>
-obligation for $s'$ may not be satisfied, and an error is reported.
+The analysis computes a set of facts $D(s)$ holding before each statement $s$. A
+fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables and
+$s'$ is a call statement with a non-empty \<@MustCall> obligation. The variables
+in $P$ are \emph{must aliases} for $s'$:  hence, satisfying the \<@MustCall>
+obligation for \emph{any} variable in $P$ is sufficient to satisfy the
+obligation for $s'$.  (In \Cref{sec:must-call-choice} we shall generalize the
+set of variables held in $P$.)  If the analysis discovers a fact $\langle P, s'
+\rangle$ reaching the method exit, then the \<@MustCall> obligation for $s'$ may
+not be satisfied, and an error is reported.
 
 \Cref{alg:consistency-checker} proceeds as follows.
 Lines~\ref{li:start-init}--\ref{li:end-init} initialize $D$ by scanning for
@@ -280,26 +280,25 @@ with a non-empty \<@MustCall> type (see \textsc{MCObligations} in
 \Cref{alg:helpers}).  The fixed-point loop then proceeds by choosing some fact
 $\langle P, s' \rangle$ from some $D(s)$ (our implementation uses a worklist for
 efficiency).  If the \<@MustCall> obligation for $s'$ is satisfied before $s$
-(\Cref{li:check-satisfied}), the fact is not propagated further.
-For the basic checker, \textsc{MCSatisfied} in \Cref{alg:helpers} checks whether
-there is some variable $p \in P$ such that the inferred \<@MustCall> type for
-$p$ before $s$ ($\textsc{MCBefore}(p,s)$)is contained in its \<@CalledMethods>
-type ($\textsc{CMBefore}(p,s)$), i.e., all
-\<@MustCall> methods have been invoked.  Otherwise, if $s$ marks the end of the
-scope in which the obligation can be met (\Cref{li:end-scope}), a violation is
-reported, as some \<@MustCall> method may not have been invoked.
+(\cref{li:check-satisfied}), the fact is not propagated further. For the basic
+checker, \textsc{MCSatisfied} in \Cref{alg:helpers} checks whether there is some
+variable $p \in P$ such that the inferred \<@MustCall> type for $p$ before $s$
+($\textsc{MCBefore}(p,s)$) is contained in its \<@CalledMethods> type
+($\textsc{CMBefore}(p,s)$), i.e., all \<@MustCall> methods have already been
+invoked.  If not satisfied, and if $s$ marks the end of the scope in which the
+obligation can be met (\cref{li:end-scope}), a violation is reported, as some
+\<@MustCall> method may not have been invoked.
 
-If neither of these cases hold, the algorithm propagates a modified fact to
-successors, with an updated set $N$ of must-call aliases.  $N$ is computed in a
+If neither of these cases hold, the algorithm propagates the fact to
+successors with an updated set $N$ of must aliases.  $N$ is computed in a
 standard gen-kill style on
 lines~\ref{li:compute-kill}--\ref{li:compute-new-mc-aliases}.  The kill set
 simply consists of whatever variable (if any) appears on the left-hand side of
-$s$.  The gen set is computed using a \textsc{MCAliases} routine, which in
-\cref{alg:helpers} just returns $\emptyset$; we present a more useful version of
+$s$.  The gen set is computed by checking if $s$ creates a new must alias for
+some variable in $P$, using the \textsc{CreatesAlias} routine.  In
+\Cref{alg:helpers} the routine simply checks for an assignment where the
+right-hand side variable is in $P$; we present a more sophisticated version of
 this routine in \Cref{sec:must-call-choice}.
-% The basic
-% version of \textsc{MCAliases} (\cref{alg:helpers}) adds a new alias $p$
-% if $s$ copies from $q$ to $p$ (making $p$ and $q$ must-aliases) and $q \in P$.
 Finally, \Cref{li:prop-to-succs} propagates the new fact to successors.  The
 process continues until $D$ reaches a fixed point.  \todo{Tie this into a
 running example?}

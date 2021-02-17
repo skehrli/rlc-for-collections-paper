@@ -69,8 +69,6 @@
 %% the next command will enable that style.
 %%\citestyle{acmauthoryear}
 
-% cref command
-\usepackage{cleveref}
 
 % tables
 \usepackage{tabularx}
@@ -111,6 +109,9 @@
 \captionsetup{labelfont={small,bf}, textfont={small,bf,stretch=0.8}, labelsep=colon, margin=0pt}
 
 \usepackage{flushend} % balanced columns on last page
+
+% cref command; best to load last
+\usepackage{cleveref}
 
 %%
 %% end of the preamble, start of the body of the document source.
