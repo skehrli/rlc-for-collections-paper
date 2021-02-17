@@ -34,7 +34,12 @@ Ideally, a tool for preventing resource leaks would be:
 %% in ecj are unsound; complex analyses based on typestate are either too slow
 %% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
 
-Extant approaches fail at least one of these criteria. The most common
+Extant approaches fail at least one of these criteria.
+Language-based features do not apply to all uses of resource variables:
+Java's try-with-resources statement, for example, can
+only safely close local variables that implement the particular
+interface (\<java.lang.AutoCloseable>) that it supports.
+The most common other
 approach encountered by developers, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
