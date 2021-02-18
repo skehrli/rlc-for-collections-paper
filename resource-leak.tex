@@ -162,13 +162,18 @@
   \emph{accumulation problem}, a class of typestate problems amenable
   to sound checking \emph{with no alias analysis}.  We developed a
   baseline sound and modular leak checker via this approach, but found
-  that it suffered from an excess of false positives.  To reduce false
-  positives, we introduce \emph{lightweight ownership tracking}, a
+  that it suffered from an excess of false positives.
+  To reduce false
+  positives, we two introduce innovations: \emph{lightweight ownership tracking}
+  and \emph{accumulation frames}.
+  Lightweight ownership tracking is a
   technique to help determine which alias is responsible for releasing
   a resource.  Since our goal is only to prevent resource leaks, our
   ownership tracking avoids many of the heavyweight aliasing
-  restrictions associated with other ownership type systems.  We
-  implemented our techniques in a tool, called \tool, for Java, and show that it
+  restrictions associated with other ownership type systems.
+  Accumulation frames extend the theory of accumulation analysis to permit
+  certain kinds of cycles in the typestate automaton.
+  We implemented our techniques in a tool, called \tool, for Java, and show that it
   scales well, finds real bugs with a low false positive rate, and
   imposes only a low additional annotation burden for developers.
 \end{abstract}

@@ -24,6 +24,7 @@ Ideally, a tool for preventing resource leaks would be:
 \begin{itemize}
 \item \emph{fast}, so that it scales to real-world programs and
   developers can use it regularly;
+\item \emph{applicable} to all uses of leakable resources legacy code with few or no code changes,
 \item \emph{sound}, so that undetected resource leaks do not slip into
   the program; and
 \item \emph{precise}, so that developers are not bothered by false positive
@@ -43,12 +44,14 @@ The most common other
 approach encountered by developers, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
-are fast and precise---but only report the most obvious of
+are fast, precise, and applicable to legacy code---but only report the most obvious of
 errors. State-of-the-art typestate or dataflow analyses such as
 Grapple~\cite{zuo2019grapple} achieve more precise results---and
 can find more subtle bugs than bug-finders, though they remain unsound---but
 requires hours to analyze even a single real-world Java program, due
 to their reliance on expensive whole-program alias analyses.
+\todo{Find a good, recent example of a really heavyweight technique to attack here
+  for not being applicable and too hard to use.}
 
 Our key insight is that the resource leak problem is an extended
 version of an accumulation problem~\cite{kellogg20verifying}. An
@@ -85,7 +88,7 @@ Our contributions are \todo{line these up with what we actually did,
   bugs and has few false positives (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of
   lightweight ownership and accumulation frames to the low false
-  positive rate of our approach (\cref{sec:ablation}). \todo{this sounds great!  we need to be sure we can implement these experiments.}
+  positive rate of our approach (\cref{sec:ablation}).
 \item a comparison to alternative approaches to resource leak
   checking, that demonstrates that our approach occupies a unique
   point in the design space: faster and more usable than heavy-weight
