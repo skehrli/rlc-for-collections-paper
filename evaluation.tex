@@ -9,13 +9,14 @@
 
 \begin{table}
   \caption{An ablation study on the contribution of the lightweight
-    ownership (\emph{LO-ONLY}) and accumulation frames (\emph{AF-ONLY})
+    ownership (\emph{NO-LO}), resource aliasing (\emph{NO-RA}),
+    and accumulation frames (\emph{NO-AF})
     features in reducing false positives. Each entry is the number of extra
-    false positive warnings reported by that variant on the given project.}
+    false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
   
   \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
-    Project                              &      \emph{NONE} & \emph{LO-ONLY} & \emph{AF-ONLY} & \emph{FULL}      \\
+    Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
     \hline
     \abltablerow{apache/zookeeper}              {?}            {?}             {?}                               \\
     \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
@@ -62,7 +63,8 @@ Our evaluation has three parts:
 \item case studies on open-source projects, which show that our approach
   scales to realistic programs and finds real bugs (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of
-  lightweight ownership system (\cref{sec:lightweight-ownership}) and
+  lightweight ownership system (\cref{sec:lightweight-ownership}),
+  resource aliasing (\cref{sec:resource-aliasing}), and
   accumulation frames (\cref{sec:reset-must-call}) to the false positive
   rate on the case studies in \cref{sec:case-studies} (\cref{sec:ablation}).
 \item a comparison study that shows the advantages of our approach against
@@ -107,17 +109,19 @@ cannot become out-of-date if the checker is passing.
 
 \todo{Describe some examples of true and false positives.}
 
-\subsection{Ablating lightweight ownership and accumulation frames}
+\subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
 \label{sec:ablation}
 
-Without the lightweight ownership system (\cref{sec:lightweight-ownership}) and
+Without lightweight ownership (\cref{sec:lightweight-ownership}),
+resource aliasing (\cref{sec:must-call-choice}), and
 accumulation frames (\cref{sec:reset-must-call}), our analysis produces significantly
 more false positives. To show the contribution of each to our tool's precision,
 we performed an ablation study on the same programs we used as case studies in
-\cref{sec:case-studies} by building four versions of our tool: one with both
-features disabled (\emph{NONE}), one with lightweight ownership but without
-accumulation frames (\emph{LO-ONLY}), one with accumulation frames but not
-lightweight ownership (\emph{AF-ONLY}), and one with both enabled (\emph{FULL}).
+\cref{sec:case-studies} by building four versions of our tool:
+one with lightweight ownership disabled (\emph{NO-LO}),
+one with resource aliaisng disabled (\emph{NO-RA}),
+and one with accumulation frames disabled(\emph{NO-AF}),
+and the original with all three enabled (\emph{FULL}).
 We re-ran the experiments in \cref{sec:case-studies} using each variant, and
 recorded the change in the number of warnings. Since our analysis has no false
 negatives, the difference between the total number of warnings (i.e. the sum of

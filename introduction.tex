@@ -66,10 +66,11 @@ is faster and more precise \todo{Flesh this out with a more direct
   comparison to compare against more "heavyweight" systems like Rust
   ownership or fancier type systems}.
 
-To achieve a competitive level of precision in practice, we needed two
+To achieve a competitive level of precision in practice, we needed three
 innovations beyond our key insight:
 \begin{itemize}
 \item a lightweight, heuristic ownership transfer system.
+\item a lightweight, specialized must-alias analysis for resources.
 \item \emph{accumulation frames}, an extension to the theory of
   accumulation analysis which allow a single program element to
   soundly have an accumulation analysis applied to it multiple times.
@@ -81,18 +82,19 @@ Our contributions are \todo{line these up with what we actually did,
 \item the insight that the resource leak problem is an accumulation problem,
   and a set of type systems designed to take advantage of this fact (\cref{sec:base-type-systems}).
 \item a novel lightweight ownership tracking system (\cref{sec:lightweight-ownership}).
+\item a novel lightweight resource-alias tracking analysis (\cref{sec:must-call-choice}).
 \item a novel extension to accumulation analysis (\cref{sec:reset-must-call}).
 \item an implementation of our type systems as an extension to Java,
   augmented with these two innovations (\cref{sec:implementation}).
 \item case studies that demonstrate that our implementation finds real
   bugs and has few false positives (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of
-  lightweight ownership and accumulation frames to the low false
+  each of our improvements to our basic analysis to the low false
   positive rate of our approach (\cref{sec:ablation}).
-\item a comparison to alternative approaches to resource leak
-  checking, that demonstrates that our approach occupies a unique
-  point in the design space: faster and more usable than heavy-weight
-  typestate systems, but sound and able to find even subtle bugs,
-  unlike heuristic bug-finders (\cref{sec:compare}).
+%% \item a comparison to alternative approaches to resource leak
+%%   checking, that demonstrates that our approach occupies a unique
+%%   point in the design space: faster and more usable than heavy-weight
+%%   typestate systems, but sound and able to find even subtle bugs,
+%%   unlike heuristic bug-finders (\cref{sec:compare}).
 \end{itemize}
   

@@ -164,13 +164,16 @@
   baseline sound and modular leak checker via this approach, but found
   that it suffered from an excess of false positives.
   To reduce false
-  positives, we two introduce innovations: \emph{lightweight ownership tracking}
+  positives, we introduce three innovations: \emph{lightweight ownership tracking},
+  \emph{resource alias analysis},
   and \emph{accumulation frames}.
   Lightweight ownership tracking is a
   technique to help determine which alias is responsible for releasing
   a resource.  Since our goal is only to prevent resource leaks, our
   ownership tracking avoids many of the heavyweight aliasing
   restrictions associated with other ownership type systems.
+  Resouce alias analysis is a specialized, lightweight must-alias analysis
+  that identifies program elements that definitely control the same resource.
   Accumulation frames extend the theory of accumulation analysis to permit
   certain kinds of cycles in the typestate automaton.
   We implemented our techniques in a tool, called \tool, for Java, and show that it
@@ -238,6 +241,8 @@
 \input{types}
 
 \input{ownership}
+
+\input{resource-alias}
 
 \input{accumulation-frames}
 
