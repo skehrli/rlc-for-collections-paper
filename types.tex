@@ -1,41 +1,36 @@
 % the technical sections about the core accumulation systems: called methods,
 % must-call, and the must call invoked worklist algorithm.
 
-\section{Accumulation type systems for resource leak detection}
+\section{Cooperating analyses for leak detection}
 \label{sec:base-type-systems}
 
-\tool is composed of two cooperating type systems---a taint tracking
-type system tracking which methods must be called (the Must Call
-Checker of \cref{sec:must-call}) and an accumulation type system
-tracking which methods have been called (the Called Methods Checker of
-\cref{sec:called-methods})---and a dataflow analysis that tracks
-owning pointers and compares the results of the two type systems when
-an owning pointer goes out of scope (the Ownership Checker of
-\cref{sec:must-call-invoked}). This section describes the basics of
-these analyses; further details on novel features are provided in
-\cref{sec:lightweight-ownership} and \cref{sec:reset-must-call}.
-
-These analyses work in three stages:
+\tool is composed of three distinct analyses:
 \begin{enumerate}
-\item the Must Call Checker (\cref{sec:must-call}) computes a conservative
+\item a taint tracking type system (\cref{sec:must-call}) computes a conservative
   \emph{overapproximation} of the set of methods that might need to be called
   on each expression in the program.
-\item the Called Methods Checker (\cref{sec:called-methods}) computes
+\item an accumulation type system (\cref{sec:called-methods}) computes
   a conservative \emph{underapproximation} of the set of methods that are
   actually called on each expression in the program.
-\item the Ownership Checker (\cref{sec:must-call-invoked}) computes a set
+\item a dataflow analysis (\cref{sec:must-call-invoked}) computes a set
   of owning pointers that contains at least one element for every resource.
-  For each owning pointer, the Ownership Checker compares the results
-  of the Must Call Checker and the Called Methods Checker at each program
-  point at which the pointer might go out of scope, and issues an error
-  if any method reported by the Must Call Checker was not reported as
-  definitely called by the Called Methods Checker.
+  For each owning pointer, it checks the consistency of the results
+  of the two type systems at each program
+  point at which the pointer might go out of scope:
+  if any method that might need to be called is not in the set of methods
+  that definitely were called, it issues an error.
 \end{enumerate}
+
+This section describes the basics of
+these analyses; further details on novel features are provided in
+\cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}.
+
+\todo{MK: Rashmi suggests a running example might really help here, and I agree.}
 
 \subsection{Background on type qualifiers}
 \label{sec:background}
 
-Both the Must Call Checker and the Called Methods Checker are
+\Cref{sec:must-call,sec:called-methods} describe
 \emph{pluggable type systems}~\cite{FosterFFA99}---specialized type
 systems that are layered on top of the type system of the host
 language.  Types in a pluggable type system are composed of two parts:
@@ -46,7 +41,7 @@ type is a type from the host language. Our implementation is in Java
 qualifiers: an \<@> symbol before a type indicates that it is a type
 qualifier (a type without an \<@> symbol is a base type).
 
-\subsection{A type system for must-call obligations}
+\subsection{Inferring must-call obligations with a type system}
 \label{sec:must-call}
 
 \begin{figure}
@@ -92,6 +87,12 @@ This checker tracks the methods that an object should call before it
 is deallocated. It produces a conservative overapproximation of the
 set of methods that might actually need to be called on an object.
 
+The type system supports two qualifiers: \<@MustCall> and
+\<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
+methods that the annotated type should call. The type
+\<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
+deallocated, \<obj.a()> should be called.
+
 For example, an object whose type is \<java.io.OutputStream> might
 have an obligation to call the \<close()> method, to release an
 underlying file resource. Or, such an \<OutputStream> might not have
@@ -99,12 +100,6 @@ such an obligation, if the underlying resource is, for example, a byte
 array. Either of these obligations can be represented by the static
 type \<@MustCall(\{"close"\}) OutputStream>, which can be read as "an
 OutputStream that might need to call close before it is deallocated".
-
-The MustCall Checker supports two qualifiers: \<@MustCall> and
-\<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
-methods that the annotated type should call. The type
-\<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
-deallocated, \<obj.a()> should be called.
 
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \<@MustCallUnknown>.
@@ -134,19 +129,22 @@ and not a resource that must be closed---then local type inference can
 infer that that particular \<InputStream>'s type is also \<@MustCall(\{\})>,
 preventing a false positive.
 
-\subsection{A type system for called methods}
+\subsection{Inferring called methods with an accumulation analysis}
 \label{sec:called-methods}
 
-Our Called Methods type system is an extension of a similar system
+Our type system for inferring which methods are definitely called on an object
+is an extension of a similar system
 from prior work~\cite{kellogg20verifying}. We made some bugfixes and
 small enchancements to that system; the primary difference in our
 version is that methods are considered called even if they throw an exception
 (in the prior work, a method was only considered ``called'' when it terminated
-successfully). The remainder of this section is a brief explanation
-of the Called Methods type system; see~\cite{kellogg20verifying} for
+successfully)---a necessity in Java because the \<close()> method
+in \<java.io.Closeable> is specified to possibly throw an \<IOException>.
+The remainder of this section is a brief explanation
+of the type system from prior work~\cite{kellogg20verifying}, which contains
 a more full description.
 
-The Called Methods Checker is an \emph{accumulation analysis}: a special case
+This checker is an \emph{accumulation analysis}: a special case
 of typestate analysis~\cite{StromY86} in which:
 \begin{enumerate}
 \item the order in which operations are performed cannot affect what is
@@ -167,10 +165,10 @@ and $B$ is:
 \trule{B \subseteq A}{\<@CalledMethods(A)> \sqsubseteq \<@CalledMethods(B)>}
 The resulting lattice has \<@CalledMethods(\{\})> as its top type.
 
-Called Methods type are inferred within method bodies---when a method
-\<foo()> is called on an object \<obj>, <obj>'s type is refined to a
-set including \<"foo"> in the remainder of the method body (or until
-it might be side-effected).
+Called Methods types are inferred within method bodies---when a method
+\<foo()> is called on an object \<obj>, <obj>'s type is refined to
+a subtype of \<@CalledMethods("foo")>---that is, to a type with a
+set of methods including \<"foo">---in the remainder of the method body.
 
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}

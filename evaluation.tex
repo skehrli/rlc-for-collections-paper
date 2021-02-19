@@ -83,8 +83,10 @@ containing significant uses of leakable resources.
 We modified the build system of each project to run our
 analysis. We manually annotated each program with must-call,
 called-methods, and ownership annotations. We also
-made small changes to the programs, where possible, to avoid
-common false positives of our analysis. We then examined all
+made small, semantics-preserving changes to the programs where
+possible---such as adding
+\<final> modifiers to fields---to avoid
+false positives from our analysis. We then examined all
 remaining warnings, and categorized them as either true
 positives---real resource leaks---or false positives---code that our
 system was insufficiently precise to prove correct. We submitted bug
@@ -110,6 +112,8 @@ express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
 
 \todo{Describe some examples of true and false positives.}
+
+\todo{Discuss the annotations that had to be written by hand.}
 
 \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
 \label{sec:ablation}

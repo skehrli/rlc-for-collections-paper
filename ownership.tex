@@ -1,13 +1,15 @@
 \section{Lightweight ownership tracking}
 \label{sec:lightweight-ownership}
 
+\todo{Add an example of how @Owning or @NotOwning helps reduce false positives.}
+
 For the basic technique described in \Cref{sec:base-type-systems}, false
 positives are often caused by cases where a \<@MustCall> obligation is satisfied
 in another procedure, via parameter passing, return values, or object fields.
 Here, we describe a \emph{lightweight ownership tracking} technique for reducing
 false positives in such cases.  With lightweight ownership, programmer
 annotations \emph{cannot} introduce any checker unsoundness; they can only to
-reduce false positives.  Further, unlike other ownership type systems,
+reduce false positives.  Further, unlike other ownership type systems~\todo{cite},
 lightweight ownership imposes no restriction on what operations can be performed
 through an alias, and hence has a minimal impact on the programming model.
 
@@ -38,7 +40,7 @@ is treated as satisfied. Specifically, the condition checked by
 \begin{align*}
   \exists p \in P &.\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}\\
                   &\vee (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \mathrm{method\ return\ type\ is\ } \mathtt{@Owning})\\
-                  &\vee (s \mathrm{\ is\ } \mathtt{q\ =\ foo(...,p,...)} \wedge \mathrm{param\ type\ is\ } \mathtt{@Owning})\\
+                  &\vee (s \mathrm{\ is\ } \mathtt{q\ =\ foo(...,p,...)} \wedge \mathtt{p} \mathrm{\ is\ } \mathtt{@Owning})\\
                   &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
 \end{align*}
 
@@ -63,7 +65,9 @@ object returned from such a library will be tracked by default, and the checker
 never assumes that passing an object to a library will satisfy its obligation.
 
 Programmers can override defaults by writing explicit \<@Owning> and
-\<@NotOwning> annotations.  Such explicit annotations can \emph{never}
+\<@NotOwning> annotations on method returns, parameters, and fields
+(though never both at the same location---they are
+mutually exclusive).  Such explicit annotations can \emph{never}
 compromise soundness.  If such an annotation is incorrect (e.g., an \<@Owning>
 annotation on a reference that does not satisfy an obligation), it can only lead
 to false positives, not false negatives.  Due to this design, there is great

@@ -155,17 +155,22 @@
   to perform detection.  Typestate-based techniques require
   sophisticated reasoning about pointer aliasing, and hence suffer
   from either scalability issues or a high annotation burden for
-  developers.  We desire a method for preventing resource leaks that
+  developers.
+  We \todo{desire} a method for preventing resource leaks that
   is both lightweight, with a minimal annotation burden, and modular,
-  to enable scalability.
+  to enable scalability.\todo{``desire'' in the previous sentence makes
+    it sound like we won't do it. Find a better word?}
 
   We observe that resource leak detection is an instance of an
   \emph{accumulation problem}, a class of typestate problems amenable
   to sound checking \emph{with no alias analysis}.  We developed a
-  baseline sound and modular leak checker via this approach, but found
-  that it suffered from an excess of false positives.
-  To reduce false
-  positives, we introduce three innovations: \emph{lightweight ownership tracking},
+  baseline sound and modular leak checker via this approach.
+  % Rashmi said the following was too negative, and I agree:
+  % , but found
+  % that it suffered from an excess of false positives.
+  To improve the precision of this sound analysis,
+  we introduce three innovations:
+  \emph{lightweight ownership tracking},
   \emph{resource alias analysis},
   and \emph{accumulation frames}.
   Lightweight ownership tracking is a
@@ -256,6 +261,13 @@
 \section{Conclusions}
 
 Conclusions.
+
+\todo{Discuss future work on ownership inference, verifying that
+  builders always call build, whatever else we can think of.}
+
+\begin{acks}
+Thanks to Rashmi Mudduluru and the anonymous reviewers for their comments on an earlier versions of this paper.
+\end{acks}
 
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.

@@ -44,8 +44,9 @@ The most common other
 approach encountered by developers, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
-are fast, precise, and applicable to legacy code---but only report the most obvious of
-errors. State-of-the-art typestate or dataflow analyses such as
+are fast and applicable to legacy code---but either only report the most obvious of
+errors or are wildly imprecise (\cref{sec:compare}).
+State-of-the-art typestate or dataflow analyses such as
 Grapple~\cite{zuo2019grapple} achieve more precise results---and
 can find more subtle bugs than bug-finders, though they remain unsound---but
 requires hours to analyze even a single real-world Java program, due
@@ -55,9 +56,16 @@ to their reliance on expensive whole-program alias analyses.
 
 Our key insight is that the resource leak problem is an extended
 version of an accumulation problem~\cite{kellogg20verifying}. An
-accumulation problem is a special-case of typestate problem which does
-not require a whole-program alias analysis for soundness.  This
-insight allows us to build a novel static analysis, based on a
+accumulation problem is a special-case of typestate problem
+in which the order of operations performed cannot change what
+is subsequently permitted and executing more operations cannot
+add additional restrictions.
+If a typestate problem meets these restrictions, then using an accumulation
+analysis provides a major benefit: it does
+not require a whole-program alias analysis for soundness.\todo{This description
+  of accumulation analysis is too wordy; get the restrictions + benefit across
+  with less words.}
+This insight allows us to build a novel static analysis, based on a
 standard type system without a whole-program alias analysis, that is
 both sound---meaning it can find many more bugs than heuristic-based
 approaches---and much faster than extant typestate-based approaches.
@@ -66,7 +74,7 @@ is faster and more precise \todo{Flesh this out with a more direct
   comparison to compare against more "heavyweight" systems like Rust
   ownership or fancier type systems}.
 
-To achieve a competitive level of precision in practice, we needed three
+To achieve precision in practice, we needed three
 innovations beyond our key insight:
 \begin{itemize}
 \item a lightweight, heuristic ownership transfer system.
@@ -85,7 +93,7 @@ Our contributions are \todo{line these up with what we actually did,
 \item a novel lightweight resource-alias tracking analysis (\cref{sec:must-call-choice}).
 \item a novel extension to accumulation analysis (\cref{sec:reset-must-call}).
 \item an open-source implementation of our type systems as an extension to Java,
-  augmented with these two innovations (\cref{sec:implementation}).
+  augmented with these innovations, called \tool (\cref{sec:implementation}).
 \item case studies that demonstrate that our implementation finds real
   bugs and has few false positives (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of

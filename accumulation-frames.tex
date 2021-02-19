@@ -102,8 +102,9 @@ when creating the physical socket. When such a \<Socket> is created, it
 initally has no must-call obligation; it is only when the \<Socket> is
 actually connected that the must-call obligation is created.
 
-Our analysis initially naively assumed that all \<Socket>s are
-\<@MustCall(\{"close"\})>. This assumption causes false positives
+If all \<Socket>s are treated as \<@MustCall(\{"close"\})>---that is,
+without the accumulation frames described in this section---a false positive
+would be reported
 in code such as the below, which operates on an unconnected socket
 (simplified from real code in Apache Zookeeper~\todo{cite}):
 
@@ -118,8 +119,8 @@ in code such as the below, which operates on an unconnected socket
 The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called, so without an
 accumulation frame our analysis would report a possible leak along
-that path. 
-However, we can use an accumulation frame \emph{without an obligation}
+that path.  However, we can use an accumulation frame \emph{without an
+  obligation}---i.e. in which the \<Socket> is \<@MustCall({})>---
 that extends from the constructor call to a method that connects the
-socket (such as \<connect()> or \<bind()>) to avoid this false positive,
-by annotating those methods as \<@ResetMustCall("this")>.
+socket (such as \<connect()> or \<bind()>) to avoid this false
+positive, by annotating those methods as \<@ResetMustCall("this")>.

@@ -1,13 +1,18 @@
 \section{Resource aliasing}
 \label{sec:must-call-choice}
 
-This section introduces a lightweight, specialized must-alias analysis that
-tracks \emph{resource alias} sets---sets of pointers that definitely
-correspond to the same underlying system resource. Prior work on
-accumulation analyses showed that limited, specialized forms of alias
-analysis can provide precision to an accumulation analysis where needed,
-without incurring the cost of a whole-program analysis~\cite{KelloggRSSE2020}; our resource
-alias analysis is no different.
+This section introduces a lightweight, specialized must-alias analysis
+that tracks \emph{resource alias} sets---sets of pointers that
+definitely correspond to the same underlying system resource.  Because
+resource aliases correspond to the same underlying resource, closing
+one alias also closes the other---so our sound resource alias analysis
+permits \tool to avoid issuing false positive warnings about resources
+that have already been closed through their resource aliases.  Prior
+work on accumulation analyses showed that limited, specialized forms
+of alias analysis can provide precision to an accumulation analysis
+where needed, without incurring the cost of a whole-program
+analysis~\cite{KelloggRSSE2020}; our resource alias analysis is no
+different.
 
 \subsection{Wrapper types}
 
@@ -29,12 +34,13 @@ hand, if $b$ wraps a stream managing a resource, like a \<FileOutputStream> $f$,
 then \<close()> must be invoked on \emph{either} $b$ or $f$. Calling \<close()> on $b$
 is sufficient since $b$\<.close()> invokes \<close()> on its wrapped stream $f$.
 
-Previous work has shown that a reasoning about wrapper types is required to
-avoid excessive false positive and duplicate reports~\cite{TorlakC10} \todo{cite
-ECJ}.  Wrapper types in earlier work were handled with hard-coded specifications of
-which library types are wrappers and also, in the work of Torlak and
-Chandra~\cite{TorlakC10}, a clustering technique to group warnings involving a
-resource and its wrappers.  
+Previous work has shown that a reasoning about wrapper types is
+required to avoid excessive false positive and duplicate
+reports~\cite{TorlakC10,ecj-resource-leak}.  Wrapper types in earlier
+work were handled with hard-coded specifications of which library
+types are wrappers and also, in the work of Torlak and
+Chandra~\cite{TorlakC10}, a clustering technique to group warnings
+involving a resource and its wrappers.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
@@ -48,12 +54,13 @@ relationship between distinct objects, like a wrapper and the wrapped resource.
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
 \end{lstlisting}
 
-\mccannot qualifiers must always appear in pairs---one on a parameter of a
-method, and another on its return type.  A pair of \mccannot annotations has two
-effects on our inference and checking.  First, must-call obligation inference (\Cref{sec:must-call})
-treats the annotated elements as polymorphic---the must-call obligations of the
-parameter are copied to the return type. Therefore, if the wrapped type has no
-must-call obligations (like a \<ByteArrayOutputStream>),
+\mccannot qualifiers must always appear in pairs---one on a parameter
+of a method, and another on its return type.  A pair of \mccannot
+annotations has two effects on our inference and checking.  First,
+must-call obligation inference (\Cref{sec:must-call}) treats the
+annotated elements as polymorphic---the must-call obligations of the
+parameter are copied to the return type. Therefore, if the wrapped
+type has no must-call obligations (like a \<ByteArrayOutputStream>),
 the wrapper will not have must-call obligations, either.
 
 Second, at call sites, the Must Call Consistency Checker
@@ -126,7 +133,8 @@ procedures:
 \end{enumerate}
 These verification procedures permit a programmer to soundly specify a resource-aliasing
 relationship in their own code, a capability that was not present in prior work
-that relies on a hard-coded list of wrapper types.
+that relies on a hard-coded list of wrapper types, and that we used in our case studies
+\todo{3 in Zookeeper + however many in the rest} times.
 
 % As noted in previous work, p
 % The
