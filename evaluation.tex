@@ -224,13 +224,14 @@ we did not run it on our other case study programs.
   \end{tabularx}
 \end{table}
 
-Grapple~\cite{zuo2019grapple} is a modern typestate-based resource
-leak analysis focused on precision and (relative) scalability. Grapple
-models its alias and dataflow analyses as dynamic transitive-closure
-computation of graph representations of the target programs. Grapple,
-like all previous typestate-based analyses, requires a whole-program
-alias analysis. Grapple contains four checkers, of which two (IO and
-Socket) are useful for detecting resource leaks.
+\todo{be sure to note that Grapple is not modular, unlike us}
+Grapple~\cite{zuo2019grapple} is a modern typestate-based resource leak analysis
+focused on precision and (relative) scalability. Grapple models its alias and
+dataflow analyses as dynamic transitive-closure computation of graph
+representations of the target programs. Grapple, like all previous
+typestate-based analyses, requires a whole-program alias analysis. Grapple
+contains four checkers, of which two (IO and Socket) are useful for detecting
+resource leaks.
 
 The Grapple authors have already evaluated their tool on earlier
 versions of the case study programs in
