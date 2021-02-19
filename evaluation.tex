@@ -64,7 +64,7 @@ Our evaluation has three parts:
   scales to realistic programs and finds real bugs (\cref{sec:case-studies}).
 \item an ablation study that demonstrates the contributions of
   lightweight ownership system (\cref{sec:lightweight-ownership}),
-  resource aliasing (\cref{sec:resource-aliasing}), and
+  resource aliasing (\cref{sec:must-call-choice}), and
   accumulation frames (\cref{sec:reset-must-call}) to the false positive
   rate on the case studies in \cref{sec:case-studies} (\cref{sec:ablation}).
 \item a comparison study that shows the advantages of our approach against
@@ -138,18 +138,115 @@ compared to \emph{FULL}.
 
 Our approach represents a novel point in the design space of a resource leak checker.
 
-We compared our approach with two other tools that purport to detect resource leaks:
+In this section, we compare our approach with two other modern tools that purport to detect resource leaks:
 \begin{itemize}
-\item an analysis built into the Eclipse Compiler for Java (ecj).
-\item Grapple~\cite{}, an unsound, typestate-based analysis that represents a significant, recent
+\item the analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
+  for detecting resource leaks in the Eclipse IDE~\cite{ecj-resource-leak}.
+\item Grapple~\cite{zuo2019grapple}, an unsound, typestate-based analysis that represents a significant, recent
   improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
 \end{itemize}
+Each tool is evaluated against the four criteria that we proposed in \cref{sec:intro}
+for an ideal resource-leak detector: analysis speed, applicability to legacy code, soundness (i.e. ability
+to detect all errors), and precision (i.e. lack of false positive warnings).
 
-The Grapple paper already evaluated on earlier versions of \todo{some of?} the case study programs in \cref{sec:case-studies}.
+\subsubsection{Eclipse}
+\label{sec:eclipse}
 
-We also ran our analysis and ecj's on these versions of the case study programs.
+The Eclipse analysis is a simple dataflow analysis
+augmented with heuristics. Because it is tightly integrated with
+the compiler, it scales well and runs quickly. It contains
+heuristics for ownership, resource wrappers, and resource-free
+closeables, among others; these are all hard-coded into the analysis and cannot
+be adjusted by the user. It does not support annotations to express
+specifications in these categories that differ from its defaults.
+It supports two levels of analysis: detecting ``potential'' resource
+leaks and detecting high-confidence resource leaks; the former reports a superset
+of the warnings reported by the latter.
 
-The results presumably show that our tool is faster than grapple and finds more bugs, but has more false positives.
-Compared to ecj, we expect to be slower, find more bugs, and have similar numbers of false positives.
+We ran this analysis on the same version of Zookeeper's zookeeper-server
+module that we ran \tool on in \cref{sec:case-studies}. Once Eclipse
+has loaded the project, the analysis runs nearly instantaneously---it
+clearly satisfies the "fast" criterion. It is also easy to apply it to
+existing legacy code---it clearly satisfies the "applicable" criterion.
 
-\todo{would we present these results as a table?}
+In potential leak mode on zookeeper-server, the analysis reported 180
+warnings.  Of these, we determined that 8 were true positives
+(corresponding to true positives that our sound tool found), and the
+other 172 were false positives.  The most common cause of false
+positives was the unchangeable, default ownership transfer assumption
+at method invocations: each call to a method such as
+\<Socket\#getInputStream> that returns a resource-alias resulted in a
+warning.  Of the true positives, 5 of 8 were warnings about such
+calls, where the aliased resource really was not closed on all
+paths. We believe that these true positives are "accidental"---the
+analysis found them because of its imprecise handling of resource
+aliases, not because it detected the actual leak. When the
+``potential'' resource leaks are ignored in ``high-confidence'' mode,
+Eclipse reports only 3 warnings: one true positive and two false
+positives.
+
+These results demonstrate that the Eclipse bug-finder is unsound in both
+modes: it misses at least 4 real warnings that our tool found when detecting
+potential leaks. Further, the analysis is imprecise: in potential leak mode,
+the vast majority of warnings are false positives. However, this sort
+of bug-finding tool does have two advantages: it is fast, and it is easily
+applicable to legacy code. Compared to our tool, the Eclipse analysis
+is much faster and equally applicable to legacy code, but both less sound
+and less precise.
+
+Given that these results on zookeeper-server
+clearly show the strengths and weaknesses of this tool compared to our own,
+we did not run it on our other case study programs.
+
+\subsubsection{Grapple}
+\label{sec:grapple}
+
+% a line in tab:grapple
+% these numbers come from tables 2 and 3 in the grapple paper from EuroSys.
+% for TPs and FPs, I added together the IO and Socket columns of table 2.
+\newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
+
+\begin{table}
+  \caption{Key findings on the Grapple tool's performance on the case study
+    programs in \cref{sec:case-studies}; reproduced from~\cite{zuo2019grapple}.}
+  \label{tab:grapple}
+  
+  \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+    Project                              &  TPs    &    FPs         & Run time      \\
+    \hline
+    \grappletablerow{ZooKeeper}             {6}         {0}           {01h07m02s}     \\
+    \grappletablerow{HDFS}                  {5}         {2}           {01h54m52s}    \\
+    \grappletablerow{HBase}                 {15}        {2}           {33h51m59s}     \\
+    \hline
+    \grappletablerow{\textbf{Total}}        {26}        {4}           {-}          \\
+  \end{tabularx}
+\end{table}
+
+Grapple~\cite{zuo2019grapple} is a modern typestate-based resource
+leak analysis focused on precision and (relative) scalability. Grapple
+models its alias and dataflow analyses as dynamic transitive-closure
+computation of graph representations of the target programs. Grapple,
+like all previous typestate-based analyses, requires a whole-program
+alias analysis. Grapple contains four checkers, of which two (IO and
+Socket) are useful for detecting resource leaks.
+
+The Grapple authors have already evaluated their tool on earlier
+versions of the case study programs in
+\cref{sec:case-studies}~\cite{zuo2019grapple}.  Unfortunately, we were
+not able to run the tool on the same versions of the case study
+programs that we used in \cref{sec:case-studies}.
+\todo{Manu: explain why we couldn't/didn't try to do this.}
+We reproduce their key findings below in \cref{tab:grapple}
+(their run time numbers were computed on a commodity machine
+\todo{similar to} the commodity machine we used to compute the run
+times that appear in \cref{tab:case-studies}, but includes the cost
+of running all four of their checkers).
+
+Compared to our approach, Grapple is slower (due to its reliance on
+an expensive whole-program alias analysis, which \tool avoids by using
+an accumulation analysis), similarly applicable to legacy
+code, less sound, and much more precise--our type-based approach
+trades off precision and a small amount of user effort (i.e. to write annotations)
+for soundness and speed. In this way, \tool and Grapple are complementary:
+they optimize for different criteria. Users should select the tool whose
+priorities match their own.

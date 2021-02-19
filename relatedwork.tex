@@ -21,6 +21,7 @@ dynamic transitive-closure computation of graph representations of
 the target programs, enabling extraordinary precision with a whole-program
 alias analysis. Compared to \tool, it is more precise but suffers
 from unsoundness and an order of magnitude longer run times.
+We compare directly to Grapple in \cref{sec:grapple}.
 
 The Eclipse Compiler for Java includes a simple dataflow-based
 bug-finder for resource leaks~\cite{ecj-resource-leak}. Their analysis
@@ -30,6 +31,7 @@ classes; unlike \tool, it is also unsound. It is fast and
 compared to \tool---are present in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, Infer~\cite{infer-resource-leak}, and others.
+We compare to the Eclipse analysis directly in \cref{sec:eclipse}.
 
 Weimer and Necula~\cite{WeimerN04} proposed a language feature called
 a compensation stack to avoid resource leak problems in Java.
