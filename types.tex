@@ -97,7 +97,8 @@ For example, an object whose type is \<java.io.OutputStream> might
 have an obligation to call the \<close()> method, to release an
 underlying file resource. Or, such an \<OutputStream> might not have
 such an obligation, if the underlying resource is, for example, a byte
-array. Either of these obligations can be represented by the static
+array. Either the obligation to close or no obligation at all
+can be represented by the static
 type \<@MustCall(\{"close"\}) OutputStream>, which can be read as "an
 OutputStream that might need to call close before it is deallocated".
 
@@ -149,7 +150,9 @@ of typestate analysis~\cite{StromY86} in which:
 \begin{enumerate}
 \item the order in which operations are performed cannot affect what is
   subsequently permitted, and
-\item executing more operations does not add restrictions.
+\item executing more operations does not add restrictions---that is,
+  the set of permitted operations after executing some operation is always
+  a superset of the set of permitted operations before executing that operation.
 \end{enumerate}
 This special case of typestate analysis is useful because it does not
 require a whole-program alias analysis for soundness, and instead
@@ -159,7 +162,7 @@ The checker supports two qualifiers: \<@CalledMethods>
 and \<@CalledMethodsBottom>. The type \<@CalledMethods(>$A$\<) Object>
 represents an object on which the methods in the set $A$ have definitely
 been called (other methods not in $A$ might also have been called).
-\<@CalledMethodsBottom> is a subtype of every other type; the subtyping
+\<@CalledMethodsBottom> is a subtype of every other Called Methods type; the subtyping
 rule between any two \<@CalledMethods> annotations with method sets $A$
 and $B$ is:
 \trule{B \subseteq A}{\<@CalledMethods(A)> \sqsubseteq \<@CalledMethods(B)>}
@@ -283,7 +286,10 @@ checker, \textsc{MCSatisfied} in \Cref{alg:helpers} checks whether there is some
 variable $p \in P$ such that the inferred \<@MustCall> type for $p$ before $s$
 ($\textsc{MCBefore}(p,s)$) is contained in its \<@CalledMethods> type
 ($\textsc{CMBefore}(p,s)$), i.e., all \<@MustCall> methods have already been
-invoked.  If not satisfied, and if $s$ marks the end of the scope in which the
+invoked.
+\todo{The names CMBefore and MCBefore are confusing - they're nearly identical.
+  Can we think of better ones that are equally useful?}
+If not satisfied, and if $s$ marks the end of the scope in which the
 obligation can be met (\cref{li:end-scope}), a violation is reported, as some
 \<@MustCall> method may not have been invoked.
 
