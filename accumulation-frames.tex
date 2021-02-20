@@ -10,6 +10,7 @@ In practice, however, this is not true. Consider, for example,
 the following code:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
+  @MustCall("close")
   class SocketContainer {
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
@@ -21,7 +22,7 @@ the following code:
 In the lifetime of a \<SocketContainer> object, it might control any
 number of resources, depending on the number of calls to
 \<reconnect()>. In order to verify the code above (and uses of the
-class), we need \emph{accumulation frames}---regions of the program in
+class), we need \emph{accumulation frames}---distinct regions of the program in
 which a program element can be treated as the subject of an
 accumulation analysis. The important distinction between an analysis
 with accumulation frames and a standard accumulation analysis is that
@@ -34,7 +35,7 @@ above:
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   SocketContainer sc = ...;
   sc.close();
-  // frame boundary: sc treated as going out of scope
+  // frame boundary
   sc.reconnect();
   sc.close();
 \end{lstlisting}
@@ -60,35 +61,62 @@ definition for \<reconnect()> above would then become:
   }
 \end{lstlisting}
 
-When an \<@ResetMustCall> method is invoked, the Must Call Checker and
-the Called Methods remove any inferred information about the target, and
-restore it to the default value for its type in their respective hierarchies
-\footnote{Note that according to the rules in
-  \cref{sec:owning-fields}, a class with an owning field must have a
-  \<@MustCall> annotation corresponding to a method that ensures the
-  field's must-call obligations are fulfilled.}.
-\todo{Should I mention here that it is an error if that default type is not
-  top in the CM hierarchy?}
+\todo{Martin: fix this for the Must Call Checker} When an \<@ResetMustCall>
+method is invoked, the Must Call Checker and the Called Methods remove any
+inferred information about the target, and restore it to the default value for
+its type in their respective hierarchies \footnote{Note that according to the
+rules in \cref{sec:owning-fields}, a class with an owning field must have a
+\<@MustCall> annotation corresponding to a method that ensures the field's
+must-call obligations are fulfilled.}. \todo{Should I mention here that it is an
+error if that default type is not top in the CM hierarchy?}
 
-The Ownership Checker also enforces three new rules, to ensure that
+
+The Must Call Consistency Checker treats calls to \<@ResetMustCall> obligations
+as creating a fresh obligation to check, since they mark the beginning of a new
+accumulation frame.  In terms of our pseudocode, assume we have a routine
+\textsc{RMCTargets}$(s)$ that works as follows: if $s$ is a
+statement invoking a \<@ResetMustCall> method $m$, \textsc{RMCTargets}$(s)$ returns
+the actual parameters at $s$ corresponding to $m$'s \<@ResetMustCall> targets;
+otherwise, it returns $\emptyset$.  Then, we can update the
+\textsc{MCObligations} procedure of \Cref{alg:helpers} to handle
+\<@ResetMustCall> as follows:
+\begin{algorithmic}
+  \Procedure{MCObligations}{$s$}
+    \State $r \gets \textsc{RMCTargets}(s)$
+    \If{$s$ is \lstinline{p = foo(...)} and \textsc{HasMCReturn}(\lstinline{foo})}
+      \State $r \gets r \cup \{p\}$
+    \EndIf
+    \State \Return $r$
+    \EndProcedure
+\end{algorithmic}
+Also, if during the data flow analysis, we encounter a call to a \<@ResetMustCall>
+method on a tracked variable $v$, we treat the existing \<@MustCall>
+obligation of $v$ as \emph{satisfied} before the call.  I.e., we add one more
+case to the \textsc{MCSatisfied} predicate given in
+\Cref{sec:ownership-transfer} ($[\ldots]$ stands for the previous cases):
+\begin{align*}
+  \exists p \in P &.\ [\ldots] \vee p \in \textsc{RMCTargets}(s)
+\end{align*}
+This is sound since the checker creates a new obligation for calls to
+\<@ResetMustCall> methods, and the must-call obligation inference ensures the
+\<@MustCall> type for the target will have a superset of any methods present
+before the call.
+
+Finally, the checker must enforce two new rules to ensure that
 re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with an \<@ResetMustCall> that targets that object.
-\item when a non-final, owning field is re-assigned, it is checked
-  using the procedure defined in \cref{sec:must-call-invoked} as if it
-  is going out of scope.
-\item methods annotated with \<@ResetMustCall> are only called targetting
-  owning pointers, or within a method with another \<@ResetMustCall> annotation
-  with the same target.
+\item when a non-final, owning field $f$ is re-assigned at statement $s$, its \<@MustCall> obligation
+must be satisfied before $s$ (i.e., $\textsc{MCBefore}(f,s) \subseteq
+\textsc{CMBefore}(f,s)$, see \Cref{alg:helpers})
 \end{itemize}
-
 \noindent
 Together, these rules guarantee that any re-assignment to a non-final, owning
 field (1) ends the current accumulation frame with the obligation fulfilled,
 and (2) starts a new accumulation frame, with the obligation re-imposed on
-an owning pointer.
+the target at the caller.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
