@@ -24,28 +24,26 @@ number of resources, depending on the number of calls to
 \<reconnect()>. In order to verify the code above (and uses of the
 class), we need \emph{accumulation frames}---distinct regions of the program in
 which a program element can be treated as the subject of an
-accumulation analysis. The important distinction between an analysis
-with accumulation frames and a standard accumulation analysis is that
-in the former a single program element can be treated as going out of
-scope multiple times.
+accumulation analysis. At the boundary between each frame, we check
+that 1) the obligations of the old frame are fulfilled, and 2)
+reset the obligations of the object.
 
 For example, consider the following use of the \<SocketContainer> class
 above:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   SocketContainer sc = ...;
-  sc.close();
-  // frame boundary
-  sc.reconnect();
+  sc.reconnect();  // frame boundary
   sc.close();
 \end{lstlisting}
 
 This code contains two accumulation frames: the first extends from the
-constructor call to the first call to \<close()>, and the second
+constructor call to the first call to \<reconnect()>, and the second
 extends from the call to \<reconnect()> (which creates another
-obligation) to the end of the block. In effect, we can treat \<sc> as
-two different entirely separate program elements---one for each
-accumulation frame.
+obligation) to the end of the block. Because \<reconnect()> is guaranteed
+to clean up the resources that it overwrites---note the call
+to \<close()> in its implementation---this code is safe, even though \<sc>
+corresponds to two different resources: one for each frame.
 
 We introduce a new annotation, called \<@ResetMustCall>, to delineate
 an accumulation frame. \<@ResetMustCall> is written on a method
@@ -61,15 +59,19 @@ definition for \<reconnect()> above would then become:
   }
 \end{lstlisting}
 
-\todo{Martin: fix this for the Must Call Checker} When an \<@ResetMustCall>
-method is invoked, the Must Call Checker and the Called Methods remove any
-inferred information about the target, and restore it to the default value for
-its type in their respective hierarchies \footnote{Note that according to the
-rules in \cref{sec:owning-fields}, a class with an owning field must have a
-\<@MustCall> annotation corresponding to a method that ensures the field's
-must-call obligations are fulfilled.}. \todo{Should I mention here that it is an
-error if that default type is not top in the CM hierarchy?}
-
+When an \<@ResetMustCall>
+method is invoked, \tool removes any
+inferred Called Methods information about the target (\<sc> in the example).
+This rule means that even if \<close()> has already been called on \<sc>
+when \<reconnect()>
+is called, \<close()> must be called again---corresponding to the intuition
+that a new accumulation frame ``resets'' the obligations of \<sc>.
+The inferred must-call methods for \<sc> could also increase:
+if the declared type of \<sc>'s default must-call type includes any
+methods that are not in the current must-call type for \<sc>, they are added.
+Since \<@ResetMustCall> annotations can only increase its target's obligations,
+no verification for them is needed: placing them anywhere in the program is sound
+(but may reduce precision).
 
 The Must Call Consistency Checker treats calls to \<@ResetMustCall> obligations
 as creating a fresh obligation to check, since they mark the beginning of a new
@@ -101,6 +103,10 @@ This is sound since the checker creates a new obligation for calls to
 \<@ResetMustCall> methods, and the must-call obligation inference ensures the
 \<@MustCall> type for the target will have a superset of any methods present
 before the call.
+There is one exception to this consistency check: if an \<@ResetMustCall>
+method is invoked within a method that also has an \<@ResetMustCall> annotation
+with the same target---thus imposing the obligation on its caller---then
+the new obligation can be treated as satisfied immediately.
 
 Finally, the checker must enforce two new rules to ensure that
 re-assignments to non-final, owning fields like \<sock> in the example
@@ -151,4 +157,9 @@ that path.  However, we can use an accumulation frame \emph{without an
   obligation}---i.e. in which the \<Socket> is \<@MustCall({})>---
 that extends from the constructor call to a method that connects the
 socket (such as \<connect()> or \<bind()>) to avoid this false
-positive, by annotating those methods as \<@ResetMustCall("this")>.
+positive, by annotating those methods (in the definition of
+\<java.net.Socket>) as \<@ResetMustCall("this")>.  When one of these
+methods is then called on the \<Socket> in client code that is being
+verified by \tool, its inferred must-call obligations increase to include
+\<close()>, because by default an arbitrary \<Socket>'s type is
+\<@MustCall("close")>.
