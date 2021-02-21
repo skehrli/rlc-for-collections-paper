@@ -56,23 +56,24 @@ to their reliance on expensive whole-program alias analyses.
 
 Our key insight is that the resource leak problem is an extended
 version of an accumulation problem~\cite{kellogg20verifying}. An
-accumulation problem is a special-case of typestate problem
-in which the order of operations performed cannot change what
-is subsequently permitted and executing more operations cannot
-add additional restrictions.
-If a typestate problem meets these restrictions, then using an accumulation
-analysis provides a major benefit: it does
-not require a whole-program alias analysis for soundness.\todo{This description
-  of accumulation analysis is too wordy; get the restrictions + benefit across
-  with less words.}
-This insight allows us to build a novel static analysis, based on a
-standard type system without a whole-program alias analysis, that is
-both sound---meaning it can find many more bugs than heuristic-based
-approaches---and much faster than extant typestate-based approaches.
-Compared to existing sound approaches, our accumulation-based system
-is faster and more precise \todo{Flesh this out with a more direct
-  comparison to compare against more "heavyweight" systems like Rust
-  ownership or fancier type systems}.
+accumulation problem is a special-case of typestate problem in which
+the order of operations performed cannot change what is subsequently
+permitted and executing more operations cannot add additional
+restrictions.  If a typestate problem meets these restrictions, then
+using an accumulation analysis provides a major benefit: it does not
+require a whole-program alias analysis for soundness.\todo{This
+  description of accumulation analysis is too wordy; get the
+  restrictions + benefit across with less words.}  This insight allows
+us to build a novel static analysis, based on a standard type system
+without a whole-program alias analysis, that is both sound\footnote{Mostly
+  sound~\cite{livshits2015defense}; see
+\cref{sec:threats} for the usual implementation caveats.}---meaning it
+can find many more bugs than heuristic-based approaches---and much
+faster than extant typestate-based approaches.  Compared to existing
+sound approaches, our accumulation-based system is faster and more
+precise \todo{Flesh this out with a more direct comparison to compare
+  against more "heavyweight" systems like Rust ownership or fancier
+  type systems}.
 
 To achieve precision in practice, we needed three
 innovations beyond our key insight:
