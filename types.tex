@@ -135,14 +135,14 @@ preventing a false positive.
 
 Our type system for inferring which methods are definitely called on an object
 is an extension of a similar system
-from prior work~\cite{kellogg20verifying}. We made some bugfixes and
+from prior work~\cite{KelloggRSSE2020}. We made some bugfixes and
 small enchancements to that system; the primary difference in our
 version is that methods are considered called even if they throw an exception
 (in the prior work, a method was only considered ``called'' when it terminated
 successfully)---a necessity in Java because the \<close()> method
 in \<java.io.Closeable> is specified to possibly throw an \<IOException>.
 The remainder of this section is a brief explanation
-of the type system from prior work~\cite{kellogg20verifying}, which contains
+of the type system from prior work~\cite{KelloggRSSE2020}, which contains
 a more full description.
 
 This checker is an \emph{accumulation analysis}: a special case
