@@ -148,41 +148,40 @@
   Resource leaks remain a significant software quality issue and a key
   cause of problems like slowdowns and crashes.  Many techniques have
   been developed to prevent resource leaks, but existing techniques
-  have a variety of drawbacks.  Language constructs can prevent
-  certain classes of leaks, but they often have restricted
-  applicability.  Other techniques frame resource leak detection as a
-  typestate problem, and apply techniques from typestate verification
-  to perform detection.  Typestate-based techniques require
-  sophisticated reasoning about pointer aliasing, and hence suffer
-  from either scalability issues or a high annotation burden for
-  developers.
-  We \todo{desire} a method for preventing resource leaks that
-  is both lightweight, with a minimal annotation burden, and modular,
-  to enable scalability.\todo{``desire'' in the previous sentence makes
-    it sound like we won't do it. Find a better word?}
-
+  have a variety of drawbacks: they are either slow, unsound,
+  imprecise, not applicable to existing code, or a combination
+  of these.\looseness=-1
+  
   We observe that resource leak detection is an instance of an
-  \emph{accumulation problem}, a class of typestate problems amenable
-  to sound checking \emph{with no alias analysis}.  We developed a
+  accumulation problem, a class of typestate problems amenable
+  to sound checking with no alias analysis.  We developed a
   baseline sound and modular leak checker via this approach.
   % Rashmi said the following was too negative, and I agree:
   % , but found
   % that it suffered from an excess of false positives.
   To improve the precision of this sound analysis,
   we introduce three innovations:
-  \emph{lightweight ownership tracking},
-  \emph{resource alias analysis},
-  and \emph{accumulation frames}.
-  Lightweight ownership tracking is a
-  technique to help determine which alias is responsible for releasing
-  a resource.  Since our goal is only to prevent resource leaks, our
-  ownership tracking avoids many of the heavyweight aliasing
-  restrictions associated with other ownership type systems.
-  Resouce alias analysis is a specialized, lightweight must-alias analysis
-  that identifies program elements that definitely control the same resource.
-  Accumulation frames extend the theory of accumulation analysis to permit
-  certain kinds of cycles in the typestate automaton.
-  We implemented our techniques in an open-source tool, called \tool, for Java, and show that it
+  a lightweight ownership tracking system;
+  a specialized, inexpensive resource alias analysis;
+  and an extension to the theory of accumulation analysis
+  that allows us to check that re-assignments to non-final fields
+  that hold a resource are safe.
+  %% MK: the below is too wordy - less jargon in the abstract, just the summary
+  %%
+  %% Lightweight ownership tracking is a
+  %% technique to help determine which alias is responsible for releasing
+  %% a resource.  Since our goal is only to prevent resource leaks, our
+  %% ownership tracking avoids many of the heavyweight aliasing
+  %% restrictions associated with other ownership type systems.
+  %% Resouce alias analysis is a specialized, lightweight must-alias analysis
+  %% that identifies program elements that definitely control the same resource.
+  %% Accumulation frames extend the theory of accumulation analysis to permit
+  %% certain kinds of cycles in the typestate automaton.
+  This approach occupies a unique slice of the design space when compared
+  to prior approaches: it maintains soundness, but has relatively low overhead
+  and runs quickly compared to heavier-weight approaches.
+  We implemented our techniques in an open-source tool,
+  called \tool, for Java, and show that it
   scales well, finds real bugs with a low false positive rate, and
   imposes only a low additional annotation burden for developers.
 \end{abstract}
