@@ -18,7 +18,7 @@
   \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
     Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
     \hline
-    \abltablerow{apache/zookeeper}              {?}            {?}             {?}                               \\
+    \abltablerow{apache/zookeeper}              {66}            {97}             {18}                               \\
     \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
     \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
     \hline
@@ -137,7 +137,14 @@ the number of false positives that are prevented by each feature.
 
 \Cref{tab:ablation} has an entry for each variant on each case study project,
 which is the number of extra warnings that that variant reported on the project,
-compared to \emph{FULL}.
+compared to \emph{FULL}. From the table, it is clear that both lightweight
+ownership and resource aliases are critically important to the precision of
+\tool: each feature prevents more false positive errors than the total number
+of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
+  this claim when we have the results from the other benchmarks.} Though
+the accumulation frame feature prevents fewer errors, it permits verification
+of a complex pattern---the use of non-final, owning fields---that is used in a
+few critical places in each benchmark.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
