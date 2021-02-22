@@ -44,9 +44,13 @@ involving a resource and its wrappers.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
-if satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
-obligation, and vice-versa.  If $r_1$ and $r_2$ are must-aliased pointers, then
-clearly they are also resource aliases.  We also introduce a new type
+iff:
+\begin{itemize}
+\item satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
+  obligation, and vice-versa; or
+\item if $r_1$ and $r_2$ are must-aliased pointers.
+\end{itemize}
+We also introduce a new type
 qualifier \mccannot to indicate where an API method creates a resource-alias
 relationship between distinct objects, like a wrapper and the wrapped resource.
 \mccannot can be used to annotate a \<BufferedOutputStream> constructor as follows:

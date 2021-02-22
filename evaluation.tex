@@ -3,30 +3,6 @@
 
 % TODO: if this table is after tab:case-studies, then it doesn't appear? WTF
 
-% a line in tab:ablation
-% note that the FULL column is always zero, so it's not included here
-% arguments: project name, NONE, LO-ONLY, AF-ONLY
-\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4 & 0}
-
-\begin{table}
-  \caption{An ablation study on the contribution of the lightweight
-    ownership (\emph{NO-LO}), resource aliasing (\emph{NO-RA}),
-    and accumulation frames (\emph{NO-AF})
-    features in reducing false positives. Each entry is the number of extra
-    false positive warnings reported by the variant with the given feature disabled on the given project.}
-  \label{tab:ablation}
-  
-  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
-    Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
-    \hline
-    \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
-    \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
-    \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
-    \hline
-    \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
-  \end{tabularx}
-\end{table}
-
 
 % a line in tab:case-studies
 % arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
@@ -48,7 +24,7 @@
   \label{tab:case-studies}
 
   \begin{tabular}{@{}lrr|rr|rrrr@{}}
-    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs & RT(s)      \\
+    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs & Wall-clock time      \\
     \hline
     \osstablerow{apache/zookeeper:zookeeper-server}              {94,872}        {?}            {?}          {99}        {10}     {?}      {47}   {?}        \\
     \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
@@ -78,28 +54,29 @@ Our evaluation has three parts:
 
 We selected \todo{3} popular open-source projects with significant
 usage of resources (and thus high danger of resource leaks), by
-convenience.
-For each project, we selected and analyzed one module
-containing significant uses of leakable resources.
-We modified the build system of each project to run our
-analysis. We manually annotated each program with must-call,
-called-methods, and ownership annotations. We also
+convenience.  For each project, we selected and analyzed one module
+containing significant uses of leakable resources.  We modified the
+build system of each project to run our analysis. We manually
+annotated each program with must-call, called-methods, and ownership
+annotations (the ``Annos'' column in \cref{tab:case-studies}). We also
 made small, semantics-preserving changes to the programs where
-possible---such as adding
-\<final> modifiers to fields---to avoid
-false positives from our analysis. We then examined all
-remaining warnings, and categorized them as either true
-positives---real resource leaks---or false positives---code that our
-system was insufficiently precise to prove correct. We submitted bug
-reports and patches to the projects describing true positives, when time permitted.
-We also measured the number of possible resource leaks in each project
-and the run time of our analysis using \todo{a standardized machine similar to the one used
-  in the Grapple paper}. Each case study took one author a few hours;
-most of the time was spent understanding the code under analysis, which no
-authors were familiar with before beginning, writing corresponding annotations
-where appropriate, and reasoning through warnings emitted by the tool by hand
-to determine whether a warning was a true or false positive.
-The annotated versions of the case study programs are available at
+possible---such as adding \<final> modifiers to fields---to avoid
+false positives from our analysis (``Diff size''). We then examined
+all remaining warnings, and categorized them as either true positives
+(``TPs'')---real resource leaks---or false positives (``FPs'')---code
+that our system was insufficiently precise to prove correct.
+% We should probably remove this, since we've only done what, one?
+We submitted bug reports and patches to the projects describing true
+positives, when time permitted.  We also measured the number of
+possible resource leaks in each project (``resources'') and the run
+time of our analysis (``Wall-clock time'') using \todo{a standardized
+  machine similar to the one used in the Grapple paper}. Each case
+study took one author a few hours; most of the time was spent
+understanding the code under analysis, which no authors were familiar
+with before beginning; writing corresponding annotations where
+appropriate; and reasoning through warnings emitted by the tool by
+hand to determine whether a warning was a true or false positive.  The
+annotated versions of the case study programs are available at
 \todo{an anonymized fork of the projects}.
 
 \Cref{tab:case-studies} summarizes the results. \tool finds multiple
@@ -113,11 +90,36 @@ express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
 
 \todo{Describe some examples of true and false positives.}
+\todo{Definitely discuss our confirmed bug that Narges got fixed.}
 
 \todo{Discuss the annotations that had to be written by hand.}
 
 \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
 \label{sec:ablation}
+
+% a line in tab:ablation
+% note that the FULL column is always zero, so it's not included here
+% arguments: project name, NONE, LO-ONLY, AF-ONLY
+\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4 & 0}
+
+\begin{table}
+  \caption{An ablation study on the contribution of the lightweight
+    ownership (\emph{NO-LO}), resource aliasing (\emph{NO-RA}),
+    and accumulation frames (\emph{NO-AF})
+    features in reducing false positives. Each entry is the number of extra
+    false positive warnings reported by the variant with the given feature disabled on the given project.}
+  \label{tab:ablation}
+  
+  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
+    Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
+    \hline
+    \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
+    \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
+    \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
+    \hline
+    \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
+  \end{tabularx}
+\end{table}
 
 Without lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
@@ -190,7 +192,7 @@ other 172 were false positives.  The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
 at method invocations: each call to a method such as
 \<Socket\#getInputStream> that returns a resource-alias resulted in a
-warning.  Of the true positives, 5 of 8 were warnings about such
+warning.  Of the true positives, 4 of 7 were warnings about such
 calls, where the aliased resource really was not closed on all
 paths. We believe that these true positives are "accidental"---the
 analysis found them because of its imprecise handling of resource
@@ -200,7 +202,7 @@ Eclipse reports only 3 warnings: one true positive and two false
 positives.
 
 These results demonstrate that the Eclipse bug-finder is unsound in both
-modes: it misses at least 4 real warnings that our tool found when detecting
+modes: it misses at least 3 real warnings that our tool found when detecting
 potential leaks. Further, the analysis is imprecise: in potential leak mode,
 the vast majority of warnings are false positives. However, this sort
 of bug-finding tool does have two advantages: it is fast, and it is easily
@@ -208,9 +210,12 @@ applicable to legacy code. Compared to our tool, the Eclipse analysis
 is much faster and equally applicable to legacy code, but both less sound
 and less precise.
 
-Given that these results on zookeeper-server
-clearly show the strengths and weaknesses of this tool compared to our own,
-we did not run it on our other case study programs.
+%% Chandra rightly pointed out that this para make us look lazy. Let's just
+%% say what we did, not why we did it.
+%%
+%% Given that these results on zookeeper-server
+%% clearly show the strengths and weaknesses of this tool compared to our own,
+%% we did not run it on our other case study programs.
 
 \subsubsection{Grapple}
 \label{sec:grapple}
@@ -236,6 +241,8 @@ we did not run it on our other case study programs.
   \end{tabularx}
 \end{table}
 
+\todo{Be very sure that Grapple is unsound - read their paper again, and
+   point out why in this paragraph.}
 \todo{be sure to note that Grapple is not modular, unlike us}
 Grapple~\cite{zuo2019grapple} is a modern typestate-based resource leak analysis
 focused on precision and (relative) scalability. Grapple models its alias and

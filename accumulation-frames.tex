@@ -1,12 +1,23 @@
 \section{Accumulation frames}
 \label{sec:reset-must-call}
 
+This section describes an enhancement to the theory of accumulation
+analysis that allows \tool to verify non-final, owning fields
+that contain one or more resources during their lifetime
+(\cref{sec:non-final-owning}).
+This approach is also useful for
+removing another set of false positives caused by unconnected sockets
+(\cref{sec:unconnected-sockets}).
+
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
 The analyses we have described so far assume that a single program
-element will control at most one resource while it is in scope.
-In practice, however, this is not true. Consider, for example,
+element will control at most one resource while it is in scope:
+they always issue an error if a non-final field is assigned an expression
+that controls a resource.
+In practice, however, this is not true---non-final fields
+may be assigned resources. Consider, for example,
 the following code:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]

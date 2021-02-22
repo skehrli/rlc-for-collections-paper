@@ -1,11 +1,33 @@
 \section{Lightweight ownership tracking}
 \label{sec:lightweight-ownership}
 
-\todo{Add an example of how @Owning or @NotOwning helps reduce false positives.}
-
-For the basic technique described in \Cref{sec:base-type-systems}, false
-positives are often caused by cases where a \<@MustCall> obligation is satisfied
+\Cref{sec:base-type-systems} describes a sound accumulation-based
+checker for resource leaks. However, that checker often encounters false
+positives caused by cases where a \<@MustCall> obligation is satisfied
 in another procedure, via parameter passing, return values, or object fields.
+For example, consider the following code that safely closes a \<Socket>:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  void example(String myHost, int myPort) {
+    Socket s = new Socket(myHost, myPort);
+    closeSocket(s);
+  }
+  void closeSocket(@Owning Socket s) {
+    s.close();
+  }  
+\end{lstlisting}
+
+The \<closeSocket()> routine takes ownership of the socket---that is,
+it takes responsibility for closing it. The correct place for our
+checker to enforce that \<close()> has been called on \<s> is not
+when \<s> goes out of scope in \<example()>, but rather when \<s>
+goes out of scope in \<closeSocket()>. The checker described by
+\cref{sec:base-type-systems} would issue a false positive on this
+code, because it would warn about \<example>'s pointer to \<s>.
+With the \<@Owning> annotation on the parameter to \<closeSocket>,
+however, the checker can determine that \<closeSocket> is the correct
+place to check.
+
 Here, we describe a \emph{lightweight ownership tracking} technique for reducing
 false positives in such cases.  With lightweight ownership, programmer
 annotations \emph{cannot} introduce any checker unsoundness; they can only to
@@ -13,23 +35,11 @@ reduce false positives.  Further, unlike other ownership type systems~\todo{cite
 lightweight ownership imposes no restriction on what operations can be performed
 through an alias, and hence has a minimal impact on the programming model.
 
-% We developed two novel approaches for tracking whether a pointer is
-% owning: a lightweight ownership transfer approach using annotations
-% that does not depend on the annotations' correctness---that is, adding
-% ownership annotations can only reduce false positives, not false
-% negatives (\cref{sec:ownership-transfer})---and a lightweight, local
-% alias analysis for dealing with wrapper objects
-% (\cref{sec:must-call-choice}).
-
 \subsection{Ownership transfer}
 \label{sec:ownership-transfer}
 
-% \todo{Write about @Owning and @NotOwning, and show how they can only
-%   reduce false positives.}
-
 With lightweight ownership, a parameter, return, or field type may be annotated
-as either \<@Owning> or \<@NotOwning> (we shall discuss default assumptions for
-these annotations shortly).  In
+as either \<@Owning> or \<@NotOwning>.  In
 the Must Call Consistency Checker (\Cref{sec:must-call-invoked}), if a tracked
 variable $p$ is assigned to such an \<@Owning> location $l$, we \emph{transfer}
 ownership to $l$, and $p$'s \<@MustCall> obligation
@@ -95,8 +105,8 @@ reduce annotation burden; we plan to pursue such techniques in future work.
     \item $C.n$ must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \<@MustCall> obligation.
   \end{enumerate}
-  In this manner, we compositionally verify the usage of $f$, by imposing
-  a \<@MustCall> obligation on clients using the $C$ class.  Condition 2 can be
+  In this manner, we verify the usage of $f$, by imposing
+  a \<@MustCall> obligation on clients using the $C$ class.  Condition 2 is
   checked by requiring an appropriate \<@EnsuresCalledMethods> annotation on
   $C.n$, which is then enforced by the Called Methods
   Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...}
