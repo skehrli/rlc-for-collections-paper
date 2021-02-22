@@ -273,4 +273,14 @@ for soundness and speed. In this way, \tool and Grapple are complementary:
 they optimize for different criteria. Users should select the tool whose
 priorities match their own.
 
+\todo{We should note here (or somewhere) the difference in the nature of the bugs
+reported between our approach and whole-program analysis, in particular for
+class-level issues.  E.g., if there is a class with a method \<m()> that
+overwrites a non-final \<@Owning> field \<f> without checking its nullness
+first, we consider that a true positive bug, since the abstraction is not
+provably free of leaks.  In a whole-program analysis approach, a true positive
+would typically have to be an actual control-flow path on which \<m()> is
+invoked twice to overwrite \<f>.  (Maybe this can be discussed under
+modularity?)  Bottom line, it makes TP and FP numbers between the approaches not
+100\% comparable.  --Manu}
 
