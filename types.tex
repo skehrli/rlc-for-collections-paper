@@ -112,6 +112,9 @@ to call particular methods. However, as soon as the \<Socket> constructor
 is invoked and \<s> is assigned, \<s> has an obligation to call the
 \<close()> method.
 
+\todo{It would be helpful to explicitly state whether this analysis is an
+  accumulation analysis.}
+
 The type system supports two qualifiers: \<@MustCall> and
 \<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
 methods that the annotated type must call. The type
@@ -218,6 +221,9 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}
+
+\todo{Put \cref{alg:helpers,alg:consistency-checker} on the same
+  page.}
 
 \begin{algorithm}[t]
   \caption{Finding missed calls.  Structured like pseudocode in~\cite{TorlakC10}.}
