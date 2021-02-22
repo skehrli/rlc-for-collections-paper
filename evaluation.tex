@@ -42,29 +42,33 @@
 Our evaluation has three parts:
 \begin{itemize}
 \item case studies on open-source projects, which show that our approach
-  scales to realistic programs and finds real bugs (\cref{sec:case-studies}).
-\item an ablation study that demonstrates the contributions of
-  lightweight ownership system (\cref{sec:lightweight-ownership}),
-  resource aliasing (\cref{sec:must-call-choice}), and
-  accumulation frames (\cref{sec:reset-must-call}) to the false positive
-  rate on the case studies in \cref{sec:case-studies} (\cref{sec:ablation}).
-\item a comparison study that shows the advantages of our approach against
-  two traditional approaches: heuristic bug-finders and heavy-weight
-  typestate analysis (\cref{sec:compare}).
+  is scalable and finds real bugs (\cref{sec:case-studies}).
+\item an evaluation of the contributions of our enhancements:
+  lightweight ownership, % (\cref{sec:lightweight-ownership}),
+  resource aliasing, % (\cref{sec:must-call-choice}), and
+  accumulation frames % (\cref{sec:reset-must-call})
+  (\cref{sec:ablation}).
+\item a comparison to previous leak detectors:  both heuristic bug-finding
+  and heavy-weight whole-program
+  % typestate
+  analysis (\cref{sec:compare}).
 \end{itemize}
 
 \subsection{Case studies on open-source projects}
 \label{sec:case-studies}
 
 We selected \todo{3} popular open-source projects with significant
-usage of resources (and thus high danger of resource leaks), by
-convenience.  For each project, we selected and analyzed one module
+usage of resources, by
+convenience.\todo{Did we actually choose them because previous work used
+  them?  If so, say that.}
+
+For each project, we selected and analyzed one module
 containing significant uses of leakable resources.  We modified the
 build system of each project to run our analysis. We manually
 annotated each program with must-call, called-methods, and ownership
 annotations (the ``Annos'' column in \cref{tab:case-studies}). We also
-made small, semantics-preserving changes to the programs where
-possible---such as adding \<final> modifiers to fields---to avoid
+made small, semantics-preserving changes to the programs---such as adding
+\<final> modifiers to fields---to reduce
 false positives from our analysis. We report the total number
 of new lines we added to each project, including warning suppressions,
 annotations, and code changes (``Diff size''). We then examined
