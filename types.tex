@@ -329,7 +329,8 @@ $s$.  The gen set is computed by checking if $s$ creates a new must alias for
 some variable in $P$, using the \textsc{CreatesAlias} routine.  In
 \Cref{alg:helpers} the routine simply checks for an assignment where the
 right-hand side variable is in $P$; we present a more sophisticated version of
-this routine in \Cref{sec:must-call-choice}.
+this routine in \Cref{sec:must-call-choice}. \manu{Note that we could just return
+empty set here and still be sound}
 Finally, \Cref{li:prop-to-succs} propagates the new fact to successors.  The
 process continues until $D$ reaches a fixed point.  \todo{Tie this into a
 running example?}
