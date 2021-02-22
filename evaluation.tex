@@ -182,8 +182,8 @@ of the warnings reported by the latter.
 We ran this analysis on the same version of Zookeeper's zookeeper-server
 module that we ran \Tool on in \cref{sec:case-studies}. Once Eclipse
 has loaded the project, the analysis runs nearly instantaneously---it
-clearly satisfies the "fast" criterion. It is also easy to apply it to
-existing legacy code---it clearly satisfies the "applicable" criterion.
+clearly satisfies the ``fast'' criterion. It is also easy to apply it to
+existing legacy code---it clearly satisfies the ``applicable'' criterion.
 
 In potential leak mode on zookeeper-server, the analysis reported 180
 warnings.  Of these, we determined that 8 were true positives
@@ -194,7 +194,7 @@ at method invocations: each call to a method such as
 \<Socket\#getInputStream> that returns a resource-alias resulted in a
 warning.  Of the true positives, 4 of 7 were warnings about such
 calls, where the aliased resource really was not closed on all
-paths. We believe that these true positives are "accidental"---the
+paths. We believe that these true positives are ``accidental''---the
 analysis found them because of its imprecise handling of resource
 aliases, not because it detected the actual leak. When the
 ``potential'' resource leaks are ignored in ``high-confidence'' mode,
