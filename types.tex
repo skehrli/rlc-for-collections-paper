@@ -144,7 +144,7 @@ The subtyping relationship is for two \<@MustCall> types with sets
 of required methods $A$ and $B$ is:
 \trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
 
-The default type qualifier is \<@MustCall(\{\}) for base types without a
+The default type qualifier is \<@MustCall(\{\})> for base types without a
 programmer-written type qualifier.\footnote{For unannotated local variables,
   flow-sensitive type refinement infers a type.}
 % By writing another type qualifier on the declaration of a class, a
@@ -297,6 +297,14 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \end{algorithmic}
 
 \end{algorithm}
+
+\todo{I think the most important thing to do to make this section more
+  comprehensible is to explain the semantics of the domian $D$.  What does
+  it represent?  What is
+  its relationship to \<@MustCall> types?
+
+Would it be helpful to separate it into two parts, one for obligations and
+one for aliases.}
 
 \todo{Use the example in \cref{fig:example} throughout this section
   to explain the algorithm, possibly extending it if needed.}
