@@ -80,6 +80,9 @@ Testing can only show the presence of bugs, not their absence;
 
 \todo{Is there other relevant related work? Find out.}
 
+\todo{We may want to cite RAII (\url{https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization}) and
+state that our handling of owning fields can verify it.}
+
 \subsection{Typestate analysis}
 \label{sec:rw-typestate}
 
@@ -99,4 +102,5 @@ An alternative to applying a typestate analysis to an existing program
 is to rewrite the program in a typestate-oriented programming
 language~\cite{AldrichSSS2009}. \todo{Aldrich's group probably has a
   paper about doing resource leak detection in Plaid, so find and cite
-  that here.}
+that here.}  \todo{Honestly I don't know that they do; I've looked at a few and
+never saw anything about leak detection.  --Manu}

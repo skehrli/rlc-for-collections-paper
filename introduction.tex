@@ -26,10 +26,10 @@ Ideally, a tool for preventing resource leaks would be:
 \begin{itemize}
 \item \emph{fast}, so that it scales to real-world programs and
   developers can use it regularly;
-\item \emph{applicable} to all uses of leakable resources legacy code with few or no code changes,
+\item \emph{applicable} to leakable resources in existing code with few or no code changes,
 \item \emph{sound}, so that undetected resource leaks do not slip into
   the program; and
-\item \emph{precise}, so that developers are not bothered by false positive
+\item \emph{precise}, so that developers are not bothered by excessive false positive
   warnings.
 \end{itemize}
 
@@ -38,26 +38,29 @@ Ideally, a tool for preventing resource leaks would be:
 %% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
 
 Extant approaches fail at least one of these criteria.
-Language-based features do not \emph{apply} to all uses of resource variables:
+Language-based features may not \emph{apply} to all uses of resource variables:
 Java's try-with-resources statement, for example, can
-only safely close local variables that implement the particular
-interface (\<java.lang.AutoCloseable>) that it supports.
-The most common other
-approach encountered by developers, built into Java IDEs including
+only close resource types implementing the \<java.lang.AutoCloseable> interface,
+and cannot handle
+common resource usage patterns that span multiple procedures.
+Heuristic bug-finding tools for leaks, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
-IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
+IDEA~\cite{idea-resource-leak}, 
 are \emph{fast} and \emph{applicable} to legacy
-code---but either only report the most obvious of
-errors or are wildly \emph{imprecise}, and are
-always \emph{unsound} (\cref{sec:compare}).
-State-of-the-art typestate or dataflow analyses such as
-Grapple~\cite{zuo2019grapple} achieve more \emph{precise} results---and
-can find more subtle bugs than bug-finders, though they usually remain
+code---but they are \emph{unsound} and can be highly \emph{imprecise}
+(\Cref{sec:compare}).  
+Inter-procedural typestate or dataflow analyses~\cite{TorlakC10,zuo2019grapple}
+achieve more \emph{precise}
+results---and
+can find more complex bugs than bug-finders, though they usually remain
 \emph{unsound}---but
-require hours to analyze even a single real-world Java program, due
-to their reliance on \emph{slow}, expensive whole-program alias analyses.
-\todo{Find a good, recent example of a really heavyweight technique to attack here
-  for not being applicable and too hard to use.}
+they can require hours to analyze a large-scale modern Java program, due
+to the costliness of precise whole-program analysis.  \todo{Find a good, recent example of a really heavyweight technique to attack here
+for not being applicable and too hard to use.} \todo{Does this work? --Manu} Finally, ownership type
+systems~\cite{clarke2013ownership} as employed in languages like Rust
+\todo{cite} can prevent nearly all resource leaks, but they cannot easily be
+\emph{applied} to existing large Java code bases due to the additional restrictions
+they impose.
 
 Our key insight is that the resource leak problem is an extended
 version of an accumulation problem~\cite{KelloggRSSE2020}. An
