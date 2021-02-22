@@ -9,9 +9,11 @@ programmer is not explicitly disposed of. In an unmanaged language
 like C, that explicit resource might be memory; in a managed language
 like Java, it might be a file descriptor, a socket, or a database
 connection.  Resource leaks continue to cause severe bugs, even in
-modern, heavily-used Java applications~\cite{ghanavati2020memory};
-this state-of-the-practice does not differ much from two decades
-ago~\cite{WeimerN04}.  A survey of Microsoft engineers in 2015 found
+modern, heavily-used Java applications~\cite{ghanavati2020memory}.
+This state-of-the-practice does not differ much from two decades
+ago~\cite{WeimerN04}. \todo{If we know of any more studies that show resource
+  leaks are a big problem, we should add citations to them here, too.}
+A survey of Microsoft engineers in 2015 found
 that they consider resource leak bugs to be one of the most
 significant challenges for modern developers~\cite{LoNZ2015}.  That
 resource leaks remain such a serious problem despite decades of
@@ -36,7 +38,7 @@ Ideally, a tool for preventing resource leaks would be:
 %% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
 
 Extant approaches fail at least one of these criteria.
-Language-based features do not apply to all uses of resource variables:
+Language-based features do not \emph{apply} to all uses of resource variables:
 Java's try-with-resources statement, for example, can
 only safely close local variables that implement the particular
 interface (\<java.lang.AutoCloseable>) that it supports.
@@ -44,26 +46,33 @@ The most common other
 approach encountered by developers, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak} is heuristic bug-finding tools, which
-are fast and applicable to legacy code---but either only report the most obvious of
-errors or are wildly imprecise (\cref{sec:compare}).
+are \emph{fast} and \emph{applicable} to legacy
+code---but either only report the most obvious of
+errors or are wildly \emph{imprecise}, and are
+always \emph{unsound} (\cref{sec:compare}).
 State-of-the-art typestate or dataflow analyses such as
-Grapple~\cite{zuo2019grapple} achieve more precise results---and
-can find more subtle bugs than bug-finders, though they remain unsound---but
-requires hours to analyze even a single real-world Java program, due
-to their reliance on expensive whole-program alias analyses.
+Grapple~\cite{zuo2019grapple} achieve more \emph{precise} results---and
+can find more subtle bugs than bug-finders, though they usually remain
+\emph{unsound}---but
+require hours to analyze even a single real-world Java program, due
+to their reliance on \emph{slow}, expensive whole-program alias analyses.
 \todo{Find a good, recent example of a really heavyweight technique to attack here
   for not being applicable and too hard to use.}
 
 Our key insight is that the resource leak problem is an extended
 version of an accumulation problem~\cite{KelloggRSSE2020}. An
-accumulation problem is a special-case of typestate problem in which
+accumulation problem is a special-case of typestate problem~\cite{StromY86}:
+one which can be solved by attaching a finite-state machine (FSM)
+to each program element, and transitioning the state of each
+FSM whenever a relevant operation is performed---such an analysis
+is called a typestate analysis.
+Accumulation analysis is a type state analysis in which
 the order of operations performed cannot change what is subsequently
 permitted and executing more operations cannot add additional
 restrictions.  If a typestate problem meets these restrictions, then
 using an accumulation analysis provides a major benefit: it does not
-require a whole-program alias analysis for soundness.\todo{This
-  description of accumulation analysis is too wordy; get the
-  restrictions + benefit across with less words.}  This insight allows
+require a whole-program alias analysis for soundness.
+This insight allows
 us to build a novel static analysis, based on a standard type system
 without a whole-program alias analysis, that is both sound\footnote{Mostly
   sound~\cite{livshits2015defense}; see
@@ -85,21 +94,24 @@ innovations beyond our key insight:
   soundly have an accumulation analysis applied to it multiple times.
 \end{itemize}
 
-Our contributions are \todo{line these up with what we actually did,
-  experiments-wise}:
+Our contributions are:
 \begin{itemize}
-\item the insight that the resource leak problem is an accumulation problem,
-  and a set of type systems designed to take advantage of this fact (\cref{sec:base-type-systems}).
-\item a novel lightweight ownership tracking system (\cref{sec:lightweight-ownership}).
-\item a novel lightweight resource-alias tracking analysis (\cref{sec:must-call-choice}).
-\item a novel extension to accumulation analysis (\cref{sec:reset-must-call}).
+\item the insight that the resource leak problem is an accumulation
+  problem, and a novel set of type systems designed to take advantage
+  of this fact (\cref{sec:base-type-systems}).
+\item three novel innovations that improve the precision of our type
+  systems: a lightweight ownership tracking system
+  (\cref{sec:lightweight-ownership}), a lightweight resource-alias
+  tracking analysis (\cref{sec:must-call-choice}), and an extension to
+  accumulation analysis (\cref{sec:reset-must-call}).
 \item an open-source implementation of our type systems as an extension to Java,
   augmented with these innovations, called \tool (\cref{sec:implementation}).
-\item case studies that demonstrate that our implementation finds real
-  bugs and has few false positives (\cref{sec:case-studies}).
-\item an ablation study that demonstrates the contributions of
-  each of our improvements to our basic analysis to the low false
-  positive rate of our approach (\cref{sec:ablation}).
+\item an extensive empirical evaluation: case studies on heavily-used
+  Java programs that handle many resources (\cref{sec:case-studies}),
+  an ablation study that shows the contributions of each innovation to
+  \tool's precision (\cref{sec:ablation}), and a comparison to
+  other state-of-the-art approaches that demonstrates the unique strengths
+  of our approach (\cref{sec:compare}).
 %% \item a comparison to alternative approaches to resource leak
 %%   checking, that demonstrates that our approach occupies a unique
 %%   point in the design space: faster and more usable than heavy-weight

@@ -1,10 +1,30 @@
+\section{Background on type qualifiers}
+\label{sec:background}
+
+\Cref{sec:must-call,sec:called-methods} will describe
+\emph{pluggable type systems}~\cite{FosterFFA99}---specialized type
+systems that are layered on top of the type system of the host
+language.  Types in a pluggable type system are composed of two parts:
+a \emph{type qualifier} and a base type. The type qualifier is the
+part of the type that is unique to the pluggable type system; the base
+type is a type from the host language. Our implementation is in Java
+(see \cref{sec:implementation}), so we use the Java syntax for type
+qualifiers: an \<@> symbol before a type indicates that it is a type
+qualifier (a type without an \<@> symbol is a base type).
+
 % the technical sections about the core accumulation systems: called methods,
 % must-call, and the must call invoked worklist algorithm.
 
 \section{Cooperating analyses for leak detection}
 \label{sec:base-type-systems}
 
-\tool is composed of three distinct analyses:
+This section shows how we built a sound, modular, accumulation-based
+resource leak checker.
+Further details on novel features that improve the precision
+of that checker are provided in
+\cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}.
+
+\tool is composed of three cooperating analyses:
 \begin{enumerate}
 \item a taint tracking type system (\cref{sec:must-call}) computes a conservative
   \emph{overapproximation} of the set of methods that might need to be called
@@ -21,25 +41,17 @@
   that definitely were called, it issues an error.
 \end{enumerate}
 
-This section describes the basics of
-these analyses; further details on novel features are provided in
-\cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}.
+\begin{figure}
+  \lstinputlisting{simplesocket.txt}
+  \caption{A simple example of a safe use of a \<Socket> resource.}
+  \label{fig:example}
+\end{figure}
 
-\todo{MK: Rashmi suggests a running example might really help here, and I agree.}
-
-\subsection{Background on type qualifiers}
-\label{sec:background}
-
-\Cref{sec:must-call,sec:called-methods} describe
-\emph{pluggable type systems}~\cite{FosterFFA99}---specialized type
-systems that are layered on top of the type system of the host
-language.  Types in a pluggable type system are composed of two parts:
-a \emph{type qualifier} and a base type. The type qualifier is the
-part of the type that is unique to the pluggable type system; the base
-type is a type from the host language. Our implementation is in Java
-(see \cref{sec:implementation}), so we use the Java syntax for type
-qualifiers: an \<@> symbol before a type indicates that it is a type
-qualifier (a type without an \<@> symbol is a base type).
+\noindent
+Throughout this section, we will refer to the motivating example
+in \cref{fig:example}. This simple code shows
+a safe use of a \<Socket>---a resource that must be closed before
+it is deallocated.
 
 \subsection{Inferring must-call obligations with a type system}
 \label{sec:must-call}
@@ -83,24 +95,40 @@ qualifier (a type without an \<@> symbol is a base type).
 \label{fig:must-call-hierarchy}
 \end{figure}
 
-This checker tracks the methods that an object should call before it
-is deallocated. It produces a conservative overapproximation of the
+The first important fact that our checker must establish
+is which methods might actually need to be called on
+a given program element. The checker described in this section
+tracks the methods that an object should call before it
+is deallocated in a general way---it is not necessarily specific
+to resource leaks. It produces a conservative overapproximation of the
 set of methods that might actually need to be called on an object.
+
+For example, consider \cref{fig:example}. When \<s> is initially
+created, it is assigned the value \<null>, which has no obligations
+to call particular methods. However, as soon as the \<Socket> constructor
+is invoked and \<s> is assigned, \<s> has an obligation to call the
+\<close()> method.
 
 The type system supports two qualifiers: \<@MustCall> and
 \<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
 methods that the annotated type should call. The type
 \<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
-deallocated, \<obj.a()> should be called.
+deallocated, \<obj.a()> should be called. Our implementation
+uses local type inference (implemented via a dataflow algorithm)
+to propagate these facts. For example, in \cref{fig:example}, the
+type of \<s> (and the \<new> expression on the right-hand side of
+the assignment) is \<@MustCall("close")> as soon as it is assigned.
 
-For example, an object whose type is \<java.io.OutputStream> might
-have an obligation to call the \<close()> method, to release an
-underlying file resource. Or, such an \<OutputStream> might not have
-such an obligation, if the underlying resource is, for example, a byte
-array. Either the obligation to close or no obligation at all
+Note that the type \<@MustCall("close")>
+can represent anything that \emph{might} need to
+call \<close()>: for example, at the entrance to
+the \<finally> block in \cref{fig:example}, \<s>'s
+actual value might either be \<null>, which does not
+need to call any methods, or an open \<Socket>, which does.
+Thus, either the obligation to close or no obligation at all
 can be represented by the static
-type \<@MustCall(\{"close"\}) OutputStream>, which can be read as "an
-OutputStream that might need to call close before it is deallocated".
+type \<@MustCall(\{"close"\}) Socket>, which can be read as "a
+Socket that might need to call close before it is deallocated".
 
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \<@MustCallUnknown>.
@@ -111,8 +139,9 @@ of required methods $A$ and $B$ is:
 The default type qualifier for raw base types is \<@MustCall(\{\})>.
 By writing another type qualifier on the declaration of a class, a
 user can specify a different default for raw types of that class.
-Using this mechanism, the qualified type of the expression \<new
-java.net.Socket()> is \<@MustCall(\{"close"\}) Socket>. Our implementation
+Using this mechanism, the qualified type of the \<new> expression
+in \cref{fig:example}
+is \<@MustCall(\{"close"\}) Socket>. Our implementation
 also provides an ``inheritable'' version of the \<@MustCall> annotation,
 which allows us to annotate a class (or interface) and all of its subtypes.
 For example, we use such an annotation on \<java.io.Closeable> to indicate
@@ -121,22 +150,17 @@ they are deallocated.
 
 A benefit of using a type system for tracking must-call obligations is
 that \tool can use local type inference to refine the obligations of
-a particular variable. For example, a \<java.io.InputStream>
-defaults to having an \<@MustCall(\{"close"\})> obligation. If the only
-assignment to a local variable of this type has a right-hand side with
-the type \<@MustCall(\{\})>, however---for instance, if it is a new
-\<java.io.StringReader>, which only wraps a string stored in memory
-and not a resource that must be closed---then local type inference can
-infer that that particular \<InputStream>'s type is also \<@MustCall(\{\})>,
-preventing a false positive.
+a particular variable. For example, if the only assignment to \<s>
+in \cref{fig:example} were the initial assignment to \<null>, then
+\tool would be able to determine that \<s> does not have a must-call
+obligation.
 
 \subsection{Inferring called methods with an accumulation analysis}
 \label{sec:called-methods}
 
 Our type system for inferring which methods are definitely called on an object
 is an extension of a similar system
-from prior work~\cite{KelloggRSSE2020}. We made some bugfixes and
-small enchancements to that system; the primary difference in our
+from prior work~\cite{KelloggRSSE2020}.  The primary difference in our
 version is that methods are considered called even if they throw an exception
 (in the prior work, a method was only considered ``called'' when it terminated
 successfully)---a necessity in Java because the \<close()> method
@@ -168,10 +192,10 @@ and $B$ is:
 \trule{B \subseteq A}{\<@CalledMethods(A)> \sqsubseteq \<@CalledMethods(B)>}
 The resulting lattice has \<@CalledMethods(\{\})> as its top type.
 
-Called Methods types are inferred within method bodies---when a method
-\<foo()> is called on an object \<obj>, <obj>'s type is refined to
-a subtype of \<@CalledMethods("foo")>---that is, to a type with a
-set of methods including \<"foo">---in the remainder of the method body.
+Called Methods types are inferred within method bodies---so for example
+in \cref{fig:example}, the type of \<s> is initially \<@CalledMethods({})>,
+but transitions to \<@CalledMethods("close")> on all paths after the
+\<finally> block.
 
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}
