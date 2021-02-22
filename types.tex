@@ -12,6 +12,13 @@ type is a type from the host language. Our implementation is in Java
 qualifiers: ``\<@>'' before a type indicates that it is a type
 qualifier, and a type without ``\<@>'' is a base type.
 
+A type system checks programmer-written types.  Our system requires the
+programmer to write types on method signatures, but within method bodies it
+uses flow-sensitive type refinement, a dataflow analysis that performs type
+inference.  This permits an expression to have different types on different
+lines of the program.
+
+
 % the technical sections about the core accumulation systems: called methods,
 % must-call, and the must call invoked worklist algorithm.
 
@@ -21,8 +28,7 @@ qualifier, and a type without ``\<@>'' is a base type.
 This section presents a sound, modular, accumulation-based
 resource leak checker.
 \Cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}
-enhance the precision
-of that checker.
+enhance its precision.
 
 \Tool is composed of three cooperating analyses:
 \begin{enumerate}
@@ -43,13 +49,13 @@ of that checker.
 
 \begin{figure}
   \lstinputlisting{simplesocket.txt}
-  \caption{A simple example of a safe use of a \<Socket> resource.}
+  \caption{A safe use of a \<Socket> resource.}
   \label{fig:example}
 \end{figure}
 
 \noindent
-Throughout this section, we will refer to the motivating example
-in \cref{fig:example}. This simple code shows
+This section uses \cref{fig:example} as a motivating example.
+It shows
 a safe use of a \<Socket>---a resource that must be closed before
 it is deallocated.
 
@@ -82,26 +88,23 @@ it is deallocated.
 \end{tikzpicture}
 %\precaptionspace
 %\vspace{0.25cm}
-\caption{Part of the type hierarchy for representing which methods must be
-  called.
+\caption{Part of the \<MustCall> type hierarchy for representing which methods must be
+  called; the full hierarchy is a
+  lattice of arbitrary size.
   If an expression's type has qualifier \<@Must\-Call(\{"a", "b"\})>, then
   the methods ``\<a>'' and ``\<b>'' might need to be called before the
   expression is deallocated.
   Arrows represent
   subtyping relationships.
-  The diagram shows a part of the type hierarchy; the full hierarchy is a
-  lattice of arbitrary size. 
 }
 \label{fig:must-call-hierarchy}
 \end{figure}
 
 The first important fact that our checker must establish
-is which methods might actually need to be called on
-a given program element. The checker described in this section
-tracks the methods that an object should call before it
-is deallocated in a general way---it is not necessarily specific
-to resource leaks. It produces a conservative overapproximation of the
-set of methods that might actually need to be called on an object.
+is which methods might need to be called on
+a given object before the object is deallocated.
+This type system is general---it is not specific
+to resource leaks.
 
 For example, consider \cref{fig:example}. When \<s> is initially
 created, it is assigned the value \<null>, which has no obligations
@@ -111,13 +114,13 @@ is invoked and \<s> is assigned, \<s> has an obligation to call the
 
 The type system supports two qualifiers: \<@MustCall> and
 \<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
-methods that the annotated type should call. The type
+methods that the annotated type must call. The type
 \<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
 deallocated, \<obj.a()> should be called. Our implementation
-uses local type inference (implemented via a dataflow algorithm)
+uses flow-sensitive local type inference (implemented via a dataflow algorithm)
 to propagate these facts. For example, in \cref{fig:example}, the
-type of \<s> (and the \<new> expression on the right-hand side of
-the assignment) is \<@MustCall("close")> as soon as it is assigned.
+the \<new> expression has type \<@MustCall("close")>, and therefore
+\<s> has that type after the assignment.
 
 Note that the type \<@MustCall("close")>
 can represent anything that \emph{might} need to
@@ -127,8 +130,10 @@ actual value might either be \<null>, which does not
 need to call any methods, or an open \<Socket>, which does.
 Thus, either the obligation to close or no obligation at all
 can be represented by the static
-type \<@MustCall(\{"close"\}) Socket>, which can be read as "a
-Socket that might need to call close before it is deallocated".
+type \<@MustCall(\{"close"\}) Socket>, which can be read as ``a
+Socket that might need to call close before it is deallocated''.
+The type-checker conservatively requires all these methods to be called,
+and it issues a warning if they are not.
 
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \<@MustCallUnknown>.
@@ -136,24 +141,31 @@ The subtyping relationship is for two \<@MustCall> types with sets
 of required methods $A$ and $B$ is:
 \trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
 
-The default type qualifier for raw base types is \<@MustCall(\{\})>.
-By writing another type qualifier on the declaration of a class, a
-user can specify a different default for raw types of that class.
+The default type qualifier is \<@MustCall(\{\}) for base types without a
+programmer-written type qualifier.
+% By writing another type qualifier on the declaration of a class, a
+% user can specify a different default for raw types of that class.
 Using this mechanism, the qualified type of the \<new> expression
 in \cref{fig:example}
 is \<@MustCall(\{"close"\}) Socket>. Our implementation
-also provides an ``inheritable'' version of the \<@MustCall> annotation,
-which allows us to annotate a class (or interface) and all of its subtypes.
-For example, we use such an annotation on \<java.io.Closeable> to indicate
-that all \<Closeable> objects must have the \<close()> method called before
-they are deallocated.
+provides JDK annotations to require that every 
+\<Closeable> object must have the \<close()> method called before
+it is deallocated.
 
-A benefit of using a type system for tracking must-call obligations is
-that \Tool can use local type inference to refine the obligations of
-a particular variable. For example, if the only assignment to \<s>
-in \cref{fig:example} were the initial assignment to \<null>, then
-\Tool would be able to determine that \<s> does not have a must-call
-obligation.
+% also provides an ``inheritable'' version of the \<@MustCall> annotation,
+% which allows us to annotate a class (or interface) and all of its subtypes.
+% For example, we use such an annotation on \<java.io.Closeable> to indicate
+% that all \<Closeable> objects must have the \<close()> method called before
+% they are deallocated.
+
+%% This is redundant, I think.
+% A benefit of using a type system for tracking must-call obligations is
+% that \Tool can use local type inference to refine the obligations of
+% a particular variable. For example, if the only assignment to \<s>
+% in \cref{fig:example} were the initial assignment to \<null>, then
+% \Tool would be able to determine that \<s> does not have a must-call
+% obligation.
+
 
 \subsection{Inferring called methods with an accumulation analysis}
 \label{sec:called-methods}
