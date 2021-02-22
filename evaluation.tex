@@ -104,48 +104,48 @@ cannot become out-of-date if the checker is passing.
 
 % a line in tab:ablation
 % note that the FULL column is always zero, so it's not included here
-% arguments: project name, NONE, LO-ONLY, AF-ONLY
-\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4 & 0}
+% arguments: project name, no-LO, no-RA, no-AF
+\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 
 \begin{table}
   \caption{An ablation study on the contribution of the lightweight
-    ownership (\emph{NO-LO}), resource aliasing (\emph{NO-RA}),
-    and accumulation frames (\emph{NO-AF})
+    ownership (\emph{without-LO}), resource aliasing (\emph{without-RA}),
+    and accumulation frames (\emph{without-AF})
     features in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
   
-  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
-    Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
+  \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+    Project                              &      \emph{without-LO} & \emph{without-RA} & \emph{without-AF}     \\
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
-    \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
+    \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
     \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
     \hline
     \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
   \end{tabularx}
 \end{table}
 
-Without lightweight ownership (\cref{sec:lightweight-ownership}),
+Lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
-accumulation frames (\cref{sec:reset-must-call}), our analysis produces significantly
-more false positives. To show the contribution of each to our tool's precision,
+accumulation frames (\cref{sec:reset-must-call})
+each contribute to \Tool's precision by eliminating false positives.
+To show the contribution of each,
 we performed an ablation study on the same programs we used as case studies in
-\cref{sec:case-studies} by building four versions of our tool:
-one with lightweight ownership disabled (\emph{NO-LO}),
-one with resource aliaisng disabled (\emph{NO-RA}),
-and one with accumulation frames disabled(\emph{NO-AF}),
-and the original with all three enabled (\emph{FULL}).
+\cref{sec:case-studies} by building three variants of \Tool:
+one with lightweight ownership disabled (\emph{without-LO}),
+one with resource aliaisng disabled (\emph{without-RA}),
+and one with accumulation frames disabled(\emph{without-AF}).
 We re-ran the experiments in \cref{sec:case-studies} using each variant, and
 recorded the change in the number of warnings. Since our analysis has no false
 negatives, the difference between the total number of warnings (i.e. the sum of
-the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by the \emph{FULL}
-variant and the total number of false positives produced by each variant is
+the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by \Tool
+and the total number of false positives produced by each variant is
 the number of false positives that are prevented by each feature.
 
 \Cref{tab:ablation} has an entry for each variant on each case study project,
-which is the number of extra warnings that that variant reported on the project,
-compared to \emph{FULL}. From the table, it is clear that both lightweight
+which is the number of extra warnings that that variant reported on the project.
+From the table, it is clear that both lightweight
 ownership and resource aliases are critically important to the precision of
 \Tool: each feature prevents more false positive errors than the total number
 of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
