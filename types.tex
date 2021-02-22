@@ -279,7 +279,20 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \end{algorithm}
 
 \begin{algorithm}
-  \caption{Basic helper functions for \Cref{alg:consistency-checker}.}
+  \caption{Basic helper functions for \Cref{alg:consistency-checker}.
+  \todo{Please define every helper function used in this algorithm.  At
+    lease give its signature and its specification as a comment, though
+    their bodies are not necessary.  I suggest breaking the the list of
+    helper methods into two lists:  those that will be redefined in a
+    subsequent section, and those that will not.  Each can be in a separate
+    algorithm environment.}
+  \todo{It's confusing that Procedure MCObligations does not handle code
+    like ``myvar = myformal'' where myformal is declared to have a
+    \<@MustCall> type.  The current formulation is more syntactic than it
+    needs to be.  I suggest permitting the right-hand side to be arbitrary,
+    and use the declared type of the right-hand side.  (Why isn't it
+    already written like that?)}
+}
   \label{alg:helpers}
   \begin{algorithmic}[1]
   \State // \textit{what must-call obligations does s introduce?}
@@ -292,7 +305,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \EndProcedure
   \State // \textit{Is the must-call obligation for some variable in P satisfied either before s or by s?}
   \Procedure{MCSatisfied}{$P,s$}
-  \State \Return $\exists p \in P .\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}$
+  \State \Return $\exists p \in P .\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore}(p,s)$
   \EndProcedure
   \State // \textit{Does s end the scope in which P's must-call obligation can
   be satisfied?}
