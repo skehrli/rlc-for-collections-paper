@@ -13,9 +13,8 @@ modern, heavily-used Java applications~\cite{ghanavati2020memory}.
 This state-of-the-practice does not differ much from two decades
 ago~\cite{WeimerN04}. \todo{If we know of any more studies that show resource
   leaks are a big problem, we should add citations to them here, too.}
-A survey of Microsoft engineers in 2015 found
-that they consider resource leak bugs to be one of the most
-significant challenges for modern developers~\cite{LoNZ2015}.  That
+Microsoft engineers consider resource leak bugs to be one of the most
+significant development challenges~\cite{LoNZ2015}.  That
 resource leaks remain such a serious problem despite decades of
 research and improvements in languages and tooling shows that
 preventing resource leaks remains an urgent, difficult, open problem.
@@ -24,13 +23,13 @@ preventing resource leaks remains an urgent, difficult, open problem.
 
 Ideally, a tool for preventing resource leaks would be:
 \begin{itemize}
-\item \emph{fast}, so that it scales to real-world programs and
-  developers can use it regularly;
 \item \emph{applicable} to leakable resources in existing code with few or no code changes,
 \item \emph{sound}, so that undetected resource leaks do not slip into
-  the program; and
+  the program;
 \item \emph{precise}, so that developers are not bothered by excessive false positive
-  warnings.
+  warnings; and
+\item \emph{fast}, so that it scales to real-world programs and
+  developers can use it regularly.
 \end{itemize}
 
 %% Extant approaches fail at least one of these: bug finders like the analysis
@@ -40,7 +39,7 @@ Ideally, a tool for preventing resource leaks would be:
 Extant approaches fail at least one of these criteria.
 Language-based features may not \emph{apply} to all uses of resource variables:
 Java's try-with-resources statement, for example, can
-only close resource types implementing the \<java.lang.AutoCloseable> interface,
+only close resource types that implement the \<java.lang.AutoCloseable> interface,
 and cannot handle
 common resource usage patterns that span multiple procedures.
 Heuristic bug-finding tools for leaks, built into Java IDEs including
@@ -58,34 +57,38 @@ they can require hours to analyze a large-scale modern Java program, due
 to the costliness of precise whole-program analysis.  \todo{Find a good, recent example of a really heavyweight technique to attack here
 for not being applicable and too hard to use.} \todo{Does this work? --Manu} Finally, ownership type
 systems~\cite{clarke2013ownership} as employed in languages like Rust
-\todo{cite} can prevent nearly all resource leaks, but they cannot easily be
-\emph{applied} to existing large Java code bases due to the additional restrictions
-they impose.
+\todo{cite} can prevent nearly all resource leaks, but the require
+rewriting the program, a substantial task which is often infeasible.
+These techniques are not applicable to legacy codebases and coding styles.
+Our contribution is an \emph{accumulation analysis} for the resource leak
+problem, which satisfies all 4 requirements:  it is applicable,
+sound, precise, and fast.
 
-Our key insight is that the resource leak problem is an extended
-version of an accumulation problem~\cite{KelloggRSSE2020}. An
-accumulation problem is a special-case of typestate problem~\cite{StromY86}:
-one which can be solved by attaching a finite-state machine (FSM)
-to each program element, and transitioning the state of each
-FSM whenever a relevant operation is performed---such an analysis
-is called a typestate analysis.
-Accumulation analysis is a type state analysis in which
+An accumulation analysis~\cite{KelloggRSSE2020}
+is a special-case of typestate analysis~\cite{StromY86}.
+Typestate analysis attaches a finite-state machine (FSM)
+to each program element, and transitions the state of each
+FSM whenever a relevant operation is performed.\todo{That description
+  leaves out the ``type'' part of ``typestate''.}
+In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
 permitted and executing more operations cannot add additional
-restrictions.  If a typestate problem meets these restrictions, then
-using an accumulation analysis provides a major benefit: it does not
+restrictions.  If it is applicable, accumulation analysis provides a major
+benefit over general typestate analysis: it does not
 require a whole-program alias analysis for soundness.
-This insight allows
-us to build a novel static analysis, based on a standard type system
-without a whole-program alias analysis, that is both sound\footnote{Mostly
-  sound~\cite{livshits2015defense}; see
-\cref{sec:threats} for the usual implementation caveats.}---meaning it
-can find many more bugs than heuristic-based approaches---and much
-faster than extant typestate-based approaches.  Compared to existing
-sound approaches, our accumulation-based system is faster and more
-precise \todo{Flesh this out with a more direct comparison to compare
-  against more "heavyweight" systems like Rust ownership or fancier
-  type systems}.
+
+%% This text is redundant.
+% This insight allows
+% us to build a novel static analysis, based on a standard type system
+% without a whole-program alias analysis, that is both sound\footnote{Mostly
+%   sound~\cite{livshits2015defense}; see
+% \cref{sec:threats} for the usual implementation caveats.}---meaning it
+% can find many more bugs than heuristic-based approaches---and much
+% faster than extant typestate-based approaches.  Compared to existing
+% sound approaches, our accumulation-based system is faster and more
+% precise \todo{Flesh this out with a more direct comparison to compare
+%   against more "heavyweight" systems like Rust ownership or fancier
+%   type systems}.
 
 To achieve precision in practice, we needed three
 innovations beyond our key insight:
@@ -100,15 +103,19 @@ innovations beyond our key insight:
 Our contributions are:
 \begin{itemize}
 \item the insight that the resource leak problem is an accumulation
-  problem, and a novel set of type systems designed to take advantage
+  problem, and
+  % a novel set of
+  type systems designed to take advantage
   of this fact (\cref{sec:base-type-systems}).
-\item three novel innovations that improve the precision of our type
+\item three
+  % novel
+  innovations that improve the precision of our type
   systems: a lightweight ownership tracking system
   (\cref{sec:lightweight-ownership}), a lightweight resource-alias
   tracking analysis (\cref{sec:must-call-choice}), and an extension to
   accumulation analysis (\cref{sec:reset-must-call}).
-\item an open-source implementation of our type systems as an extension to Java,
-  augmented with these innovations, called \Tool (\cref{sec:implementation}).
+\item an open-source implementation for Java,
+  called \Tool (\cref{sec:implementation}).
 \item an extensive empirical evaluation: case studies on heavily-used
   Java programs that handle many resources (\cref{sec:case-studies}),
   an ablation study that shows the contributions of each innovation to
