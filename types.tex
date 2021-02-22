@@ -142,7 +142,8 @@ of required methods $A$ and $B$ is:
 \trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
 
 The default type qualifier is \<@MustCall(\{\}) for base types without a
-programmer-written type qualifier.
+programmer-written type qualifier.\footnote{For unannotated local variables,
+  flow-sensitive type refinement infers a type.}
 % By writing another type qualifier on the declaration of a class, a
 % user can specify a different default for raw types of that class.
 Using this mechanism, the qualified type of the \<new> expression
@@ -170,44 +171,50 @@ it is deallocated.
 \subsection{Inferring called methods with an accumulation analysis}
 \label{sec:called-methods}
 
-Our type system for inferring which methods are definitely called on an object
-is an extension of a similar system
+\todo{Mike changed ``our types system for inferring'' to ``our type system
+  tracks''.  Let's lay off use of ``infer'' because it implies we have
+  written a type inference tool, when what we have really written is a
+  type-checking tool (with local type inference).}
+
+Our type system tracks a conservative underapproximation of which methods have been called on an object.
+It is an extension of a similar system
 from prior work~\cite{KelloggRSSE2020}.  The primary difference in our
-version is that methods are considered called even if they throw an exception
-(in the prior work, a method was only considered ``called'' when it terminated
-successfully)---a necessity in Java because the \<close()> method
+version is that a method is considered called even if it throws an
+exception---a necessity in Java because the \<close()> method
 in \<java.io.Closeable> is specified to possibly throw an \<IOException>.
-The remainder of this section is a brief explanation
-of the type system from prior work~\cite{KelloggRSSE2020}, which contains
-a more full description.
+In the prior work, a method was only considered ``called'' when it terminated
+successfully.
+The remainder of this section is a brief summary
+of the prior work~\cite{KelloggRSSE2020}.
 
-This checker is an \emph{accumulation analysis}: a special case
-of typestate analysis~\cite{StromY86} in which:
-\begin{enumerate}
-\item the order in which operations are performed cannot affect what is
-  subsequently permitted, and
-\item executing more operations does not add restrictions---that is,
-  the set of permitted operations after executing some operation is always
-  a superset of the set of permitted operations before executing that operation.
-\end{enumerate}
-This special case of typestate analysis is useful because it does not
-require a whole-program alias analysis for soundness, and instead
-can be implemented as a standard pluggable type system.
+% This checker is an \emph{accumulation analysis}: a special case
+% of typestate analysis~\cite{StromY86} in which:
+% \begin{enumerate}
+% \item the order in which operations are performed cannot affect what is
+%   subsequently permitted, and
+% \item executing more operations does not add restrictions---that is,
+%   the set of permitted operations after executing some operation is always
+%   a superset of the set of permitted operations before executing that operation.
+% \end{enumerate}
+% This special case of typestate analysis is useful because it does not
+% require a whole-program alias analysis for soundness, and instead
+% can be implemented as a standard pluggable type system.
 
-The checker supports two qualifiers: \<@CalledMethods>
-and \<@CalledMethodsBottom>. The type \<@CalledMethods(>$A$\<) Object>
+The checker is an accumulation analysis whose accumulation qualifier is \<@CalledMethods>.
+The type \<@CalledMethods(>$A$\<) Object>
 represents an object on which the methods in the set $A$ have definitely
-been called (other methods not in $A$ might also have been called).
-\<@CalledMethodsBottom> is a subtype of every other Called Methods type; the subtyping
-rule between any two \<@CalledMethods> annotations with method sets $A$
-and $B$ is:
+been called; other methods not in $A$ might also have been called.
+The subtyping
+rule is:
 \trule{B \subseteq A}{\<@CalledMethods(A)> \sqsubseteq \<@CalledMethods(B)>}
-The resulting lattice has \<@CalledMethods(\{\})> as its top type.
+The top type is \<@CalledMethods(\{\})>.
+The qualifier \<@CalledMethodsBottom> is a subtype of every \<@CalledMethods> qualifier.
 
-Called Methods types are inferred within method bodies---so for example
-in \cref{fig:example}, the type of \<s> is initially \<@CalledMethods({})>,
-but transitions to \<@CalledMethods("close")> on all paths after the
-\<finally> block.
+Thanks to flow-sensitive type refinement,
+Called Methods types are inferred within method bodies.  For example,
+in \cref{fig:example} the type of \<s> is initially \<@CalledMethods({})>,
+but it transitions to \<@CalledMethods("close")> after the call to \<close>.
+
 
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}
