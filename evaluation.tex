@@ -186,9 +186,9 @@ clearly satisfies the ``fast'' criterion. It is also easy to apply it to
 existing legacy code---it clearly satisfies the ``applicable'' criterion.
 
 In potential leak mode on zookeeper-server, the analysis reported 180
-warnings.  Of these, we determined that 8 were true positives
+warnings.  Of these, we determined that 7 were true positives
 (corresponding to true positives that our sound tool found), and the
-other 172 were false positives.  The most common cause of false
+other 173 were false positives.  The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
 at method invocations: each call to a method such as
 \<Socket\#getInputStream> that returns a resource-alias resulted in a
