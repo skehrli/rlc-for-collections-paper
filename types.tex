@@ -273,6 +273,9 @@ but transitions to \<@CalledMethods("close")> on all paths after the
 
 \end{algorithm}
 
+\todo{Use the example in \cref{fig:example} throughout this section
+  to explain the algorithm, possibly extending it if needed.}
+
 Given inferred \<@MustCall> obligations and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that \<@MustCall> methods for each object
 are always invoked before the object becomes unreachable.  Pseudocode for a
