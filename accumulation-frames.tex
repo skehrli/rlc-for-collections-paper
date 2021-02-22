@@ -26,10 +26,14 @@ the following code:
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
     void close() { sock.close() };
-    void reconnect() { sock.close(); sock = ...; }
+    void reconnect() {
+      if (!sock.isClosed()) {
+        sock.close();
+      }
+      sock = ...;
+    }
   }
 \end{lstlisting}
-
 In the lifetime of a \<SocketContainer> object, it might control any
 number of resources, depending on the number of calls to
 \<reconnect()>. In order to verify the code above (and uses of the
@@ -44,10 +48,11 @@ above:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   SocketContainer sc = ...;
-  sc.reconnect();  // frame boundary
+  sc.close()
+  // frame boundary
+  sc.reconnect();
   sc.close();
 \end{lstlisting}
-
 This code contains two accumulation frames: the first extends from the
 constructor call to the first call to \<reconnect()>, and the second
 extends from the call to \<reconnect()> (which creates another
@@ -66,14 +71,14 @@ definition for \<reconnect()> above would then become:
   class SocketContainer {
     ...
     @ResetMustCall("this")
-    void reconnect() { sock.close(); sock = ...; }
+    void reconnect() { ... }
   }
 \end{lstlisting}
-
 When an \<@ResetMustCall>
 method is invoked, \Tool removes any
 inferred Called Methods information about the target (\<sc> in the example).
 This rule means that even if \<close()> has already been called on \<sc>
+(as in the example)
 when \<reconnect()>
 is called, \<close()> must be called again---corresponding to the intuition
 that a new accumulation frame ``resets'' the obligations of \<sc>.
@@ -127,7 +132,7 @@ above are sound:
   must be annotated with an \<@ResetMustCall> that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$, its \<@MustCall> obligation
 must be satisfied before $s$ (i.e., $\textsc{MCBefore}(f,s) \subseteq
-\textsc{CMBefore}(f,s)$, see \Cref{alg:helpers})
+\textsc{CMBefore}(f,s)$, see \Cref{alg:helpers}).
 \end{itemize}
 \noindent
 Together, these rules guarantee that any re-assignment to a non-final, owning
