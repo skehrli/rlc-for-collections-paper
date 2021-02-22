@@ -6,31 +6,35 @@
 
 % a line in tab:case-studies
 % arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
-\newcommand{\osstablerow}[9]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8 & #9 s}
+\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
 
 \begin{table*}
   \caption{Verifying the absence of resource leaks in case studies.
     Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
     ``Resources'' is the number of resources created by the program.
-    ``Diff size'' is the difference in LoC between the original and
-    annotated programs, counting both annotations and modified code.
+    % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
+    % > git diff --stat origin/with-checker -- '*.java'
+    % then subtract the deleted lines from the added lines and report that number
+    ``Diff size'' is the number of lines changed in our annotated version,
+    as reported by \<git diff>. Note that this includes warning suppressions
+    and annotations.
     ``Annos.'' is number of manually-written annotations to specify
     existing methods.
-    ``TPs'' is true positives. ``Conf'' is confirmed true positives. 
+    ``TPs'' is true positives.
     ``FPs'' is false positives, where the our analysis could not
   guarantee that the call was safe, but manual analysis revealed that no
   run-time failure was possible.
-    ``RT(s)'' is the wall-clock run time of our analysis in seconds.}
+    ``RT(s)'' is the wall-clock run time of our analysis.}
   \label{tab:case-studies}
 
-  \begin{tabular}{@{}lrr|rr|rrrr@{}}
-    Project                              &      LoC      & Resources   &  Diff size  & Annos.   & TPs  & Conf    & FPs & Wall-clock time      \\
+  \begin{tabular}{@{}lrr|rr|rrr@{}}
+    Project                                    &      LoC      & Resources   &  Diff size  & Annos.   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server}              {94,872}        {?}            {?}          {99}        {10}     {?}      {47}   {?}        \\
-    \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
-    \osstablerow{apache/hbase:?}                  {?}        {?}            {?}          {?}        {?}     {?}      {?}   {?}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server} {94,872}        {232}       {192}          {99}       {10}       {47}   {?}        \\
+    \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
+    \osstablerow{apache/hbase:?}                       {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
     \hline
-    \osstablerow{\textbf{Total}}                {?}        {?}            {?}          {?}        {?}     {?}      {?}   {-}        \\
+    \osstablerow{\textbf{Total}}                        {?}        {?}            {?}          {?}        {?}       {?}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -65,13 +69,14 @@ annotated each program with must-call, called-methods, and ownership
 annotations (the ``Annos'' column in \cref{tab:case-studies}). We also
 made small, semantics-preserving changes to the programs---such as adding
 \<final> modifiers to fields---to reduce
-false positives from our analysis (``Diff size''). We then examined
+false positives from our analysis. We report the total number
+of new lines we added to each project, including warning suppressions,
+annotations, and code changes (``Diff size''). We then examined
 all remaining warnings, and categorized them as either true positives
 (``TPs'')---real resource leaks---or false positives (``FPs'')---code
 that our system was insufficiently precise to prove correct.
 % We should probably remove this, since we've only done what, one?
-We submitted bug reports and patches to the projects describing true
-positives, when time permitted.  We also measured the number of
+We also measured the number of
 possible resource leaks in each project (``resources'') and the run
 time of our analysis (``Wall-clock time'') using \todo{a standardized
   machine similar to the one used in the Grapple paper}. Each case
@@ -103,48 +108,48 @@ cannot become out-of-date if the checker is passing.
 
 % a line in tab:ablation
 % note that the FULL column is always zero, so it's not included here
-% arguments: project name, NONE, LO-ONLY, AF-ONLY
-\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4 & 0}
+% arguments: project name, no-LO, no-RA, no-AF
+\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 
 \begin{table}
   \caption{An ablation study on the contribution of the lightweight
-    ownership (\emph{NO-LO}), resource aliasing (\emph{NO-RA}),
-    and accumulation frames (\emph{NO-AF})
+    ownership (\emph{without-LO}), resource aliasing (\emph{without-RA}),
+    and accumulation frames (\emph{without-AF})
     features in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
   
-  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
-    Project                              &      \emph{NO-LO} & \emph{NO-RA} & \emph{NO-AF} & \emph{FULL}      \\
+  \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+    Project                              &      \emph{without-LO} & \emph{without-RA} & \emph{without-AF}     \\
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
-    \abltablerow{apache/hfds}                   {?}            {?}             {?}                               \\
+    \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
     \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
     \hline
     \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
   \end{tabularx}
 \end{table}
 
-Without lightweight ownership (\cref{sec:lightweight-ownership}),
+Lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
-accumulation frames (\cref{sec:reset-must-call}), our analysis produces significantly
-more false positives. To show the contribution of each to our tool's precision,
+accumulation frames (\cref{sec:reset-must-call})
+each contribute to \Tool's precision by eliminating false positives.
+To show the contribution of each,
 we performed an ablation study on the same programs we used as case studies in
-\cref{sec:case-studies} by building four versions of our tool:
-one with lightweight ownership disabled (\emph{NO-LO}),
-one with resource aliaisng disabled (\emph{NO-RA}),
-and one with accumulation frames disabled(\emph{NO-AF}),
-and the original with all three enabled (\emph{FULL}).
+\cref{sec:case-studies} by building three variants of \Tool:
+one with lightweight ownership disabled (\emph{without-LO}),
+one with resource aliaisng disabled (\emph{without-RA}),
+and one with accumulation frames disabled(\emph{without-AF}).
 We re-ran the experiments in \cref{sec:case-studies} using each variant, and
 recorded the change in the number of warnings. Since our analysis has no false
 negatives, the difference between the total number of warnings (i.e. the sum of
-the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by the \emph{FULL}
-variant and the total number of false positives produced by each variant is
+the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by \Tool
+and the total number of false positives produced by each variant is
 the number of false positives that are prevented by each feature.
 
 \Cref{tab:ablation} has an entry for each variant on each case study project,
-which is the number of extra warnings that that variant reported on the project,
-compared to \emph{FULL}. From the table, it is clear that both lightweight
+which is the number of extra warnings that that variant reported on the project.
+From the table, it is clear that both lightweight
 ownership and resource aliases are critically important to the precision of
 \Tool: each feature prevents more false positive errors than the total number
 of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
