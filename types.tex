@@ -226,7 +226,16 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   page.}
 
 \begin{algorithm}[t]
-  \caption{Finding missed calls.  Structured like pseudocode in~\cite{TorlakC10}.}
+  \caption{Finding unfulfilled \<@MustCall> obligations.
+    % Structured like pseudocode in~\cite{TorlakC10}.
+    \todo{Are elements of $D$ must-call obligations?  If so, say that.  If
+      not, say what they are.}
+    \todo{Elements of D ``are of the form $\langle P, s' \rangle$'', but
+      line 5 uses $\mapsto$ instead of $\langle \rangle$.}
+    \todo{The ``not at a fixed point'' test is \emph{not} the same as ``the
+      value of D is the same as on the previous iteration'', which makes
+      the algorithm a bit harder to read.}
+  }
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
   \Procedure{FindMissedCalls}{$CFG$}
@@ -313,8 +322,8 @@ Given inferred \<@MustCall> obligations and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that \<@MustCall> methods for each object
 are always invoked before the object becomes unreachable.  Pseudocode for a
 basic version of this checker appears in \Cref{alg:consistency-checker}, with
-helper functions in \Cref{alg:helpers}.  In subsequent sections we will describe
-various enhancements to this basic approach.
+helper functions in \Cref{alg:helpers}.  \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
+describe enhancements to this basic approach.
 
 The checker performs an intra-procedural dataflow analysis over a control-flow
 graph with nodes from a set $\mathit{Statement}$ of statements and a
@@ -325,10 +334,14 @@ statements: assignment, method call, return, field write?}
 
 The analysis computes a set of facts $D(s)$ holding before each statement $s$. A
 fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables and
-$s'$ is a call statement with a non-empty \<@MustCall> obligation. The variables
-in $P$ are \emph{must aliases} for $s'$:  hence, satisfying the \<@MustCall>
+$s'$ is a call statement with\todo{A statement never has a \<@MustCall>
+  obligation.  Only an expression does.}
+a non-empty \<@MustCall> obligation. The variables
+in $P$ are \emph{must aliases} for $s'$\todo{A statement doesn't have
+  aliases of it.  Do you mean of the result of evaluating the statement?
+  or the lhs if the statement is an assignment?}:  hence, satisfying the \<@MustCall>
 obligation for \emph{any} variable in $P$ is sufficient to satisfy the
-obligation for $s'$.  (In \Cref{sec:must-call-choice} we shall generalize the
+obligation for $s'$.  (\Cref{sec:must-call-choice} generalizes the
 set of variables held in $P$.)  If the analysis discovers a fact $\langle P, s'
 \rangle$ reaching the method exit, then the \<@MustCall> obligation for $s'$ may
 not be satisfied, and an error is reported.
