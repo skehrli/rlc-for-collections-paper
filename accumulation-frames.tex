@@ -2,7 +2,7 @@
 \label{sec:reset-must-call}
 
 This section describes an enhancement to the theory of accumulation
-analysis that allows \tool to verify non-final, owning fields
+analysis that allows \Tool to verify non-final, owning fields
 that contain one or more resources during their lifetime
 (\cref{sec:non-final-owning}).
 This approach is also useful for
@@ -71,7 +71,7 @@ definition for \<reconnect()> above would then become:
 \end{lstlisting}
 
 When an \<@ResetMustCall>
-method is invoked, \tool removes any
+method is invoked, \Tool removes any
 inferred Called Methods information about the target (\<sc> in the example).
 This rule means that even if \<close()> has already been called on \<sc>
 when \<reconnect()>
@@ -171,7 +171,7 @@ socket (such as \<connect()> or \<bind()>) to avoid this false
 positive, by annotating those methods (in the definition of
 \<java.net.Socket>) as \<@ResetMustCall("this")>.  When one of these
 methods is then called on the \<Socket> in client code that is being
-verified by \tool, its inferred must-call obligations increase to include
+verified by \Tool, its inferred must-call obligations increase to include
 \<close()>, because by default an arbitrary \<Socket>'s type is
 \<@MustCall("close")>.
 

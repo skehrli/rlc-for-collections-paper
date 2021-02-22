@@ -1,20 +1,20 @@
 \section{Limitations and threats to validity}
 \label{sec:threats}
 
-Like any tool that analyzes source code, \tool can only
+Like any tool that analyzes source code, \Tool can only
 give guarantees for code that it checks: the guarantee
 excludes native code, unchecked libraries (such as the JDK),
 and code generated dynamically or by other annotation processors
 such as Lombok. Though the Checker Framework can handle
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
-\tool compromises this guarantee
+\Tool compromises this guarantee
 by assuming that objects resulting from reflective invocations
 do not carry must-call obligations, though this behavior can
-be disabled. Like any sound static analysis, \tool does
+be disabled. Like any sound static analysis, \Tool does
 issue some false positives; these must be suppressed by
 the programmer and the correctness of the relevant code
 must be proved using another method. Within the bounds
-of a warning suppression, \tool assumes that 1)
+of a warning suppression, \Tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
@@ -23,22 +23,22 @@ external validity of the results presented in
 \cref{sec:evaluation}. In particular, our subject programs are
 heavily-used, heavily-tested, and contain a high-density of resource
 usage---so, in a sense, they represent a worst-case scenario for
-\tool.  Nevertheless, \tool may produce more false positives, require
+\Tool.  Nevertheless, \Tool may produce more false positives, require
 more annotations, or be more difficult to use if applied to other
-programs.  It would be both easier and more useful to use \tool from
+programs.  It would be both easier and more useful to use \Tool from
 the inception of a project, rather than applying it after the code had
 already be written, as we did in our case studies: code could be
 annotated as it was written, ensuring that the annotations truly match
 the intent of the programmers.
 
 Like any practical system, it is possible that there might
-be bugs in the implementation of \tool, or in the design of
+be bugs in the implementation of \Tool, or in the design of
 its analyses. We have mitigated this threat with an extensive
-test suite for \tool:
+test suite for \Tool:
 % count the number of files in the following directories, and their LoC:
 % file count, from the top-level OCC directory: find object-construction-checker/tests/mustcall object-construction-checker/tests/counter object-construction-checker/tests/mustcall-onlyjdk object-construction-checker/tests/noaccumulationframes object-construction-checker/tests/nolightweightownership object-construction-checker/tests/noresourcealias object-construction-checker/tests/socket must-call-checker/tests/mustcall must-call-checker/tests/nolightweightownership -type f | wc -l
 124 test classes containing
 % put all of those directories into a file called list-of-dirs, then run: for d in `cat list-of-dirs`; do cd $d ; ~/Downloads/scc ; cd ../../../; done
 % then add up the ``code'' columns
 3,437 lines of non-comment, non-blank code.
-This test suite is publicly available and distruted with \tool.
+This test suite is publicly available and distruted with \Tool.

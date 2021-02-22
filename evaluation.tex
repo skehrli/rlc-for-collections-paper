@@ -79,7 +79,7 @@ hand to determine whether a warning was a true or false positive.  The
 annotated versions of the case study programs are available at
 \todo{an anonymized fork of the projects}.
 
-\Cref{tab:case-studies} summarizes the results. \tool finds multiple
+\Cref{tab:case-studies} summarizes the results. \Tool finds multiple
 serious resource leak bugs in all of the examined programs. Though
 there are more false positives than true positives in each program,
 the number is small enough to be examined by a single developer in a
@@ -142,7 +142,7 @@ the number of false positives that are prevented by each feature.
 which is the number of extra warnings that that variant reported on the project,
 compared to \emph{FULL}. From the table, it is clear that both lightweight
 ownership and resource aliases are critically important to the precision of
-\tool: each feature prevents more false positive errors than the total number
+\Tool: each feature prevents more false positive errors than the total number
 of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
   this claim when we have the results from the other benchmarks.} Though
 the accumulation frame feature prevents fewer errors, it permits verification
@@ -180,7 +180,7 @@ leaks and detecting high-confidence resource leaks; the former reports a superse
 of the warnings reported by the latter.
 
 We ran this analysis on the same version of Zookeeper's zookeeper-server
-module that we ran \tool on in \cref{sec:case-studies}. Once Eclipse
+module that we ran \Tool on in \cref{sec:case-studies}. Once Eclipse
 has loaded the project, the analysis runs nearly instantaneously---it
 clearly satisfies the "fast" criterion. It is also easy to apply it to
 existing legacy code---it clearly satisfies the "applicable" criterion.
@@ -265,11 +265,11 @@ times that appear in \cref{tab:case-studies}, but includes the cost
 of running all four of their checkers).
 
 Compared to our approach, Grapple is slower (due to its reliance on
-an expensive whole-program alias analysis, which \tool avoids by using
+an expensive whole-program alias analysis, which \Tool avoids by using
 an accumulation analysis), similarly applicable to legacy
 code, less sound, and much more precise--our type-based approach
 trades off precision and a small amount of user effort (i.e. to write annotations)
-for soundness and speed. In this way, \tool and Grapple are complementary:
+for soundness and speed. In this way, \Tool and Grapple are complementary:
 they optimize for different criteria. Users should select the tool whose
 priorities match their own.
 

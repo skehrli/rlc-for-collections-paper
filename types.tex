@@ -24,7 +24,7 @@ Further details on novel features that improve the precision
 of that checker are provided in
 \cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}.
 
-\tool is composed of three cooperating analyses:
+\Tool is composed of three cooperating analyses:
 \begin{enumerate}
 \item a taint tracking type system (\cref{sec:must-call}) computes a conservative
   \emph{overapproximation} of the set of methods that might need to be called
@@ -149,10 +149,10 @@ that all \<Closeable> objects must have the \<close()> method called before
 they are deallocated.
 
 A benefit of using a type system for tracking must-call obligations is
-that \tool can use local type inference to refine the obligations of
+that \Tool can use local type inference to refine the obligations of
 a particular variable. For example, if the only assignment to \<s>
 in \cref{fig:example} were the initial assignment to \<null>, then
-\tool would be able to determine that \<s> does not have a must-call
+\Tool would be able to determine that \<s> does not have a must-call
 obligation.
 
 \subsection{Inferring called methods with an accumulation analysis}

@@ -14,21 +14,21 @@
 Tracker~\cite{TorlakC10} uses a dataflow analysis over the control-flow
 graph to reason about resource leaks, while avoiding the problem of
 whole-program alias analysis using an access-path approach. Like our tool,
-it scales to large Java programs; unlike \tool, however, it is unsound.
+it scales to large Java programs; unlike \Tool, however, it is unsound.
 
 Grapple~\cite{zuo2019grapple} models alias and dataflow analyses as
 dynamic transitive-closure computation of graph representations of
 the target programs, enabling extraordinary precision with a whole-program
-alias analysis. Compared to \tool, it is more precise but suffers
+alias analysis. Compared to \Tool, it is more precise but suffers
 from unsoundness and an order of magnitude longer run times.
 We compare directly to Grapple in \cref{sec:grapple}.
 
 The Eclipse Compiler for Java includes a simple dataflow-based
 bug-finder for resource leaks~\cite{ecj-resource-leak}. Their analysis
 uses a fixed set of ownership heuristics and a fixed list of wrapper
-classes; unlike \tool, it is also unsound. It is fast and
+classes; unlike \Tool, it is also unsound. It is fast and
 \todo{possibly} precise.  Similar analyses---with similar trade-offs
-compared to \tool---are present in other heuristic bug-finding tools,
+compared to \Tool---are present in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, Infer~\cite{infer-resource-leak}, and others.
 We compare to the Eclipse analysis directly in \cref{sec:eclipse}.
@@ -43,8 +43,8 @@ resources.
 
 The DroidLeaks benchmark~\cite{liu2019droidleaks} is a set of Android
 apps with known resource leak bugs. Unfortunately, it includes only
-the compiled apps, not the source code, so we were unable to run \tool
-on its contents (\tool requires source code as its input).
+the compiled apps, not the source code, so we were unable to run \Tool
+on its contents (\Tool requires source code as its input).
 
 The CLOSER~\cite{dillig2008closer} automatically inserts Java code to
 dispose of resources when they are no longer ``live'' according to its
@@ -72,7 +72,7 @@ state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
 Other techniques focus on taking advantage of common misuse of
 the Android activity lifecycle~\cite{amalfitano2020memories}.
 Testing can only show the presence of bugs, not their absence;
-\tool verifies that no resource leaks are present.
+\Tool verifies that no resource leaks are present.
 
 \subsection{Ownership tracking}
 
@@ -86,7 +86,7 @@ state that our handling of owning fields can verify it.}
 \subsection{Typestate analysis}
 \label{sec:rw-typestate}
 
-\tool relies on an accumulation
+\Tool relies on an accumulation
 analysis~\cite{KelloggRSSE2020,FahndrichLeino03} to avoid the need
 for a whole-program alias analysis, while retaining soundness.  We
 build on the core analysis described in~\cite{KelloggRSSE2020},

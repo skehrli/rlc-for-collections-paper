@@ -6,7 +6,7 @@ that tracks \emph{resource alias} sets---sets of pointers that
 definitely correspond to the same underlying system resource.  Because
 resource aliases correspond to the same underlying resource, closing
 one alias also closes the other---so our sound resource alias analysis
-permits \tool to avoid issuing false positive warnings about resources
+permits \Tool to avoid issuing false positive warnings about resources
 that have already been closed through their resource aliases.  Prior
 work on accumulation analyses showed that limited, specialized forms
 of alias analysis can provide precision to an accumulation analysis
