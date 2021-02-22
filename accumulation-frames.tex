@@ -144,7 +144,7 @@ to \<java.net.Socket>. This constructor does not actually allocate an
 operating system-level socket, but instead just creates the container
 object, which permits the programmer to e.g. set options which will be used
 when creating the physical socket. When such a \<Socket> is created, it
-initally has no must-call obligation; it is only when the \<Socket> is
+initially has no must-call obligation; it is only when the \<Socket> is
 actually connected that the must-call obligation is created.
 
 If all \<Socket>s are treated as \<@MustCall(\{"close"\})>---that is,
@@ -174,3 +174,7 @@ methods is then called on the \<Socket> in client code that is being
 verified by \tool, its inferred must-call obligations increase to include
 \<close()>, because by default an arbitrary \<Socket>'s type is
 \<@MustCall("close")>.
+
+% LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall
+% LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied
+% LocalWords:  createSocket setSoTimeout SocketException

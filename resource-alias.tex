@@ -100,7 +100,7 @@ a method \<getFd()> that returns a \<FileDescriptor>
 object for the file. This file
 descriptor cannot be closed directly---it has no \<close()> method.
 However, the descriptor can be passed to a wrapper stream such as
-\<FileOutputStream>, which if closed satisifies the original must-call
+\<FileOutputStream>, which if closed satisfies the original must-call
 obligation.  By adding \mccannot annotations to the \<getFd()> method, our
 technique can verify code like the below (from \todo{which case study?}):
 \begin{lstlisting}[frame=tb,belowskip=3mm]
@@ -161,3 +161,8 @@ that relies on a hard-coded list of wrapper types, and that we used in our case 
 % Prior work uses a pre-determined list of wrapper classes, built into
 % the tool, to handle this issue~\cite{TorlakC10}. \todo{Also cite ecj here?
 %   I think it also uses the same scheme...}
+
+% LocalWords:  BufferedOutputStream OutputStream MustCall FileOutputStream
+% LocalWords:  ByteArrayOutputStream MustCallAlias arg0 CreatesAlias getFd
+% LocalWords:  FileDescriptor belowskip RandomAccessFile myFile rws getFD
+% LocalWords:  FileInputStream EnsuresCalledMethods
