@@ -240,7 +240,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \Procedure{FindMissedCalls}{$CFG$}
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{Statement} \}$\label{li:start-init}
   \For{each $p \in \mathit{Formals}$ and $t \in \mathit{succ}(\mathit{entry})$}\label{li:init-formals}
-    \If{$p$ has non-empty \<@MustCall> type}
+    \If{$\textsc{AddsObligation}(p)$}
       \State $D(t) \gets D(t) \cup \langle \{p\}, p \rangle$
     \EndIf
   \EndFor \label{li:end-init-formals}
@@ -278,8 +278,12 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \State // \textit{s must be a call statement p = m(p1, p2, ...)}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
-  \State \Return $c$ has non-empty \<@MustCall> type ? $\{ \langle \{ p \}, c
+  \State \Return $\textsc{AddsObligation}(c)$ ? $\{ \langle \{ p \}, c
   \rangle \}$ : $\emptyset$
+  \EndProcedure
+  \State // \textit{Does e introduce a must-call obligation to check?}
+  \Procedure{AddsObligation}{$e$}
+  \State \Return $e$ has non-empty \<@MustCall> type
   \EndProcedure
   \State // \textit{Is the must-call obligation for P satisfied by s?}
   \Procedure{MCSatisfied}{$P,s$}
@@ -331,7 +335,7 @@ $s$ of the form \<p = e>, $\textsc{LHS}(s) = p$ and $\textsc{RHS}(s) = e$.
 
 \Cref{alg:consistency-checker} proceeds as follows.
 Lines~\ref{li:start-init}--\ref{li:end-init} initialize $D$, by scanning for
-expressions that create must-call obligations to be checked.  
+expressions that add must-call obligations to be checked.  
 In the basic checker, such expressions include any formal parameter or method
 call with a non-empty \<@MustCall> type.  The fixed-point loop then proceeds by
 iterating over all facts $\langle P, e \rangle$ present in any $D(s)$ (our
