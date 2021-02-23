@@ -226,7 +226,8 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
       text for that explanation.}
     \todo{D contains statements and formal parameters as the second element
       of its paris.  Why doesn't it just store (declared) types as the
-      second element of the pair?}
+      second element of the pair?  Is the use of the AST node to permit
+      error reporting?}
     \todo{D filters out empty MustCall obligations.  I think the algorithm
       would be easier to read if it did not do so.  Then D could contain
       empty MustCall obligations, and there would be a test of MCSatisfied
