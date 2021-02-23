@@ -3,18 +3,20 @@
 
 Like any tool that analyzes source code, \Tool can only
 give guarantees for code that it checks: the guarantee
-excludes native code, unchecked libraries (such as the JDK),
+excludes native code, the implementation of unchecked libraries (such as the JDK),
 and code generated dynamically or by other annotation processors
 such as Lombok. Though the Checker Framework can handle
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
 \Tool compromises this guarantee
 by assuming that objects resulting from reflective invocations
 do not carry must-call obligations, though this behavior can
-be disabled. Like any sound static analysis, \Tool does
-issue some false positives; these must be suppressed by
-the programmer and the correctness of the relevant code
-must be proved using another method. Within the bounds
-of a warning suppression, \Tool assumes that 1)
+be disabled.
+% Like any sound static analysis, \Tool does
+% issue some false positives; these must be suppressed by
+% the programmer and the correctness of the relevant code
+% must be proved using another method.
+Within the bounds
+of a user-written warning suppression, \Tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
@@ -33,7 +35,7 @@ the intent of the programmers.
 
 Like any practical system, it is possible that there might
 be bugs in the implementation of \Tool, or in the design of
-its analyses. We have mitigated this threat with an extensive
+its analyses. We have mitigated this threat with code review and an extensive
 test suite for \Tool:
 % count the number of files in the following directories, and their LoC:
 % file count, from the top-level OCC directory: find object-construction-checker/tests/mustcall object-construction-checker/tests/counter object-construction-checker/tests/mustcall-onlyjdk object-construction-checker/tests/noaccumulationframes object-construction-checker/tests/nolightweightownership object-construction-checker/tests/noresourcealias object-construction-checker/tests/socket must-call-checker/tests/mustcall must-call-checker/tests/nolightweightownership -type f | wc -l
