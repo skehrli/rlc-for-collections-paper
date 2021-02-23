@@ -4,7 +4,7 @@
 We implemented \Tool on top of the Checker Framework~\cite{PapiACPE2008},
 an industrial-strength framework for building pluggable type systems
 for Java. The Must Call and Called Methods checkers are implemented
-directly as Checker Framework checkers; the Ownership Checker is
+directly as Checker Framework checkers.  The Ownership Checker is
 implemented as a post-analysis pass over the control flow graph
 produced by the Checker Framework's dataflow analysis, which is invoked
 when the other two checkers terminate. The framework provides the

@@ -144,28 +144,20 @@ cannot become out-of-date if the checker is passing.
   \end{tabularx}
 \end{table}
 
-Lightweight ownership (\cref{sec:lightweight-ownership}),
+The base analysis of \cref{sec:base-type-systems} produces significantly
+more false positives, because it lacks 
+lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
-accumulation frames (\cref{sec:reset-must-call})
+accumulation frames (\cref{sec:reset-must-call}).
 each contribute to \Tool's precision by eliminating false positives.
-To show the contribution of each,
-we performed an ablation study on the same programs we used as case studies in
-\cref{sec:case-studies} by building three variants of \Tool:
-one with lightweight ownership disabled (\emph{without-LO}),
-one with resource aliaisng disabled (\emph{without-RA}),
-and one with accumulation frames disabled(\emph{without-AF}).
-We re-ran the experiments in \cref{sec:case-studies} using each variant, and
-recorded the change in the number of warnings. Since our analysis has no false
-negatives, the difference between the total number of warnings (i.e. the sum of
-the ``TPs'' and ``FPs'' columns in \cref{tab:case-studies}) produced by \Tool
-and the total number of false positives produced by each variant is
-the number of false positives that are prevented by each feature.
+To show the contribution of each enhancement, we individually disabled each
+feature and re-ran the experiments in \cref{sec:case-studies}.
+Since all variants are sound (no false
+negatives), any difference in warnings is a false positive that is prevented
+by the feature.
 
-\Cref{tab:ablation} has an entry for each variant on each case study project,
-which is the number of extra warnings that that variant reported on the project.
-From the table, it is clear that both lightweight
-ownership and resource aliases are critically important to the precision of
-\Tool: each feature prevents more false positive errors than the total number
+\Cref{tab:ablation} shows that each of lightweight
+ownership and resource aliases prevents more false positive errors than the total number
 of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
   this claim when we have the results from the other benchmarks.} Though
 the accumulation frame feature prevents fewer errors, it permits verification
@@ -175,11 +167,11 @@ few critical places in each benchmark.
 \subsection{Comparison to other tools}
 \label{sec:compare}
 
-Our approach represents a novel point in the design space of a resource leak checker.
+Our approach represents a novel point in the design space of resource leak checkers.
 
-In this section, we compare our approach with two other modern tools that purport to detect resource leaks:
+In this section, we compare our approach with two other modern tools that detect resource leaks:
 \begin{itemize}
-\item the analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
+\item The analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
   for detecting resource leaks in the Eclipse IDE~\cite{ecj-resource-leak}.
 \item Grapple~\cite{zuo2019grapple}, an unsound, typestate-based analysis that represents a significant, recent
   improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
