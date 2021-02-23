@@ -382,10 +382,13 @@ contained in its \<@CalledMethods> type at that point, $\textsc{CMAfter}(p,s)$;
 if true, all \<@MustCall> methods have already been invoked.  \textsc{MCAfter}
 and \textsc{CMAfter} leverage the flow-sensitive inference for \<@MustCall> and
 \<@CalledMethods> qualifiers described in \Cref{sec:must-call,sec:called-methods}.
-\todo{The names CMAfter and
-MCAfter are confusing - they're nearly identical. Can we think of better ones
-that are equally useful?} \manu{I don't have an idea that is also terse, but I
-am open to one}
+%% Mike doesn't see a way to resolve this comment.  Once MCAfter and
+%% CMAfter are defined in the algorithm, that will tip off readers that
+%% they are intended to be different and are not a typo.
+% \todo{The names CMAfter and
+% MCAfter are confusing - they're nearly identical. Can we think of better ones
+% that are equally useful?} \manu{I don't have an idea that is also terse, but I
+% am open to one.}
 
 If the obligation for $e$ is not yet satisfied, the algorithm propagates the
 fact to successors with an updated set $N$ of must aliases.  $N$ is computed in
