@@ -228,40 +228,37 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \begin{algorithm}[t]
   \caption{Finding unfulfilled \<@MustCall> obligations.
     % Structured like pseudocode in~\cite{TorlakC10}.
-    \todo{Are elements of $D$ must-call obligations?  If so, say that.  If
-      not, say what they are.}
-    \todo{Elements of D ``are of the form $\langle P, s' \rangle$'', but
-      line 5 uses $\mapsto$ instead of $\langle \rangle$.}
-    \todo{The ``not at a fixed point'' test is \emph{not} the same as ``the
-      value of D is the same as on the previous iteration'', which makes
-      the algorithm a bit harder to read.}
+    % \todo{Are elements of $D$ must-call obligations?  If so, say that.  If
+    %   not, say what they are.}
+    % \todo{Elements of D ``are of the form $\langle P, s' \rangle$'', but
+    %   line 5 uses $\mapsto$ instead of $\langle \rangle$.}
+    % \todo{The ``not at a fixed point'' test is \emph{not} the same as ``the
+    %   value of D is the same as on the previous iteration'', which makes
+    %   the algorithm a bit harder to read.}
   }
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
   \Procedure{FindMissedCalls}{$CFG$}
-  \State // \textit{elements of D(s) are of the form} $\langle P, s' \rangle$,
-  \State // \textit{where $P$ is a set of locals and $s'$ is a statement}
-  \State // \textit{with a must-call obligation}
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{Statement} \}$
-  \State // \textit{initialize from all calls with a must-call obligation}
+  \For{$p \in \mathit{Formals}$}
+    \If{$p$ has non-empty \<@MustCall> type}
+      \State $D(\mathit{entry}) \gets D(\mathit{entry}) \cup \langle \{p\}, p \rangle$
+    \EndIf
+  \EndFor
   \For{$s \in \mathit{Statement}$} \label{li:start-init}
     \For{$v \in \textsc{MCObligations}(s)$}
-%    \If{$s$ is \lstinline{p = foo()} and \textsc{HasNonEmptyMustCall}(foo)}
-      \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{v\}, s \rangle$
+      \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle \{v\}, \textsc{RHS}(s) \rangle$
     \EndFor \label{li:end-init}
   \EndFor
-  \While{$D$ is not at fixed point}
-    \State $s \gets \textsc{ChooseFrom}(\mathit{Statement})$
-    \State $\langle P, s' \rangle \gets \textsc{ChooseFrom}(D(s))$
-    \State // \textit{Is the must-call obligation for some var in } $P$
-    \State // \textit{satisfied either before }$s$\textit{ or by } $s$\textit{?}
-    \If{\textsc{MCSatisfied}(P,s)} \label{li:check-satisfied}
+  \While{$D$ has not reached fixed point}
+    \For{each $s \in \mathit{Statement}$ and $\langle P, e \rangle \in D(s)$}
+    \If{$\textsc{MCSatisfied}(P,s)$} \label{li:check-satisfied}
     \State // \textit{don't propagate to successors}
     \State \textbf{continue} 
     \EndIf
-    \If{\textsc{EndOfScope}(P,s)} \label{li:end-scope}
-      \State // \textit{must call not satisfied, so we have a leak}
-      \State report a must-call violation for $s'$
+    \If{$s$ is $\mathit{exit}$} \label{li:end-scope}
+      \State // \textit{must call not satisfied}
+      \State report a must-call violation for $e$
     \Else
     \State $kill \gets \{\textsc{LHS}(s)\}$ \label{li:compute-kill}
     \State $gen \gets$ \textsc{CreatesAlias}(P,s) ? $\{\textsc{LHS}(s)\}$ : $\emptyset$ \label{li:compute-gen} 
@@ -271,14 +268,15 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
     \State $N \gets (P - kill) \cup gen$ \label{li:compute-new-mc-aliases}
     \State // \textit{we even propagate }$\emptyset$\textit{; error reported at exit}
     \State $\forall t \in \mathit{succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle
-    N, s' \rangle$ \label{li:prop-to-succs}
+    N, e \rangle$ \label{li:prop-to-succs}
     \EndIf
+    \EndFor
   \EndWhile \label{li:alg-loop-end}
   \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
+\begin{algorithm}[h]
   \caption{Basic helper functions for \Cref{alg:consistency-checker}.
   \todo{Please define every helper function used in this algorithm.  At
     lease give its signature and its specification as a comment, though
@@ -333,31 +331,53 @@ one for aliases.}
 
 Given inferred \<@MustCall> obligations and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that \<@MustCall> methods for each object
-are always invoked before the object becomes unreachable.  Pseudocode for a
-basic version of this checker appears in \Cref{alg:consistency-checker}, with
-helper functions in \Cref{alg:helpers}.  \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
+are always invoked before the object becomes unreachable.  This property is
+checked via an intra-procedural dataflow analysis.  Here, we present
+a simple, sound version of the analysis, with limited reasoning about aliasing.
+\Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
 describe enhancements to this basic approach.
 
-The checker performs an intra-procedural dataflow analysis over a control-flow
-graph with nodes from a set $\mathit{Statement}$ of statements and a
-$\mathit{succ}$ relation capturing control flow.  For simplicity, the pseudocode
-assumes statements are normalized to a three-address form, with all intermediate
-results stored in temporary variables.  \todo{give a list of all types of
-statements: assignment, method call, return, field write?}
+\paragraph{Language} For clarity, we present the analysis over a simple
+assignment language in three-address form.  An expression $e$ in the language is
+a variable \<p>, a field read \<p.f>, or a method call \<m(p1,p2,\ldots)> (constructor
+calls are treated as method calls).  A statement $s$ takes one of three forms:
+\<p = e>, where $e$ is an expression; \<p.f = p'>, for a field write; or
+\<return p>.  Methods are represented by a control-flow graph (CFG), where nodes
+are statements, and edges indicate possible control flow.  We elide control-flow
+predicates as the consistency checker is path-insensitive. \manu{Martin, is the
+must-call checker path-sensitive?  As in, does it interpret null checks?}
 
-The analysis computes a set of facts $D(s)$ holding before each statement $s$. A
-fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables and
-$s'$ is a call statement with\todo{A statement never has a \<@MustCall>
-  obligation.  Only an expression does.}
-a non-empty \<@MustCall> obligation. The variables
-in $P$ are \emph{must aliases} for $s'$\todo{A statement doesn't have
-  aliases of it.  Do you mean of the result of evaluating the statement?
-  or the lhs if the statement is an assignment?}:  hence, satisfying the \<@MustCall>
-obligation for \emph{any} variable in $P$ is sufficient to satisfy the
-obligation for $s'$.  (\Cref{sec:must-call-choice} generalizes the
-set of variables held in $P$.)  If the analysis discovers a fact $\langle P, s'
-\rangle$ reaching the method exit, then the \<@MustCall> obligation for $s'$ may
-not be satisfied, and an error is reported.
+\paragraph{Pseudocode} \Cref{alg:consistency-checker} gives pseudocode for the
+basic version of our checker, with helper functions in \Cref{alg:helpers}.  At a
+high level, the dataflow analysis computes a map $D$ from each statement $s$ to
+a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is a set of
+variables and $e$ is either a method call expression or a formal parameter
+variable.  The meaning of $D$ is as follows: if $\langle P, e \rangle \in D(s)$,
+then $e$ has a non-empty \<@MustCall> type, and all variables in $P$ are
+\emph{must aliases} for the value of $e$ at the program point before $s$.  By
+computing $D$, the analysis can find any $e$ that does not have its \<@MustCall>
+obligation fulfilled by some must-alias and report an error.
+
+% The checker performs an intra-procedural dataflow analysis over a control-flow
+% graph with nodes from a set $\mathit{Statement}$ of statements and a
+% $\mathit{succ}$ relation capturing control flow.  For simplicity, the pseudocode
+% assumes statements are normalized to a three-address form, with all intermediate
+% results stored in temporary variables.  \todo{give a list of all types of
+% statements: assignment, method call, return, field write?}
+
+% The analysis computes a set of facts $D(s)$ holding before each statement $s$. A
+% fact is of the form $\langle P, s' \rangle$, where $P$ is a set of variables and
+% $s'$ is a call statement with\todo{A statement never has a \<@MustCall>
+%   obligation.  Only an expression does.}
+% a non-empty \<@MustCall> obligation. The variables
+% in $P$ are \emph{must aliases} for $s'$\todo{A statement doesn't have
+%   aliases of it.  Do you mean of the result of evaluating the statement?
+%   or the lhs if the statement is an assignment?}:  hence, satisfying the \<@MustCall>
+% obligation for \emph{any} variable in $P$ is sufficient to satisfy the
+% obligation for $s'$.  (\Cref{sec:must-call-choice} generalizes the
+% set of variables held in $P$.)  If the analysis discovers a fact $\langle P, s'
+% \rangle$ reaching the method exit, then the \<@MustCall> obligation for $s'$ may
+% not be satisfied, and an error is reported.
 
 \Cref{alg:consistency-checker} proceeds as follows.
 Lines~\ref{li:start-init}--\ref{li:end-init} initialize $D$ by scanning for
