@@ -316,7 +316,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \EndProcedure
   \State // \textit{Does s introduce a must alias for a var in P?}
   \Procedure{CreatesAlias}{$P,s$}
-    \State \Return $s$ is of the form \lstinline{p = q} $\wedge\ \lstinline{q} \in P$
+    \State \Return $s$ is of the form \texttt{p = q} $\wedge\ \mathtt{q} \in P$
   \EndProcedure
   \end{algorithmic}
 
