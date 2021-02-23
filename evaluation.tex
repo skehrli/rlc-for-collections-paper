@@ -61,49 +61,63 @@ We selected \todo{3} popular open-source projects with significant
 usage of resources, by
 convenience.\todo{Did we actually choose them because previous work used
   them?  If so, say that.}
-
+\todo{Did we choose the latest commit at the time of our experiments?  Some
+  table should give the commit SHAs and dates.}
 For each project, we selected and analyzed one module
-containing significant uses of leakable resources.  We modified the
-build system of each project to run our analysis. We manually
+containing significant uses of leakable resources.
+
+We modified the
+build system to run our analysis on the module. We manually
 annotated each program with must-call, called-methods, and ownership
 annotations (the ``Annos'' column in \cref{tab:case-studies}). We also
 made small, semantics-preserving changes to the programs---such as adding
 \<final> modifiers to fields---to reduce
 false positives from our analysis. We report the total number
 of new lines we added to each project, including warning suppressions,
-annotations, and code changes (``Diff size''). We then examined
-all remaining warnings, and categorized them as either true positives
-(``TPs'')---real resource leaks---or false positives (``FPs'')---code
-that our system was insufficiently precise to prove correct.
-% We should probably remove this, since we've only done what, one?
-We also measured the number of
-possible resource leaks in each project (``resources'') and the run
-time of our analysis (``Wall-clock time'') using \todo{a standardized
-  machine similar to the one used in the Grapple paper}. Each case
-study took one author a few hours; most of the time was spent
-understanding the code under analysis, which no authors were familiar
-with before beginning; writing corresponding annotations where
-appropriate; and reasoning through warnings emitted by the tool by
-hand to determine whether a warning was a true or false positive.  The
+annotations, and code changes (``Diff size'').
+We ran the analysis and manually categorized each warning as revealing a
+real resource leak (a true positive or TP) or as correct code that our
+system is unable to prove correct (a false positive or FP\@).
+The
 annotated versions of the case study programs are available at
 \todo{an anonymized fork of the projects}.
+Each case
+study took one author a few hours\todo{If it only took a few hours, why
+  didn't we add another dozen programs?  We don't necessarily have to
+  answer that question explicitly, but reviewers will ask it of themselves
+  and may reduce their trust in us as a result.}; most of the time was spent
+understanding the code under analysis (which no authors were familiar
+with before beginning), to write annotations and especially to categorize
+warnings as true or false positives.
 
-\Cref{tab:case-studies} summarizes the results. \Tool finds multiple
-serious resource leak bugs in all of the examined programs. Though
-there are more false positives than true positives in each program,
+We also measured the number of
+possible resource leaks in each project (``resources'').\todo{What is the
+  definition of this?  The static number of resource allocations in the module?}
+We measured the run time,
+as the median of 5 trials on
+% This is Mike's home machine.  Are there any other relevant parameters?
+a machine with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
+
+
+\Cref{tab:case-studies} summarizes the results. \Tool found multiple
+serious resource leak bugs in every program. \Tool issues
+more false positives than true positives in each program, but
 the number is small enough to be examined by a single developer in a
-few hours---a small price to pay for knowing that the program is
+few hours.  This is a small price to pay for knowing that the program is
 definitely free of resource leaks.  The annotations in the program are
 also a benefit: as a form of machine-checked documentation, they
 express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
+
+\todo{Do the following!}
 
 \todo{Describe some examples of true and false positives.}
 \todo{Definitely discuss our confirmed bug that Narges got fixed.}
 
 \todo{Discuss the annotations that had to be written by hand.}
 
-\subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
+\subsection{Evaluating our enhancements}
+% \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
 \label{sec:ablation}
 
 % a line in tab:ablation
@@ -293,3 +307,5 @@ invoked twice to overwrite \<f>.  (Maybe this can be discussed under
 modularity?)  Bottom line, it makes TP and FP numbers between the approaches not
 100\% comparable.  --Manu}
 
+
+% LocalWords:  LoC SHAs leakable
