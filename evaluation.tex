@@ -15,11 +15,11 @@
     % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
     % > git diff --stat origin/with-checker -- '*.java'
     % then subtract the deleted lines from the added lines and report that number
-    ``Diff size'' is the number of lines changed in our annotated version,
-    as reported by \<git diff>. Note that this includes warning suppressions
-    and annotations.
     ``Annos.'' is number of manually-written annotations to specify
     existing methods.
+    ``LoC changed'' is the number of lines of program text changed
+    in our annotated version, not including changes that will be erased at compile time
+    (such as annotations or warning suppressions).
     ``TPs'' is true positives.
     ``FPs'' is false positives, where the our analysis could not
   guarantee that the call was safe, but manual analysis revealed that no
@@ -28,9 +28,9 @@
   \label{tab:case-studies}
 
   \begin{tabular}{@{}lrr|rr|rrr@{}}
-    Project                                    &      LoC      & Resources   &  Diff size  & Annos.   & TPs      & FPs & Wall-clock time      \\
+    Project                                    &      LoC      & Resources   &  Annos.  &  LoC changed   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server} {94,872}        {232}       {192}          {99}       {10}       {47}   {?}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server} {94,872}        {232}       {99}          {12}       {10}       {47}   {?}        \\
     \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
     \osstablerow{apache/hbase:?}                       {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
     \hline
@@ -72,8 +72,9 @@ We also
 made small, semantics-preserving changes to the programs---such as adding
 \<final> modifiers to fields---to reduce
 false positives from our analysis. We report the total number
-of new lines we added to each project, including warning suppressions,
-annotations, and code changes (``Diff size'').
+of new lines we added to each project, excluding changes
+that have no impact on run-time behavior, such as annotations, comments,
+warning suppressions, or import statements (``LoC changed'').
 We ran the analysis and manually categorized each warning as revealing a
 real resource leak (a true positive or TP) or as correct code that our
 system is unable to prove correct (a false positive or FP\@).
