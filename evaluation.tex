@@ -126,15 +126,15 @@ cannot become out-of-date if the checker is passing.
 \newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 
 \begin{table}
-  \caption{An ablation study on the contribution of the lightweight
-    ownership (\emph{without-LO}), resource aliasing (\emph{without-RA}),
-    and accumulation frames (\emph{without-AF})
+  \caption{The contribution of the lightweight
+    ownership (\emph{without LO}), resource aliasing (\emph{without RA}),
+    and accumulation frames (\emph{without AF})
     features in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
   
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
-    Project                              &      \emph{without-LO} & \emph{without-RA} & \emph{without-AF}     \\
+    Project                              &      without LO & without RA & without AF     \\
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
     \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
@@ -189,32 +189,36 @@ the compiler, it scales well and runs quickly. It contains
 heuristics for ownership, resource wrappers, and resource-free
 closeables, among others; these are all hard-coded into the analysis and cannot
 be adjusted by the user. It does not support annotations to express
-specifications in these categories that differ from its defaults.
-It supports two levels of analysis: detecting ``potential'' resource
-leaks and detecting high-confidence resource leaks; the former reports a superset
-of the warnings reported by the latter.
+specifications that differ from its defaults.
+It supports two levels of analysis: detecting high-confidence resource
+leaks and detecting ``potential'' resource
+leaks (a superset of high-confidence resource leaks).
 
 We ran this analysis on the same version of Zookeeper's zookeeper-server
-module that we ran \Tool on in \cref{sec:case-studies}. Once Eclipse
-has loaded the project, the analysis runs nearly instantaneously---it
-clearly satisfies the ``fast'' criterion. It is also easy to apply it to
-existing legacy code---it clearly satisfies the ``applicable'' criterion.
+module that we ran \Tool on in \cref{sec:case-studies}. It is easy to apply
+to legacy code and it is fast---nearly instantaneous once Eclipse
+has loaded the project.
 
-In potential leak mode on zookeeper-server, the analysis reported 180
-warnings.  Of these, we determined that 7 were true positives
-(corresponding to true positives that our sound tool found), and the
-other 173 were false positives.  The most common cause of false
+In ``high-confidence'' mode on zookeeper-server, Eclipse reports 3
+warnings: 1 true positive (thus, it misses 9 real resource leaks) and 2
+false positives.
+In ``potential'' leak mode, the analysis reported 180
+warnings:  7 true positives (it misses 3 real resource leaks) and 173 false
+positives.
+The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
 at method invocations: each call to a method such as
 \<Socket\#getInputStream> that returns a resource-alias resulted in a
-warning.  Of the true positives, 4 of 7 were warnings about such
+warning.
+\todo{Mike suggests deleting the following text.  It sounds bitter and
+  petty.  If we want to say anything about this, then fix the bugs and
+  re-run the analysis (this should be easy to do), and we can report with
+  confidence.  But don't include speculation as the following does.}
+Of the true positives, 4 of 7 were warnings about such
 calls, where the aliased resource really was not closed on all
 paths. We believe that these true positives are ``accidental''---the
 analysis found them because of its imprecise handling of resource
-aliases, not because it detected the actual leak. When the
-``potential'' resource leaks are ignored in ``high-confidence'' mode,
-Eclipse reports only 3 warnings: one true positive and two false
-positives.
+aliases, not because it detected the actual leak.
 
 These results demonstrate that the Eclipse bug-finder is unsound in both
 modes: it misses at least 3 real warnings that our tool found when detecting
@@ -268,36 +272,35 @@ contains four checkers, of which two (IO and Socket) are useful for detecting
 resource leaks.
 
 The Grapple authors have already evaluated their tool on earlier
-versions of the case study programs in
-\cref{sec:case-studies}~\cite{zuo2019grapple}.  Unfortunately, we were
-not able to run the tool on the same versions of the case study
-programs that we used in \cref{sec:case-studies}.
-\todo{Manu: explain why we couldn't/didn't try to do this.}
-We reproduce their key findings below in \cref{tab:grapple}
-(their run time numbers were computed on a commodity machine
-\todo{similar to} the commodity machine we used to compute the run
-times that appear in \cref{tab:case-studies}, but includes the cost
-of running all four of their checkers).
+versions\todo{Why don't we repeat our experiments on those earlier
+  versions?  This should be easy to do since it's only a few hours of work
+  and we are now familiar with the programs.}
+ of the case study programs in
+\cref{sec:case-studies}~\cite{zuo2019grapple}.
+\Cref{tab:grapple} reproduces their claimed results.
+Unfortunately, we were
+neither able to reproduce their results, nor to run Grapple on current
+versions of the programs.  Although the Grapple framework is publicly
+available, the analysis is not, and the Grapple authors did not provide it
+to us when we requested it.  We also requested Grapple's output, so that we
+could compare it to our tool, but the Grapple authors did not provide that
+to us either.
 
-Compared to our approach, Grapple is slower (due to its reliance on
-an expensive whole-program alias analysis, which \Tool avoids by using
-an accumulation analysis), similarly applicable to legacy
-code, less sound, and much more precise--our type-based approach
-trades off precision and a small amount of user effort (i.e. to write annotations)
-for soundness and speed. In this way, \Tool and Grapple are complementary:
-they optimize for different criteria. Users should select the tool whose
-priorities match their own.
+Note that the TP and FP numbers not perfectly comparable between a modular
+and a whole-program analysis.
+Our tool reports violations of a user-supplied specification
+(which takes effort to write but provides documentation benefits), so it
+can ensure that a library is correct for all possible clients.  By
+contrast, Grapple checks a library in the context of one specific client.
 
-\todo{We should note here (or somewhere) the difference in the nature of the bugs
-reported between our approach and whole-program analysis, in particular for
-class-level issues.  E.g., if there is a class with a method \<m()> that
-overwrites a non-final \<@Owning> field \<f> without checking its nullness
-first, we consider that a true positive bug, since the abstraction is not
-provably free of leaks.  In a whole-program analysis approach, a true positive
-would typically have to be an actual control-flow path on which \<m()> is
-invoked twice to overwrite \<f>.  (Maybe this can be discussed under
-modularity?)  Bottom line, it makes TP and FP numbers between the approaches not
-100\% comparable.  --Manu}
+Our approach is complementary to Grapple's.
+Compared to our approach, Grapple is unsound, 
+much more precise,
+% equally applicable to legacy code,
+and much slower (due to its reliance on
+an expensive whole-program alias analysis).
+Different users can select whichever tool matches
+their priorities.
 
 
 % LocalWords:  LoC SHAs leakable
