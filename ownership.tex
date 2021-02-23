@@ -39,21 +39,31 @@ through an alias, and hence has a minimal impact on the programming model.
 \label{sec:ownership-transfer}
 
 With lightweight ownership, a parameter, return, or field type may be annotated
-as either \<@Owning> or \<@NotOwning>.  In
-the Must Call Consistency Checker (\Cref{sec:must-call-invoked}), if a tracked
-variable $p$ is assigned to such an \<@Owning> location $l$, we \emph{transfer}
-ownership to $l$, and $p$'s \<@MustCall> obligation
-is treated as satisfied. Specifically, the condition checked by
-\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is enhanced as follows
-\todo{sloppy, make it better}:
-\todo{Show the entire definition, not just its body.  Use that convention throughout.}
+as either \<@Owning> or \<@NotOwning>.  In the Must Call Consistency Checker
+(\Cref{sec:must-call-invoked}), if a tracked variable $p$ is assigned to such an
+\<@Owning> location $l$, we \emph{transfer} ownership to $l$, and $p$'s
+\<@MustCall> obligation is treated as satisfied. Assume we have a helper
+function $\textsc{OwningReturn}(CFG)$ that checks if the return type of $CFG$'s
+method is \<@Owning>, and $\textsc{PassedAsOwningParam}(s,p)$ that checks if $s$ is a
+call that passes $p$ to an \<@Owning> parameter of the callee.  Then,
+\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is enhanced to handle
+ownership transfer as follows:
 
-\begin{align*}
-  \exists p \in P &.\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}\\
-                  &\vee (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \mathrm{method\ return\ type\ is\ } \mathtt{@Owning})\\
-                  &\vee (s \mathrm{\ is\ } \mathtt{q\ =\ foo(...,p,...)} \wedge \mathtt{p} \mathrm{\ is\ } \mathtt{@Owning})\\
-                  &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
-\end{align*}
+% \begin{align*}
+%   \exists p \in P &.\ \textsc{MCBefore}(p,s) \subseteq \textsc{CMBefore(p,s)}\\
+%                   &\vee (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \mathrm{method\ return\ type\ is\ } \mathtt{@Owning})\\
+%                   &\vee (s \mathrm{\ is\ } \mathtt{q\ =\ foo(...,p,...)} \wedge \mathtt{p} \mathrm{\ is\ } \mathtt{@Owning})\\
+%                   &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
+% \end{align*}
+\begin{algorithmic}
+  \Procedure{MCSatisfied}{$P,s$}
+  \State \Return $\exists p \in P .\ \textsc{MCAfter}(p,s) \subseteq \textsc{CMAfter}(p,s)$ \newline
+  \hspace*{6em} $\vee\ (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \textsc{OwningReturn}(CFG))$ \newline
+  \hspace*{6em} $\vee\ \textsc{PassedAsOwningParam}(s,p)$\newline
+  \hspace*{6em} $\vee\ (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})$
+  \EndProcedure
+
+\end{algorithmic}
 
 To ensure soundness, the analysis must ensure that the \<@MustCall> obligation
 of any \<@Owning> location is satisfied.  We discuss checking of \<@Owning>
@@ -75,15 +85,16 @@ return types ensures sound handling of unannotated third-party libraries: any
 object returned from such a library will be tracked by default, and the checker
 never assumes that passing an object to a library will satisfy its obligation.
 
-Programmers can override defaults by writing explicit \<@Owning> and
-\<@NotOwning> annotations on method returns, parameters, and fields
-(though never both at the same location---they are
-mutually exclusive).  Such explicit annotations can \emph{never}
-compromise soundness.  If such an annotation is incorrect (e.g., an \<@Owning>
-annotation on a reference that does not satisfy an obligation), it can only lead
-to false positives, not false negatives.  Due to this design, there is great
-scope for creating inference techniques for lightweight ownership, to further
-reduce annotation burden; we plan to pursue such techniques in future work.
+Programmers can override defaults by writing explicit \<@Owning> or
+\<@NotOwning> annotations on method returns (constructors are always
+\<@Owning>), parameters, and fields (though never both at the same
+location---they are mutually exclusive).  Such explicit annotations can
+\emph{never} compromise soundness.  If such an annotation is incorrect (e.g., an
+\<@Owning> annotation on a reference that does not satisfy an obligation), it
+can only lead to false positives, not false negatives.  Due to this design,
+there is great scope for creating inference techniques for lightweight
+ownership, to further reduce annotation burden; we plan to pursue such
+techniques in future work.
 \todo{pointer to further discussion in evaluation?}
 
 \todo{Add a para comparing to Rust ownership and the like?}
