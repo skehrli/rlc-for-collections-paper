@@ -119,9 +119,11 @@ The type system supports two qualifiers: \<@MustCall> and
 \<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
 methods that the annotated type must call. The type
 \<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
-deallocated, \<obj.a()> should be called. Our implementation
-uses flow-sensitive local type inference (implemented via a dataflow algorithm)
-to propagate these facts. For example, in \cref{fig:example}, the
+deallocated, \<obj.a()> should be called.
+% Our implementation
+% uses flow-sensitive local type inference (implemented via a dataflow algorithm)
+% to propagate these facts.
+For example, in \cref{fig:example}, the
 the \<new> expression has type \<@MustCall("close")>, and therefore
 \<s> has that type after the assignment.
 
