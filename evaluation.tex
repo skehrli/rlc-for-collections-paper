@@ -114,11 +114,40 @@ also a benefit: as a form of machine-checked documentation, they
 express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
 
-\todo{Do the following!}
+\subsubsection{True and false positive examples}
+\label{sec:examples}
+
+This section describes some examples of warnings reported by \Tool
+in our case studies.\looseness=-1
+
+\begin{figure}
+  \lstinputlisting{hadoop-bug.txt}
+  \caption{A true positive that we found in Hadoop. Our pull request
+    to fix this bug was accepted by Hadoop's developers.}
+  \label{fig:hadoop-bug}
+\end{figure}
+
+\Cref{fig:hadoop-bug} contains code from Hadoop. If an IO error
+occurs any time between the allocation of the \<FileInputStream>
+in the first line of the method and the \<return> statement
+at the end---for example, if \<wrapInputStreamForCompression>
+throws an \<IOException>, as it is specified to do---then the
+only reference to the stream is lost. Hadoop's developers
+assigned this bug a priorty of ``Major'' and accepted our patch
+\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}.
+One developer suggested using a try-with-resources statement instead
+of our patch (which catches the exception and closes the stream),
+but we pointed out that that was impossible in this case, since
+the file needs to remain open if no error occurs so that it can be
+returned.
 
 \todo{Describe some examples of true and false positives.}
 \todo{Definitely discuss our confirmed bug that Narges got fixed.}
 
+\subsubsection{Annotations and code changes}
+\label{sec:anno-burden}
+
+\todo{Make a table of the reasons we made code changes, and discuss it here.}
 \todo{Discuss the annotations that had to be written by hand.}
 
 \subsection{Evaluating our enhancements}

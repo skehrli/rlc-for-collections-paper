@@ -4,6 +4,12 @@
 \newcommand{\todo}[1]{{\color{red}\bfseries [[#1]]}}
 \newcommand{\manu}[1]{\todo{#1 --MS}}
 
+\newif\ifanonymous
+\anonymoustrue
+
+\newcommand{\anonurl}[1]{\ifanonymous URL removed for anonymity.\else\url{#1}\fi}
+\newcommand{\footnoteanonurl}[1]{\footnote{\anonurl{#1}}}
+
 %% The anonymized name of the tool
 %% TODO: come up with a better name.
 \newcommand{\toolanon}{Plumber\xspace}
