@@ -110,7 +110,7 @@ reduce annotation burden; we plan to pursue such techniques in future work.
   a \<@MustCall> obligation on clients using the $C$ class.  Condition 2 is
   checked by requiring an appropriate \<@EnsuresCalledMethods> annotation on
   $C.n$, which is then enforced by the Called Methods
-  Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...}
+  Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...} \todo{Mention RAII}
 
   While this scheme suffices for verifying final fields, we observed many cases
   in our benchmarks of non-final fields with \<@MustCall> obligations.  Checking
