@@ -204,7 +204,7 @@ In ``high-confidence'' mode on zookeeper-server, Eclipse reports 3
 warnings: 1 true positive (thus, it misses 9 real resource leaks) and 2
 false positives.
 In ``potential'' leak mode, the analysis reported 180
-warnings:  7 true positives (it misses 3 real resource leaks) and 173 false
+warnings:  3 true positives (it misses 7 real resource leaks) and 177 false
 positives.
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
@@ -213,7 +213,7 @@ at method invocations: each call to a method such as
 warning.
 
 These results demonstrate that the Eclipse bug-finder is unsound in both
-modes: it misses at least 3 real warnings that our tool found when detecting
+modes: it misses at least 7 real warnings that our tool found when detecting
 potential leaks. Further, the analysis is imprecise: in potential leak mode,
 the vast majority of warnings are false positives. However, this sort
 of bug-finding tool does have two advantages: it is fast, and it is easily
