@@ -102,7 +102,7 @@ descriptor cannot be closed directly---it has no \<close()> method.
 However, the descriptor can be passed to a wrapper stream such as
 \<FileOutputStream>, which if closed satisfies the original must-call
 obligation.  By adding \mccannot annotations to the \<getFd()> method, our
-technique can verify code like the below (from \todo{which case study?}):
+technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoop-random-access-file}):
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   RandomAccessFile file = new RandomAccessFile(myFile, "rws");
   FileInputStream in = null;
