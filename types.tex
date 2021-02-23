@@ -312,8 +312,14 @@ calls are treated as method calls), or \<null>.  A statement $s$ takes one of th
 \<p = e>, where $e$ is an expression; \<p.f = p'>, for a field write; or
 \<return p>.  Methods are represented by a control-flow graph (CFG), where nodes
 are statements, and edges indicate possible control flow.  We elide control-flow
-predicates as the consistency checker is path-insensitive. \manu{Martin, is the
-must-call checker path-sensitive?  As in, does it interpret null checks?}
+predicates as the consistency checker is path-insensitive.
+
+% \manu{Martin, is the
+% must-call checker path-sensitive?  As in, does it interpret null checks?}
+% Martin's response: the MustCall Checker is path sensitive in the sense that
+% it's flow sensitive and the type of null is bottom. It doesn't have any
+% special logic to handle null checks, but it ``does the right thing''
+% anyway.
 
 \paragraph{Pseudocode} \Cref{alg:consistency-checker} gives pseudocode for the
 basic version of our checker, with helper functions in \Cref{alg:helpers}.  At a
