@@ -359,9 +359,11 @@ basic version of our checker, with helper functions in \Cref{alg:helpers}.  At a
 high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
 a set of variables and $e$ is either a method call expression or a formal
-parameter variable\todo{Why not just store a MustCall type?}.  The meaning of $D$ is as follows: if $\langle P, e \rangle
+parameter variable\todo{Why not just store a MustCall type?}.  The meaning
+of $D$ is as follows: if $\langle P, e \rangle
 \in D(s)$, then $e$ has a non-empty\todo{Is the fact that it is non-empty
-  important?  Storing only those feels more like an implementation optimization.} \<@MustCall> type, and all variables in $P$
+  important?  Storing only non-empty ones feels more like an implementation
+  optimization.} \<@MustCall> type, and all variables in $P$
 are \emph{must aliases} for the value of $e$ at the program point before $s$.
 Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$
