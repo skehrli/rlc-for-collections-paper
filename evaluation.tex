@@ -24,10 +24,11 @@
     ``FPs'' is false positives, where the our analysis could not
   guarantee that the call was safe, but manual analysis revealed that no
   run-time failure was possible.
-    ``RT(s)'' is the wall-clock run time of our analysis.}
+  % ``RT(s)'' is the wall-clock run time of our analysis.
+  }
   \label{tab:case-studies}
 
-  \begin{tabular}{@{}lrr|rr|rrr@{}}
+  \begin{tabular}{@{}lrr|rr|rr|r@{}}
     Project                                    &      LoC      & Resources   &  Annos.  &  LoC changed   & TPs      & FPs & Wall-clock time      \\
     \hline
     \osstablerow{apache/zookeeper:zookeeper-server} {94,872}        {232}       {99}          {12}       {10}       {47}   {?}        \\
