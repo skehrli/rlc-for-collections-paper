@@ -91,33 +91,35 @@ no verification for them is needed: placing them anywhere in the program is soun
 
 The Must Call Consistency Checker treats calls to \<@ResetMustCall> obligations
 as creating a fresh obligation to check, since they mark the beginning of a new
-accumulation frame.  In terms of our pseudocode, assume we have a routine
-\textsc{RMCTargets}$(s)$ that works as follows: if $s$ is a
-statement invoking a \<@ResetMustCall> method $m$, \textsc{RMCTargets}$(s)$ returns
-the actual parameters at $s$ corresponding to $m$'s \<@ResetMustCall> targets;
-otherwise, it returns $\emptyset$.  Then, we can update the
-\textsc{MCObligations} procedure of \Cref{alg:helpers} to handle
-\<@ResetMustCall> as follows:
+accumulation frame.  In terms of our \Cref{sec:must-call-invoked} pseudocode,
+assume we have a routine \textsc{RMCTargets}$(c)$ that returns a set of all
+variables $p_i$ passed to a \<@ResetMustCall> target parameter of the method
+invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
+\Cref{alg:helpers} to handle \<@ResetMustCall> as follows:
 \begin{algorithmic}
-  \Procedure{MCObligations}{$s$}
-    \State $r \gets \textsc{RMCTargets}(s)$
-    \If{$s$ is \lstinline{p = foo(...)} and \textsc{HasMCReturn}(\lstinline{foo})}
-      \State $r \gets r \cup \{p\}$
-    \EndIf
-    \State \Return $r$
-    \EndProcedure
+  \Procedure{FactsFromCall}{$s$}
+  \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
+  \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{RMCTargets}(c) \}$ \newline
+  \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
+  \EndProcedure
+  \end{algorithmic}
+Additionally, if during analysis, we encounter a call to a \<@ResetMustCall>
+method on a variable $p \in P$, we treat the \<@MustCall>
+obligation of $p$ as \emph{satisfied}.  I.e., we add one more
+case to the extended \textsc{MCSatisfiedAfter} predicate given in
+\Cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
+\begin{algorithmic}
+  \Procedure{MCSatisfiedAfter}{$P,s$}
+  \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{RMCTargets}(s)$
+  \EndProcedure
 \end{algorithmic}
-Also, if during the data flow analysis, we encounter a call to a \<@ResetMustCall>
-method on a tracked variable $v$, we treat the existing \<@MustCall>
-obligation of $v$ as \emph{satisfied} before the call.  I.e., we add one more
-case to the \textsc{MCSatisfied} predicate given in
-\Cref{sec:ownership-transfer} ($[\ldots]$ stands for the previous cases):
-\begin{align*}
-  \exists p \in P &.\ [\ldots] \vee p \in \textsc{RMCTargets}(s)
-\end{align*}
+
+% \begin{align*}
+%   \exists p \in P &.\ [\ldots] \vee p \in \textsc{RMCTargets}(s)
+% \end{align*}
 This is sound since the checker creates a new obligation for calls to
 \<@ResetMustCall> methods, and the must-call obligation inference ensures the
-\<@MustCall> type for the target will have a superset of any methods present
+\<@MustCall> type for the target will have a \emph{superset} of any methods present
 before the call.
 There is one exception to this consistency check: if an \<@ResetMustCall>
 method is invoked within a method that also has an \<@ResetMustCall> annotation
