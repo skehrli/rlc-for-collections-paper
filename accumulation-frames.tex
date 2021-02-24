@@ -132,9 +132,8 @@ above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with an \<@ResetMustCall> that targets that object.
-\item when a non-final, owning field $f$ is re-assigned at statement $s$, its \<@MustCall> obligation
-must be satisfied before $s$ (i.e., $\textsc{MCBefore}(f,s) \subseteq
-\textsc{CMBefore}(f,s)$, see \Cref{alg:helpers}).
+\item when a non-final, owning field $f$ is re-assigned at statement $s$, its inferred \<@MustCall> obligation
+must be contained in its \<@CalledMethods> type at the program point before $s$.
 \end{itemize}
 \noindent
 Together, these rules guarantee that any re-assignment to a non-final, owning
