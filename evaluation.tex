@@ -120,7 +120,7 @@ in the first line of the method and the \<return> statement
 at the end---for example, if \<wrapInputStreamForCompression>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
-assigned this bug a priorty of ``Major'' and accepted our
+assigned this bug a priority of ``Major'' and accepted our
 patch\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}.
 One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
@@ -131,7 +131,7 @@ reports and fixes?}
 
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
-  \caption{Code from the ZooKeeper case study that causes our tool
+  \caption{Code from the ZooKeeper case study that causes \Tool
   to issue a false positive.}
   \label{fig:zookeeper-optional}
 \end{figure}
@@ -248,9 +248,9 @@ more false positives, because it lacks
 lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
 accumulation frames (\cref{sec:reset-must-call}).
-each contribute to \Tool's precision by eliminating false positives.
-To show the contribution of each enhancement, we individually disabled each
-feature and re-ran the experiments in \cref{sec:case-studies}.
+Each contributes to \Tool's precision by eliminating false positives.
+To evaluate the contribution of each enhancement, we individually disabled each
+feature and re-ran the experiments of \cref{sec:case-studies}.
 Since all variants are sound (no false
 negatives), any difference in warnings is a false positive that is prevented
 by the feature.
@@ -260,9 +260,10 @@ ownership and resource aliases prevents more false positive errors than the tota
 of remaining false positives on the Zookeeper and HBase benchmarks, for example. \todo{Strengthen
   this claim when we have the results from the other benchmarks.} Though
 the accumulation frame feature prevents fewer errors (and even adds two more errors
-on HBase, which includes only two \ResetMustCall annotations), it permits verification
+on HBase, at its two \ResetMustCall annotations), it permits verification
 of a complex pattern---the use of non-final, owning fields---that is used in a
-few critical places in each benchmark.
+few critical places in each\todo{Does this mean, ``in the other two
+  benchmarks but not in HBase''?} benchmark.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
@@ -273,12 +274,18 @@ In this section, we compare our approach with two other modern tools that detect
 \begin{itemize}
 \item The analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
   for detecting resource leaks in the Eclipse IDE~\cite{ecj-resource-leak}.
-\item Grapple~\cite{zuo2019grapple}, an unsound, typestate-based analysis that represents a significant, recent
+\item Grapple~\cite{zuo2019grapple} represents a significant, recent
   improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
 \end{itemize}
-Each tool is evaluated against the four criteria that we proposed in \cref{sec:intro}
-for an ideal resource-leak detector: analysis speed, applicability to legacy code, soundness (i.e. ability
-to detect all errors), and precision (i.e. lack of false positive warnings).
+In brief, both tools are unsound.
+Both tools are applicable to legacy code. % , without the need to write annotations.
+Eclipse is very fast nearly instantaneous) and suffers 67--98\% false
+positives. % while missing 70-90\% of resource leaks.
+According to its authors, Grapple is precise (13\% false positive rate) but orders
+of magnitude slower than \Tool.
+Different users can select whichever tool matches
+their priorities.
+
 
 \subsubsection{Eclipse}
 \label{sec:eclipse}
@@ -307,13 +314,11 @@ warnings:  3 true positives (it misses 7 real resource leaks) and 177 false
 positives.
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
-at method invocations: each call to a method such as
-\<Socket\#getInputStream> that returns a resource-alias resulted in a
-warning.
+at method invocations: it warned at each call that returns a resource-alias, such as
+\<Socket\#getInputStream>.
 
 These results demonstrate that the Eclipse bug-finder is unsound in both
-modes: it misses at least 7 real warnings that our tool found when detecting
-potential leaks. Further, the analysis is imprecise: in potential leak mode,
+modes: it misses 7 real warnings. Further, the analysis is imprecise: in potential leak mode,
 the vast majority of warnings are false positives. However, this sort
 of bug-finding tool does have two advantages: it is fast, and it is easily
 applicable to legacy code. Compared to our tool, the Eclipse analysis
@@ -371,11 +376,9 @@ versions\todo{Why don't we repeat our experiments on those earlier
 \Cref{tab:grapple} reproduces their claimed results.
 Unfortunately, we were
 neither able to reproduce their results, nor to run Grapple on current
-versions of the programs.  Although the Grapple framework is publicly
-available, the analysis is not, and the Grapple authors did not provide it
-to us when we requested it.  We also requested Grapple's output, so that we
-could compare it to our tool, but the Grapple authors did not provide that
-to us either.
+versions of the programs.
+We requested the analysis and Grapple's output, but as of this writing
+(months later) the Grapple authors have not yet provided them.
 
 Note that the TP and FP numbers not perfectly comparable between a modular
 and a whole-program analysis.
@@ -383,15 +386,5 @@ Our tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
 can ensure that a library is correct for all possible clients.  By
 contrast, Grapple checks a library in the context of one specific client.
-
-Our approach is complementary to Grapple's.
-Compared to our approach, Grapple is unsound, 
-much more precise,
-% equally applicable to legacy code,
-and much slower (due to its reliance on
-an expensive whole-program alias analysis).
-Different users can select whichever tool matches
-their priorities.
-
 
 % LocalWords:  LoC SHAs leakable
