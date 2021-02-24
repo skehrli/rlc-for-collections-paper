@@ -49,6 +49,7 @@ enhance its precision.
 
 \begin{figure}
   \lstinputlisting{simplesocket.txt}
+  \prefigcaption
   \caption{A safe use of a \<Socket> resource.}
   \label{fig:example}
 \end{figure}
@@ -86,8 +87,7 @@ it is deallocated.
   ;
 
 \end{tikzpicture}
-%\precaptionspace
-%\vspace{0.25cm}
+% \prefigcaption
 \caption{Part of the \<MustCall> type hierarchy for representing which methods must be
   called; the full hierarchy is a
   lattice of arbitrary size.
@@ -400,6 +400,7 @@ if (...) {
   \begin{minipage}{0.55\columnwidth}
   \includegraphics[width=\linewidth,keepaspectratio]{cfg-example.pdf}
   \end{minipage}
+  \prefigcaption
   \caption{Example code and CFG for illustrating \cref{alg:consistency-checker}.
     ``\<e>'' is ``\<new Socket(...)>''.
 } \label{fig:cfg-example}

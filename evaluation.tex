@@ -30,6 +30,7 @@
   % ``RT(s)'' is the wall-clock run time of our analysis.
   }
   \label{tab:case-studies}
+  \posttablecaption
 
   \begin{tabular}{@{}lrr|rr|rr|r@{}}
     Project                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
@@ -111,6 +112,7 @@ in our case studies.\looseness=-1
 
 \begin{figure}
   \lstinputlisting{hadoop-bug.txt}
+  \prefigcaption
   \caption{A true positive that \Tool found in Hadoop. Our pull request
     to fix this bug was accepted by Hadoop's developers.}
   \label{fig:hadoop-bug}
@@ -134,6 +136,7 @@ is non-trivial.  dunno if we have space, but if we do, we may want to include}
 
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
+  \prefigcaption
   \caption{Code from the ZooKeeper case study that causes \Tool
   to issue a false positive.}
   \label{fig:zookeeper-optional}
@@ -164,10 +167,12 @@ complex path conditions.
 \label{sec:annos}
 
 \begin{table}
-  \caption{The number of annotations that we wrote, across all
-    three case studies.\todo{Order these by how common they are, once
+  \caption{The total number of annotations that we wrote.
+    % , across all three case studies.
+  \todo{Order these by how common they are, once
     we have final counts.}}
   \label{tab:annos}
+  \posttablecaption
   % counts @InheritableMustCall as @MustCall, for simplicity of presentation
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Annotation          &      Count     \\
@@ -223,6 +228,7 @@ variable.
     features in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
+  \posttablecaption
   
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
     Project                              &      without LO & without RA & without AF     \\
@@ -333,9 +339,9 @@ and less precise.
 \newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 
 \begin{table}
-  \caption{Key findings on the Grapple tool's performance on the case study
-    programs in \cref{sec:case-studies}; reproduced from~\cite{zuo2019grapple}.}
+  \caption{The Grapple tool's performance; reproduced from~\cite{zuo2019grapple}.}
   \label{tab:grapple}
+  \posttablecaption
   
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
     Project                              &  TPs    &    FPs         & Run time      \\
