@@ -51,7 +51,7 @@ Our evaluation has three parts:
 \item an evaluation of the contributions of our enhancements:
   lightweight ownership, % (\cref{sec:lightweight-ownership}),
   resource aliasing, % (\cref{sec:must-call-choice}), and
-  accumulation frames % (\cref{sec:reset-must-call})
+  and obligation creation % (\cref{sec:reset-must-call})
   (\cref{sec:ablation}).
 \item a comparison to previous leak detectors:  both heuristic bug-finding
   and heavy-weight whole-program
@@ -199,7 +199,7 @@ made 6 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
 %
 In 3 places, we added \<final> to a field; this allows our checker to verify it without using
-accumulation frames, which have stricter requirements.
+the rules for non-final owning field given in \cref{sec:reset-must-call}, which are stricter.
 %
 In 2 places, we re-ordered a \<try>
 statement and a null-check; this makes reasoning more precise by removing an
@@ -213,7 +213,6 @@ variable.
 
 
 \subsection{Evaluating our enhancements}
-% \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
 \label{sec:ablation}
 
 % a line in tab:ablation
