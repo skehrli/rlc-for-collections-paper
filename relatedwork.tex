@@ -74,14 +74,42 @@ the Android activity lifecycle~\cite{amalfitano2020memories}.
 Testing can only show the presence of bugs, not their absence;
 \Tool verifies that no resource leaks are present.
 
-\subsection{Ownership tracking}
+\subsection{Ownership tracking in Rust}
 
-\todo{Manu: Describe relationship to rust's borrow checker.}
+Ownership type systems generally impose control over aliasing, which in turn
+enables guaranteeing other high-level properties, like absence of resource
+leaks.  We do not discuss the vast literature on ownership type systems here
+(see Clarke et al.~\cite{clarke2013ownership} for a survey).  Instead, we focus
+on ownership types in Rust~\cite{klabnik2018rust} as the most popular
+practical example of using ownership to prevent resource leaks.
 
-\todo{Is there other relevant related work? Find out.}
+For a detailed overview of ownership in Rust, see Chapter 4
+of~\cite{klabnik2018rust}; we give a brief overview here.  In Rust, ownership is
+used to manage both memory and other resources.  Every value associated with a
+resource must have a \emph{unique} owning pointer, and when an owning pointer's
+lifetime ends, the value is ``dropped,'' ensuring all resources are freed.  The
+power of Rust's ownership type system is that it not only statically prevents
+resource leaks, but also other important issues like ``double-free'' bugs
+(releasing a resource more than once) and ``use-after-free'' bugs (using a
+resource after it has been released). However, this power comes with a cost; to
+enforce uniqueness, non-owning pointers must be invalidated after an assignment,
+and can no longer be used to perform any operations.  Maintaining multiple
+usable pointers to a value requires use of language features like references and
+borrowing, and even then, borrowed pointers have restricted privileges.
 
-\todo{We may want to cite RAII (\url{https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization}) and
-state that our handling of owning fields can verify it.}
+\Tool has less power than Rust's ownership types; it cannot prevent resources
+from being closed multiple times or being used after they are closed.  However,
+\Tool's lightweight ownership annotations impose \emph{no} restrictions on
+aliasing; they are simply an aid to help the tool identify how a resource will
+be closed.  Hence, lightweight ownership is much better suited to preventing
+resource leaks in existing, large Java code bases; adapting such programs to use
+a full Rust-style ownership type system would be an enormous and impractical
+undertaking.
+
+%\todo{Is there other relevant related work? Find out.}
+
+%\todo{We may want to cite RAII (\url{https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization}) and
+%state that our handling of owning fields can verify it.}
 
 \subsection{Typestate analysis}
 \label{sec:rw-typestate}
