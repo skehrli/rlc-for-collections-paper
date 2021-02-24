@@ -33,13 +33,13 @@
   \posttablecaption
 
   \begin{tabular}{@{}lrr|rr|rr|r@{}}
-    Project                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
+    Project:module                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {5}       {10}       {47}   {1m 24s}        \\
-    \osstablerow{apache/hadoop:hdfs}               {151,233}        {366}       {171}          {7}        {21}        {36}   {16m 21s}        \\
-    \osstablerow{apache/hbase:server}            {170,569}        {62}          {45}          {1}        {11}        {21}   {7m 45s}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server}       {45,410}        {232}       {99}          {5}       {10}       {47}   {1m 24s}        \\
+    \osstablerow{apache/hadoop:hadoop-hdfs-project}       {151,233}        {366}       {129}          {7}        {21}        {36}   {16m 21s}        \\
+    \osstablerow{apache/hbase:hbase-server, hbase-client} {170,569}        {62}          {35}          {1}        {11}        {21}   {7m 45s}        \\
     \hline
-    \osstablerow{\textbf{Total}}                 {563,855}        {660}         {315}          {13}        {42}       {104}   {-}        \\
+    \osstablerow{\textbf{Total}}                          {563,855}        {660}         {263}          {13}        {42}       {104}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -63,7 +63,7 @@ Our evaluation has three parts:
 \label{sec:case-studies}
 
 We selected 3 popular open-source projects that were analyzed by prior work~\cite{zuo2019grapple}.
-For each project, we selected and analyzed one module
+For each project, we selected and analyzed one or two modules
 containing significant uses of leakable resources. We used
 the latest version of the source code that was available
 when we analyzed the code.
@@ -166,24 +166,37 @@ complex path conditions.
 \subsubsection{Annotations and code changes}
 \label{sec:annos}
 
+%% Here's the full table of annotations:
+
+%% -              ZK  HB  HD  Total
+%% Owning         28  12  43  83
+%% NotOwning      8   5   17  30  = 113
+%% ----
+%% MustCall       13  7   11  31
+%% InheritableMC  0   2   7   9   = 40
+%% ---
+%% MustCallChoice 6   0   28  34
+%% PolyMustCall   4   0   0   4   = 38
+%% ---
+%% ResetMustCall  19  5   5   29  = 29
+%% ---
+%% EnsuresCM      21  4   18  43  = 43
+
+
 \begin{table}
-  \caption{The total number of annotations that we wrote.
-    % , across all three case studies.
-  \todo{Order these by how common they are, once
-    we have final counts.}}
+  \caption{The total number of annotations that we wrote.}
   \label{tab:annos}
   \posttablecaption
   % counts @InheritableMustCall as @MustCall, for simplicity of presentation
+  % counts @polymustcall with MCC, for the same reason
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
-    Annotation          &      Count     \\
+    Annotation                           &      Count     \\
     \hline
-    \<@Owning>          &      42+      \\
-    \<@NotOwning>       &      13+       \\
-    \<@MustCallAlias>   &      16+       \\
-    \CreateObligation   &      21+      \\
-    \<@EnsuresCalledMethods> & 25+      \\
-    \<@MustCall>        &      23+      \\
-    \<@PolyMustCall>    &      4+       \\
+    \<@Owning> and \<@NotOwning>            &      83/30   \\
+    \<@EnsuresCalledMethods>                &      43       \\
+    \<@MustCall>                            &      40       \\
+    \<@MustCallAlias>                       &      38       \\
+    \CreateObligation                       &      29      \\
   \end{tabularx}
 \end{table}
 
