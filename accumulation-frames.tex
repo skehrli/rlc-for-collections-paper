@@ -10,21 +10,28 @@ A post-condition annotation,
 \ResetMustCall,
 indicates for which expression an obligation is created.
 
-At each call to a method annotated as \ResetMustCall\<(\emph{expr})>, \Tool removes any
+At each call to a method annotated as \ResetMustCall\<(>\|expr|\<)>, \Tool removes any
 inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
 % methods that are not in its the current must-call type, they are added.
-Since \ResetMustCall annotations can only increase its target's obligations,
+Since a \ResetMustCall annotation can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
-The Must Call Consistency Checker treats calls to \ResetMustCall obligations
-as creating a fresh obligation to check.  In terms of our \cref{sec:must-call-invoked} pseudocode,
+When checking a call to a method annotated as
+\ResetMustCall\<(>\|expr|\<)>,
+(1) \Tool\todo{can we be more specific about which component of \Tool?} treats the \MustCall
+obligation of \|expr| as \emph{satisfied},
+and (2)
+the Must Call Consistency Checker creates a fresh obligation to check.
+%
+In terms of our \cref{sec:must-call-invoked} pseudocode,
 assume we have\todo{Put this in the pseudocode} a routine \textsc{COTargets}$(c)$ that returns a set of all
 variables $p_i$ passed to a \ResetMustCall target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
 \cref{alg:helpers} to handle \ResetMustCall as follows:
+\todo{I suggest putting the base code first and the addition with COTargets second.}
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets s.LHS, c \gets s.RHS$
@@ -33,9 +40,7 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
   \EndProcedure
   \end{algorithmic}
 \todo{Cut or move this text, making all the pseudocode a single \<algorithmic> block.}
-Additionally, if during analysis, we encounter a call to a \ResetMustCall
-method on a variable $p \in P$, \Tool treats the \MustCall
-obligation of $p$ as \emph{satisfied}.  I.e., we add one more
+I.e., we add one more
 case to the extended \textsc{MCSatisfiedAfter} predicate given in
 \cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
 \begin{algorithmic}
@@ -48,7 +53,7 @@ This is sound since the checker creates a new obligation for calls to
 \ResetMustCall methods, and the must-call obligation inference ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
-There is one exception to this consistency check: if an \ResetMustCall
+There is one exception to this consistency check: if a \ResetMustCall
 method is invoked within a method that also has an \ResetMustCall annotation
 with the same target---thus imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.
@@ -56,7 +61,7 @@ the new obligation can be treated as satisfied immediately.
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
-\ResetMustCall allows us to verify uses of non-final fields
+\ResetMustCall allows \Tool to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -76,7 +81,7 @@ the following example:
   }
 \end{lstlisting}
 In the lifetime of a \<SocketContainer> object, \<sock>
-might be re-assigned arbitrarily-many times: once at each
+might be re-assigned arbitrarily many times: once at each
 call to \<reconnect()>. This code is safe, however: \<reconnect()>
 ensures that \<sock> is closed before re-assigning it.
 
@@ -100,10 +105,10 @@ are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
-\ResetMustCall can also handle cases where an object, when created,
-does not actually allocate a resource---but it will allocate a resource
-later in its lifecycle. Consider, for example, the no-argument constructor
-to \<java.net.Socket>. This constructor does not actually allocate an
+\ResetMustCall can also handle cases where object creation
+does not allocate a resource, but the object will allocate a resource
+later in its lifecycle. Consider the no-argument constructor
+to \<java.net.Socket>. This constructor does not allocate an
 operating system-level socket, but instead just creates the container
 object, which permits the programmer to e.g. set options which will be used
 when creating the physical socket. When such a \<Socket> is created, it
@@ -114,7 +119,7 @@ or \<connect()> that the must-call obligation is created.
 If all \<Socket>s are treated as \MustCall\<(\{"close"\})>,
 a false positive would be reported
 in code such as the below, which operates on an unconnected socket
-(simplified from real code in Apache Zookeeper~\todo{cite}):
+(simplified from real code in Apache Zookeeper\todo{cite}):
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   static Socket createSocket() {
@@ -126,13 +131,14 @@ in code such as the below, which operates on an unconnected socket
 
 The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called. Using \ResetMustCall,
-however, we can soundly show that this socket is not connected:
+however, \Tool can soundly show that this socket is not connected:
 the type of the result of the no-argument constructor can be
 treated as \<@MustCall(\{\})>, and \ResetMustCall annotations
 on the methods that actually allocate the socket---\<connect()> or
 \<bind()>---enforce that as soon as the socket is actually open,
 it is treated as \<@MustCall("close")>.
 
-% LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall
-% LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied
-% LocalWords:  createSocket setSoTimeout SocketException
+% LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall expr
+% LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied COTargets
+% LocalWords:  createSocket setSoTimeout SocketException FactsFromCall
+% LocalWords:  MCSatisfiedAfter CreateObligation isClosed CalledMethods
