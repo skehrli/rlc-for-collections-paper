@@ -39,12 +39,11 @@ enhance its precision.
 \item an accumulation type system (\cref{sec:called-methods}) computes
   a conservative \emph{underapproximation} of the set of methods that are
   actually called on each expression in the program.
-\item a dataflow analysis (\cref{sec:must-call-invoked}) computes a set
-  of owning pointers that contains at least one pointer for every resource.
-  For each owning pointer, it checks the consistency of the results
-  of the two type systems at each program
-  point at which the pointer might go out of scope:
-  if any method that might need to be called is not in the set of methods
+\item a dataflow analysis (\cref{sec:must-call-invoked}) computes, for
+  every resource, a nonempty set of owning pointers.
+  For each program point at which any owning pointer might go out of scope,
+  it checks the consistency of the results of the two above-mentioned type systems.
+  If any method that might need to be called is not in the set of methods
   that definitely were called, it issues an error.
 \end{enumerate}
 
@@ -107,12 +106,9 @@ a given object before the object is deallocated.
 This type system is general---it is not specific
 to resource leaks.
 
-\todo{It would be helpful to explicitly state whether this analysis is an
-  accumulation analysis.}
-
 The Must Call type system supports two qualifiers: \<@MustCall> and
 \<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
-methods that the annotated type must call. The type
+methods that the annotated type must call. The declaration
 \<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
 deallocated, \<obj.a()> might need to be called.
 \Tool conservatively requires all these methods to be called,
@@ -120,7 +116,7 @@ and it issues a warning if they are not.
 
 For example, consider \cref{fig:example}. The expression \<null> has type
 \<@MustCall(\{\})>---it has no obligations
-to call particular methods---and \<s> has that type after its initialization.
+to call particular methods---so \<s> has that type after its initialization.
 The \<new> expression has type \<@MustCall("close")>, and therefore
 \<s> has that type after the assignment.
 At the start of the \<finally> block, where both values for \<s> flow,
@@ -139,17 +135,16 @@ the type of \<s> is their least upper bound, which is \<@MustCall("close")>.
 
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \<@MustCallUnknown>.
-The subtyping relationship is for two \<@MustCall> types with sets
-of required methods $A$ and $B$ is:
+The subtyping relationship for \<@MustCall> types is:
 \trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
 
 The default type qualifier is \<@MustCall(\{\})> for base types without a
-programmer-written type qualifier.\footnote{For unannotated local variables,
-  flow-sensitive type refinement infers a type.}
+programmer-written type qualifier.\footnote{For unannotated local variable types,
+  flow-sensitive type refinement infers a qualifier.}
 % By writing another type qualifier on the declaration of a class, a
 % user can specify a different default for raw types of that class.
 Our implementation
-provides JDK annotations to require that every 
+provides JDK annotations which require that every 
 \<Closeable> object must have the \<close()> method called before
 it is deallocated.
 
@@ -171,12 +166,12 @@ it is deallocated.
 \subsection{A type system for called methods}
 \label{sec:called-methods}
 
-\todo{Mike changed ``our types system for inferring'' to ``our type system
-  tracks''.  Let's lay off use of ``infer'' because it implies we have
-  written a type inference tool, when what we have really written is a
-  type-checking tool (with local type inference).}
+% \todo{Mike changed ``our types system for inferring'' to ``our type system
+%   tracks''.  Let's lay off use of ``infer'' because it implies we have
+%   written a type inference tool, when what we have really written is a
+%   type-checking tool (with local type inference).}
 
-The Checked Methods type system tracks a conservative underapproximation of which methods have been called on an object.
+The Called Methods type system tracks a conservative underapproximation of which methods have been called on an object.
 It is an extension of a similar system
 from prior work~\cite{KelloggRSSE2020}.  The primary difference in our
 version is that a method is considered called even if it throws an
@@ -220,18 +215,19 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \label{sec:must-call-invoked}
 
 \begin{algorithm}[t]
-  \caption{Finding unfulfilled \<@MustCall> obligations.
-  }
+  \caption{Finding unfulfilled \<@MustCall> obligations in a method.
+    \Cref{alg:helpers} defines helper functions.}
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
   \State \textit{// CFG represents a method}
   \Procedure{FindMissedCalls}{$CFG$}
   \State \textit{// D maps each statement s to a set of dataflow facts reaching}
-  \State \textit{// s.  Each fact is of the form } $\langle P, e \rangle$\textit{, where P is a set of variables}
-  \State \textit{// and e is an expression with a must-call obligation.}
+  \State \textit{// s.  Each fact is of the form $\langle P, e \rangle$, where P is a set of variables}
+  \State \textit{// that must-alias e and e is an expression with a nonempty}
+  \State \textit{// must-call obligation.}
   \State $D \gets \textsc{InitialObligations}(CFG)$ \label{li:call-initial-obs}
   \While{$D$ has not reached fixed point}
-    \For{$s \in \mathit{CFG.Statements}$, $\langle P, e \rangle \in D(s)$}
+    \For{$s \in \mathit{CFG.statements}$, $\langle P, e \rangle \in D(s)$}
     \If{$s$ is $\mathit{exit}$} \label{li:end-scope}
       \State report a must-call violation for $e$
     \ElsIf{$\neg \textsc{MCSatisfiedAfter}(P,s)$} \label{li:check-satisfied}
@@ -250,13 +246,13 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \EndWhile \label{li:alg-loop-end}
   \EndProcedure
   \Procedure{InitialObligations}{$CFG$}
-  \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{CFG.Statements} \}$\label{li:start-init}
-  \For{each $p \in \mathit{CFG.Formals}$, $t \in \mathit{CFG.succ}(\mathit{CFG.entry})$}\label{li:init-formals}
+  \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{CFG.statements} \}$\label{li:start-init}
+  \For{$p \in \mathit{CFG.formals}$, $t \in \mathit{CFG.succ}(\mathit{CFG.entry})$}\label{li:init-formals}
     \If{$\textsc{HasObligation}(p)$}
       \State $D(t) \gets D(t) \cup \langle \{p\}, p \rangle$
     \EndIf
   \EndFor \label{li:end-init-formals}
-  \For{$s \in \mathit{CFG.Statements}$ of the form \lstinline{p = m(p1, p2, ...)}} \label{li:init-calls}
+  \For{$s \in \mathit{CFG.statements}$ of the form \lstinline{p = m(p1, p2, ...)}} \label{li:init-calls}
     \State $\forall t \in \mathit{CFG.succ}(s)\ .\ D(t) \leftarrow D(t) \cup \textsc{FactsFromCall}(s)$
   \EndFor  \label{li:end-init}
   \State \Return $D$
@@ -266,11 +262,13 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 \begin{algorithm}[h]
   \caption{Helper functions for \Cref{alg:consistency-checker}.  Except for
-  \textsc{MCAfter} and \textsc{CMAfter}, all procedures will be replaced with
+  \textsc{MCAfter} and \textsc{CMAfter}, all procedures\todo{Previous
+    sentence called these ``functions''.  Be consistent.} will be replaced with
   more sophisticated versions in
   \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}.
-  \todo{Just
-  merge with other algorithm? In any case ensure they are next to each other.}
+  \todo{MCSatisfiedAfter uses $\subseteq$ for types, which is a type
+    error.  Should MCAfter and CMAfter return sets instead?}
+  \todo{Ensure the two algorithms appear on the same page.}
 }
   \label{alg:helpers}
   \begin{algorithmic}[1]
@@ -291,13 +289,13 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \EndProcedure
   \State // \textit{Does s introduce a must alias for a var in P?}
   \Procedure{CreatesAlias}{$P,s$}
-    \State \Return $s$ is of the form \texttt{p = q} $\wedge\ \mathtt{q} \in P$
+    \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}
   \EndProcedure
   \Procedure{MCAfter}{$p,s$}
-  \State \Return \<@MustCall> type of $p$ at program point after $s$
+  \State \Return \<@MustCall> type of $p$ after program point $s$
   \EndProcedure
   \Procedure{CMAfter}{$p,s$}
-  \State \Return \<@CalledMethods> type of $p$ at program point after $s$
+  \State \Return \<@CalledMethods> type of $p$ after program point $s$
   \EndProcedure
   \end{algorithmic}
 
@@ -313,8 +311,8 @@ describe enhancements to this basic approach.
 
 \paragraph{Language} For simplicity, we present the analysis over a simple
 assignment language in three-address form.  An expression $e$ in the language is
-a variable \<p>, a field read \<p.f>, a method call \<m(p1,p2,\ldots)> (constructor
-calls are treated as method calls), or \<null>.  A statement $s$ takes one of three forms:
+\<null>, a variable \<p>, a field read \<p.f>, or a method call \<m(p1,p2,\ldots)> (constructor
+calls are treated as method calls).  A statement $s$ takes one of three forms:
 \<p = e>, where $e$ is an expression; \<p.f = p'>, for a field write; or
 \<return p>.  Methods are represented by a control-flow graph (CFG) where nodes
 are statements and edges indicate possible control flow.  We elide control-flow
@@ -327,23 +325,22 @@ predicates as the consistency checker is path-insensitive.
 % special logic to handle null checks, but it ``does the right thing''
 % anyway.
 
-For a method CFG, $\mathit{CFG.Statements}$ is the statements,
-$\mathit{CFG.Formals}$ is the formal parameters,
+For a method CFG, $\mathit{CFG.statements}$ is the statements,
+$\mathit{CFG.formals}$ is the formal parameters,
 $\mathit{CFG.entry}$ is its entry node,
 $\mathit{CFG.exit}$ is its exit node, and
 $\mathit{CFG.succ}$ is its successor relation.
 For a statement
 $s$ of the form \<p = e>, $\textsc{LHS}(s) = p$ and $\textsc{RHS}(s) = e$.
+\todo{I suggest we change LHS(s) to s.LHS and RHS(s) to s.RHS.} 
 
 \paragraph{Pseudocode} \Cref{alg:consistency-checker} gives pseudocode for the
 basic version of our checker, with helper functions in \Cref{alg:helpers}.  At a
 high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
-a set of variables and $e$ is an expression\todo{Why not just store a MustCall type?} \manu{It's useful
-for error reporting, and I think that is useful to show even in pseudocode.
-Also, I don't think just storing a MustCall type simplifies things much}.  The meaning
+a set of variables and $e$ is an expression.  The meaning
 of $D$ is as follows: if $\langle P, e \rangle
-\in D(s)$, then $e$ has a \<@MustCall> type, and all variables in $P$
+\in D(s)$, then $e$ has a nonempty \<@MustCall> type, and all variables in $P$
 are \emph{must aliases} for the value of $e$ at the program point before $s$.
 Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$
@@ -352,17 +349,22 @@ that does not have its \<@MustCall> obligation fulfilled, and reports an error.
 \Cref{alg:consistency-checker} proceeds as follows.  \Cref{li:call-initial-obs}
 invokes \textsc{InitialObligations} to initialize $D$.  Only formal parameters
 or method calls can introduce obligations to be checked (not reads of local
-variables or fields); \textsc{InitialObligations}
-(lines~\ref{li:start-init}--\ref{li:end-init}) scans for such expressions and
-adds initial facts as appropriate, using helper functions \textsc{HasObligation}
-and \textsc{FactsFromCall} from \Cref{alg:helpers}.  The fixed-point loop then
-proceeds by iterating over all facts $\langle P, e \rangle$ present in any
+variables or fields).
+% \textsc{InitialObligations}
+% (lines~\ref{li:start-init}--\ref{li:end-init}) scans for such expressions and
+% adds initial facts as appropriate, using helper functions \textsc{HasObligation}
+% and \textsc{FactsFromCall} from \Cref{alg:helpers}.
+The fixed-point loop
+iterates over all facts $\langle P, e \rangle$ present in any
 $D(s)$ (our implementation uses a worklist for efficiency).  If $s$ is the exit
 node (\cref{li:end-scope}), the obligation for $e$ has not been satisfied, and
 an error is reported.  Otherwise, the algorithm checks if the obligation for $e$
 is satisfied after $s$ (\cref{li:check-satisfied}).  For the basic checker,
 \textsc{MCSatisfiedAfter} in \Cref{alg:helpers} checks whether there is some $p
-\in P$ such that after $s$, the \<@MustCall> type for $p$ is contained in its
+\in P$ such that after $s$, the \<@MustCall> type for $p$ is contained
+in\todo{Types aren't contained in types; you mean that the set that is an
+  argument to the type is a subset of the set that is an argument to the
+  other type.} its
 \<@CalledMethods> type; if true, all \<@MustCall> methods have already been
 invoked.  This check uses the inferred flow-sensitive \<@MustCall> and
 \<@CalledMethods> qualifiers described in
@@ -384,23 +386,28 @@ $s$.  The gen set is computed by checking if $s$ creates a new must alias for
 some variable in $P$, using the \textsc{CreatesAlias} routine.  Since our
 analysis is accumulation, \textsc{CreatesAlias} could simply return false
 without impacting soundness.  In \Cref{alg:helpers}, \textsc{CreatesAlias}
-handles the case of a variable copy where the right-hand side is in $P$ 
-(\Cref{sec:must-call-choice} presents more sophisticated handling). Finally,
+handles the case of a variable copy where the right-hand side is in $P$.
+(\Cref{sec:must-call-choice} presents more sophisticated handling.) Finally,
 \Cref{li:prop-to-succs} propagates the new fact to successors.  The process
 continues until $D$ reaches a fixed point.
 
 \begin{figure}
   \includegraphics[width=0.65\columnwidth,keepaspectratio]{cfg-example.pdf}
-  \caption{Example CFG for illustrating \Cref{alg:consistency-checker}.}
-  \todo{Note where an error is reported.} \manu{Unclear how to do this?  The
-  error is detected at the exit, but the ``location'' of the error is node 1.}
+  \caption{Example CFG for illustrating \Cref{alg:consistency-checker}.
+    ``\<e>'' is ``\<new Socket(...)>''.
+}
+  \todo{Use individual labels for the two arrows leading to the exit node.
+    Put the labels on the outside (not between the two arrows), so there is no ambiguity about which
+    arrow a label is associated with.}
   \label{fig:cfg-example}
 \end{figure}
 
+\todo{I suggest putting this side-by-side in \cref{fig:cfg-example}, which
+  will reduce confusion and save space.}
 \paragraph{Example} To illustrate our analysis, \Cref{fig:cfg-example} shows a
 CFG for the following program in our small language (irrelevant details elided):
 \begin{lstlisting}[xleftmargin=5pt]
-1: s = makeSocket(addr,port); // new Socket(...) in Java
+1: s = makeSocket(...); // new Socket(...) in Java
    if (...) {
 2:    s = null;
    } else {
@@ -408,6 +415,8 @@ CFG for the following program in our small language (irrelevant details elided):
 4:    close(t); // t.close() in Java
    }
 \end{lstlisting}
+\todo{The above listing is ugly because the non-numbered lines are aligned
+  differently than the numbered lines.}
 \Cref{fig:cfg-example} shows the final state of $D$ before each node.
 For initialization, statement 1 introduces the fact $\langle \{ s \}, e
 \rangle$ (where $e$ is the \<new Socket(...)> call) to $D(2)$ and $D(3)$.  At
@@ -419,9 +428,9 @@ statement 4, $\textsc{MCSatisfiedAfter}(\{s,t\},\mathtt{close(t)})$ holds, so no
 facts are propagated from 4 to $\mathit{exit}$.
 
 At this point, we have described a sound checker for \<@MustCall> obligations.
-But for real code, this checker emits too many false positives.  In particular,
-the dataflow analysis is purely intra-procedural, and it will report errors in
-cases where obligations are satisfied via parameter passing, returns, or fields.
+% But for real code, this checker emits too many false positives.  In particular,
+% the dataflow analysis is purely intra-procedural, and it will report errors in
+% cases where obligations are satisfied via parameter passing, returns, or fields.
 Subsequent sections make the checker more precise.
 
 % The Ownership Checker is a simple worklist algorithm that operates over the CFG.
