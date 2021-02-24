@@ -38,8 +38,8 @@ required to avoid excessive false positive and duplicate
 reports~\cite{TorlakC10,ecj-resource-leak}.  Wrapper types in earlier
 work were handled with hard-coded specifications of which library
 types are wrappers and also a clustering technique to heuristically group warnings
-involving a resource and its wrappers~\cite{TorlakC10}.  \manu{is our technique better than
-clustering?  i think we will only report one issue per resource, but not 100\% sure.}
+involving a resource and its wrappers~\cite{TorlakC10}. Unlike heuristic clustering,
+our approach is sound.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
@@ -117,12 +117,12 @@ technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoo
     file.close();
   }
 \end{lstlisting}
-\Tool assigns \<FileDescriptor>\todo{This seems wrong; I think \Tool
-  assigns the type to the expression \<file.getFD()>.  Please clarify.}
-a special \MustCall\<(?)> type that cannot be satisfied by any calls,
-but which is converted back\todo{This ``is converted back'' seems magical.
-  Please explain how it happens.} into \MustCall\<("close")> when passed to the \MustCallAlias constructor
-of \<FileInputStream>. This capability enabled
+Because must-call obligation inference treats \MustCallAlias annotations
+polymorphically, regardless of the associated base type,
+\Tool can verify that the same resource is held by
+the \<Random\-Access\-File> and the \<File\-Input\-Stream>, even though it
+is passed via a class without a \<close()> method.
+This capability enabled
 verifying multiple code patterns in our case studies.
 
 \subsection{Verification of \MustCallAlias}\label{sec:MustCallAlias-verification}
