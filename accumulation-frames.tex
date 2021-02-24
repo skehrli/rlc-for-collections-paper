@@ -99,7 +99,7 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
 \cref{alg:helpers} to handle \ResetMustCall as follows:
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
-  \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
+  \State $p \gets s.LHS, c \gets s.RHS$
   \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{RMCTargets}(c) \}$ \newline
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure

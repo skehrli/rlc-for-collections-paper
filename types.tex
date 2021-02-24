@@ -232,8 +232,8 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
       \State report a must-call violation for $e$
     \ElsIf{$\neg \textsc{MCSatisfiedAfter}(P,s)$} \label{li:check-satisfied}
 %    \State // \textit{propagate to successors}
-    \State $kill \gets $ $s$ assigns a variable ? $\{\textsc{LHS}(s)\}$ : $\emptyset$ \label{li:compute-kill}
-    \State $gen \gets \textsc{CreatesAlias}(P,s)$ ? $\{\textsc{LHS}(s)\}$ : $\emptyset$ \label{li:compute-gen} 
+    \State $kill \gets $ $s$ assigns a variable ? $\{s.LHS\}$ : $\emptyset$ \label{li:compute-kill}
+    \State $gen \gets \textsc{CreatesAlias}(P,s)$ ? $\{s.LHS\}$ : $\emptyset$ \label{li:compute-gen} 
     % \If{$s$ is \lstinline{p = q} and $q \in P$}
     % \State $gen \gets \{p\}$
     % \EndIf
@@ -278,7 +278,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \EndProcedure
   \State // \textit{s must be a call statement p = m(p1, p2, ...)}
   \Procedure{FactsFromCall}{$s$}
-  \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
+  \State $p \gets s.LHS, c \gets s.RHS$
   \State \Return $\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c
   \rangle \}$ : $\emptyset$
   \EndProcedure
@@ -331,8 +331,7 @@ $\mathit{CFG.entry}$ is its entry node,
 $\mathit{CFG.exit}$ is its exit node, and
 $\mathit{CFG.succ}$ is its successor relation.
 For a statement
-$s$ of the form \<p = e>, $\textsc{LHS}(s) = p$ and $\textsc{RHS}(s) = e$.
-\todo{I suggest we change LHS(s) to s.LHS and RHS(s) to s.RHS.} 
+$s$ of the form \<p = e>, $s.LHS = p$ and $s.RHS = e$.
 
 \paragraph{Pseudocode} \Cref{alg:consistency-checker} gives pseudocode for the
 basic version of our checker, with helper functions in \cref{alg:helpers}.  At a
