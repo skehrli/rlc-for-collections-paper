@@ -1,13 +1,14 @@
 \section{Lightweight ownership transfer}
 \label{sec:lightweight-ownership}
 
-\todo{I suggest that throughout this section (including in the title), we
-  rename ``lightweight ownership tracking'' to ``lightweight ownership
-  transfer''.  Our system doesn't really \emph{track} ownership so much as
-  \emph{transfer} it.  Though I guess what is really being transferred is
-  MustCall obligations, so maybe that fact can inspire better naming.  Just
-  ``lightweight ownership'' is a bit too vague for my tastes, but I think
-  it is at least better than ``lightweight ownership tracking''.}
+%% MK: I think this is taken care of.
+%% \todo{I suggest that throughout this section (including in the title), we
+%%   rename ``lightweight ownership tracking'' to ``lightweight ownership
+%%   transfer''.  Our system doesn't really \emph{track} ownership so much as
+%%   \emph{transfer} it.  Though I guess what is really being transferred is
+%%   MustCall obligations, so maybe that fact can inspire better naming.  Just
+%%   ``lightweight ownership'' is a bit too vague for my tastes, but I think
+%%   it is at least better than ``lightweight ownership tracking''.}
 
 
 \Cref{sec:base-type-systems} describes a sound accumulation-based
@@ -16,16 +17,12 @@ positives caused by cases where a \MustCall obligation is satisfied
 in another procedure via parameter passing, return values, or object fields.
 Consider the following code that safely closes a \<Socket>:
 
-\todo{Although \MustCall\<("close")> is the default type for \<Socket t>, I
-  suggest we write it out explicitly, or write a comment, because I don't
-  think that will be obvious to readers.}
-
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   void example(String myHost, int myPort) {
     Socket s = new Socket(myHost, myPort);
     closeSocket(s);
   }
-  void closeSocket(@Owning Socket t) {
+  void closeSocket(@Owning @MustCall("close") Socket t) {
     t.close();
   }  
 \end{lstlisting}
@@ -39,7 +36,7 @@ goes out of scope in \<example()>.
 % however, the checker can determine that \<closeSocket> is the correct
 % place to check.
 
-This section describes a \emph{lightweight ownership trasnfer} technique for reducing
+This section describes a \emph{lightweight ownership transfer} technique for reducing
 false positives in such cases.
 Programmers write annotations such as \<@Owning> that transfer an
 obligation:  they take away an obligation
