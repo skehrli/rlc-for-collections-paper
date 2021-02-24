@@ -1,0 +1,14 @@
+Optional<ServerSocket> createServerSocket(...) {
+  ServerSocket serverSocket;
+  try {
+    if (...) {
+       serverSocket = new ServerSocket();
+       serverSocket.setReuseAddress(true);
+       serverSocket.bind(...);
+       return Optional.of(serverSocket);
+    }
+  } catch (IOException e) {
+    // log an error
+  }
+  return Optional.empty();
+}
