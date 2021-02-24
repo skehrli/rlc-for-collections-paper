@@ -199,9 +199,8 @@
   %% certain kinds of cycles in the typestate automaton.
 
   Our approach occupies a unique slice of the design space when compared
-  to prior approaches: it is sound, has relatively low overhead \manu{what kind
-  of overhead are we talking about?},
-  and runs quickly compared to heavier-weight approaches.
+  to prior approaches: it is sound
+  and runs quickly compared to heavier-weight\todo{mention ``unsound''?} approaches.
   We implemented our techniques for Java in an open-source tool
   called \Tool.
   \Tool revealed real bugs in widely-deployed software.
@@ -284,12 +283,12 @@
 
 \input{relatedwork}
 
-\section{Conclusions}
-
-Conclusions.
-
-\todo{Discuss future work on ownership inference, verifying that
-  builders always call build, whatever else we can think of.}
+% \section{Conclusions}
+% 
+% Conclusions.
+% 
+% \todo{Discuss future work on ownership inference, verifying that
+%   builders always call build, whatever else we can think of.}
 
 \begin{acks}
 Thanks to Rashmi Mudduluru, Ben Kushigian, Chandrakana Nandi, and the
