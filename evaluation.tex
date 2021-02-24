@@ -20,8 +20,8 @@
     % then subtract the deleted lines from the added lines and report that number
     ``Annos.'' is number of manually-written annotations to specify
     existing methods.
-    ``LoC changed'' is the number of lines of program text changed
-    in our annotated version, not including changes that will be erased at compile time
+    ``Code changes'' is the number of distinct changes program text we made,
+    not including changes that will be erased at compile time
     (such as annotations or warning suppressions).
     ``TPs'' is true positives.
     ``FPs'' is false positives, where the our analysis could not
@@ -32,9 +32,9 @@
   \label{tab:case-studies}
 
   \begin{tabular}{@{}lrr|rr|rr|r@{}}
-    Project                                    &      LoC      & Resources   &  Annos.  &  LoC changed   & TPs      & FPs & Wall-clock time      \\
+    Project                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {12}       {10}       {47}   {?}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {5}       {10}       {47}   {?}        \\
     \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
     \osstablerow{apache/hbase:server}            {410,181}        {62}            {42}          {1}        {11}        {21}   {?}        \\
     \hline
@@ -76,9 +76,10 @@ We also
 made small, semantics-preserving changes to the programs---such as adding
 \<final> modifiers to fields---to reduce
 false positives from our analysis. We report the total number
-of new lines we added to each project, excluding changes
+of such changes to each project, excluding changes
 that have no impact on run-time behavior, such as annotations, comments,
-warning suppressions, or import statements (``LoC changed'').
+warning suppressions, or import statements (``Code changes'').
+The annotations and code changes are discussed further in \cref{sec:annos}.
 We ran the analysis and manually categorized each warning as revealing a
 real resource leak (a true positive or TP) or as correct code that our
 system is unable to prove correct (a false positive or FP\@).
@@ -166,7 +167,7 @@ by \<null>, as some advocate~\cite{ErnstNothingIsBetterThanOptional},
 support Java generics as future work.
 
 \subsubsection{Annotations and code changes}
-\label{sec:anno-burden}
+\label{sec:annos}
 
 \begin{table}
   \caption{The number of annotations of each
@@ -193,8 +194,34 @@ the case studies pertained to ownership or the side-effects of procedures.
 \Cref{tab:annos} shows how many of each annotation we wrote, across all three
 case studies.
 
-\todo{Make a table of the reasons we made code changes, and discuss it here.}
+\begin{table}
+  \caption{The reasons we made code changes to the
+    case study programs.\todo{Order these by how common they are, once
+    we have final counts.}}
+  \label{tab:changes}
+  \begin{tabularx}{\columnwidth}{@{}Xr@{}}
+    Reason                            &      Count     \\
+    \hline
+    add \<final> to a field           &     2   \\
+    re-order \<try> and null-check    &     2   \\
+    extract method calls into local   &     1   \\
+  \end{tabularx}
+\end{table}
 
+When we made changes to the programs, they were small (the largest was \todo{4} lines)
+and localized. \Cref{tab:changes} gives the reasons that changes were made.
+\todo{These sentences must be in the same order as the table.}
+%
+Adding \<final> to a field allows our checker to verify it without using
+accumulation frames, which have stricter requirements.
+%
+Re-ordering a \<try>
+statement and a null-check makes reasoning more precise by removing an
+infeasible control-flow-graph edge.
+%
+Extracting multiple calls to a method
+into a single call that is assigned to a local variable allows the local
+variable to be reasoned about flow-sensitively.
 
 \subsection{Evaluating our enhancements}
 % \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
