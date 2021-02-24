@@ -117,12 +117,13 @@ never assumes that passing an object to an unannotated library will satisfy its 
   Additional class-level checking is required for \<@Owning>
   fields, as the code
   satisfying their \MustCall obligations nearly always spans multiple
-  procedures.  We first discuss the case of final fields,\footnote{This paper only
-  considers instance fields.  We have not observed\todo{How would we have
-    observed it?  Does this footnote want to say that our technique is sound but not
-    precise for static fields?} resource leaks
-  through static fields in our benchmarks, and we leave their handling to future
-  work.} which cannot be overwritten after initialization of the enclosing
+  procedures.  We first discuss the case of final fields,\footnote{\Tool
+    treats all static fields as non-owning, meaning that no assignment to one
+    can satisfy a must-call obligation. In our case studies, we did
+    not observe any assignments of expressions with non-empty must-call obligations
+    to static fields. We leave handling owning static fields to future work.
+  }
+  which cannot be overwritten after initialization of the enclosing
   object.  Here, our checking enforces the ``resource acquisition is
   initialization (RAII)'' programming idiom~\cite{raii}; a distinguished
   ``destructor''-like method \<d()> must ensure the field's \MustCall obligation is
