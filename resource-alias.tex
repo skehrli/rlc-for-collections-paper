@@ -50,7 +50,7 @@ satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
 \paragraph{Introducing resource aliases}
 To indicate where an API method creates a resource-alias
 relationship between distinct objects, the programmer writes a pair of 
-\mccannot qualifiers:  one on a parameter
+\MustCallAlias qualifiers:  one on a parameter
 of a method, and another on its return type.
 For example, one constructor of \<BufferedOutputStream> is:
 \begin{lstlisting}
@@ -58,8 +58,8 @@ For example, one constructor of \<BufferedOutputStream> is:
 \end{lstlisting}
 
 \noindent
-\mccannot annotations are verified, not trusted; see \cref{sec:mccannot-verification}.
-At a call site to a \mccannot-annotated method, there are two effects.
+\MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
+At a call site to a \MustCallAlias-annotated method, there are two effects.
 
 First, the method call's must-call type is the same as that of the
 argument.  If the type of the argument has no must-call obligations (like a
@@ -68,11 +68,11 @@ obligations, either.
 
 Second,
 the Must Call Consistency Checker
-(\Cref{sec:must-call-choice}) treats the \mccannot parameter and return as
+(\Cref{sec:must-call-choice}) treats the \MustCallAlias parameter and return as
 aliases.  For our \cref{sec:must-call-invoked} pseudocode, assume\todo{Put
   this in the code snippet below instead of in text.} we have a
 predicate $\textsc{IsMust\-CallAliasParam}(s,p)$ that is true iff $s$ is a call that
-passes $p$ to a \mccannot parameter of the callee.
+passes $p$ to a \MustCallAlias parameter of the callee.
 This modified
 version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliases:
 \begin{algorithmic}
@@ -85,7 +85,7 @@ version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliase
 % With this change, \cref{alg:consistency-checker} treats the
 % assigned variable $p$ of a call statement as a new alias (just like a local
 % variable alias) if a 
-% variable in $P$ is passed to some \mccannot parameter.
+% variable in $P$ is passed to some \MustCallAlias parameter.
 
 % As shown in
 % \cref{alg:consistency-checker}, the returned set is added to the set of tracked
@@ -95,7 +95,7 @@ version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliase
 
 \subsection{Beyond wrapper types}
 
-\mccannot can also be employed in scenarios beyond direct wrapper types, a
+\MustCallAlias can also be employed in scenarios beyond direct wrapper types, a
 capability not present in previous work on resource leak detection.  In certain cases, a resource gets
 shared between objects via an intermediate object that cannot directly close the
 resource.  For example, \<java.io.RandomAccessFile> (which must be closed) has
@@ -104,7 +104,7 @@ object for the file. This file
 descriptor cannot be closed directly---it has no \<close()> method.
 However, the descriptor can be passed to a wrapper stream such as
 \<FileOutputStream>, which if closed satisfies the original must-call
-obligation.  By adding \mccannot annotations to the \<getFd()> method, our
+obligation.  By adding \MustCallAlias annotations to the \<getFd()> method, our
 technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoop-random-access-file}):
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   RandomAccessFile file = new RandomAccessFile(myFile, "rws");
@@ -125,15 +125,15 @@ but which is converted back\todo{This ``is converted back'' seems magical.
 of \<FileInputStream>. This capability enabled
 verifying multiple code patterns in our case studies.
 
-\subsection{Verification of \mccannot}\label{sec:mccannot-verification}
+\subsection{Verification of \MustCallAlias}\label{sec:MustCallAlias-verification}
 
-A pair of \mccannot annotations on a method or constructor \<m>'s return type
+A pair of \MustCallAlias annotations on a method or constructor \<m>'s return type
 and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor in a
-  \mccannot position, and \<m> returns the result of that method
+  \MustCallAlias position, and \<m> returns the result of that method
   or the call is a \<super()> constructor call appropriately annotated
-  with \mccannot.
+  with \MustCallAlias.
 \item \<p> is stored in an \<@Owning> field of the class, and the
   class declaration has an \<@MustCall(>$A$\<)> annotation for some set
   of methods $A$, and at least one of the methods in $A$ has an
