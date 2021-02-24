@@ -82,14 +82,6 @@ annotated versions of the case study programs (including
 the commit hashes that we analyzed) are available at
 \todo{an anonymized fork of the projects}.
 % the ``Annos'' column in \cref{tab:case-studies}).
-% We also
-% made small, semantics-preserving changes to the programs---such as adding
-% \<final> modifiers to fields---to reduce
-% false positives from our analysis. We report the total number
-% of such changes to each project, excluding changes
-% that have no impact on run-time behavior, such as annotations, comments,
-% warning suppressions, or import statements (``Code changes'').
-% The annotations and code changes are discussed further in \cref{sec:annos}.
 (3) We iteratively ran the analysis to correct our annotations.
 We measured the run time
 as the median of 5 trials on
@@ -128,11 +120,11 @@ in the first line of the method and the \<return> statement
 at the end---for example, if \<wrapInputStreamForCompression>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
-assigned this bug a priorty of ``Major'' and accepted our patch
-\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}.
+assigned this bug a priorty of ``Major'' and accepted our
+patch\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}.
 One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
-but we pointed out that that was impossible in this case, since
+but we pointed out that
 the file needs to remain open if no error occurs so that it can be
 returned.
 
@@ -143,24 +135,26 @@ returned.
   \label{fig:zookeeper-optional}
 \end{figure}
 
-Most false positives were caused by unique coding patterns that
-each needed to be verified by hand; for example, a series of catch
-statements, each of which set an \<error> boolean to \<true>, followed
-by a \<finally> statement that closed the relevant socket if \<error>
-was true---\Tool reports an error because it cannot reason about arbitrarily
-complex path conditions. There were some similar patterns of false positives:
-for example, across all three benchmarks the most common (with 15 instances) false
-positive was caused by
+The most common false
+positive pattern (with 15 instances) was caused by
 a generic container object like \<java.util.Optional> taking ownership of a resource, such
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
-so we issue an error when \<Optional.of> is returned. In this case, the use
+so \Tool issues an error when \<Optional.of> is returned. In this case, the use
 of the \<Optional> class complicates the code; if \<Optional> was replaced
 by \<null>,
 %% Leave out of submitted version.
 % as some advocate~\cite{ErnstNothingIsBetterThanOptional},
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
+
+Most false positives were caused by unique coding patterns.
+One example is a series of catch
+statements, each of which set an \<error> boolean to \<true>, followed
+by a \<finally> statement that closed the relevant socket if \<error>
+was true.  \Tool reports an error because it cannot reason about arbitrarily
+complex path conditions.
+
 
 \subsubsection{Annotations and code changes}
 \label{sec:annos}
@@ -184,9 +178,9 @@ support Java generics as future work.
   \end{tabularx}
 \end{table}
 
-Because most relevant \MustCall and \<@CalledMethods> annotations
-are inferred intra-procedurally, most annotations that we had to write in
-the case studies pertained to ownership or the side-effects of procedures.
+% Because most relevant \MustCall and \<@CalledMethods> annotations
+% are inferred intra-procedurally, most annotations that we had to write in
+% the case studies pertained to ownership or the side-effects of procedures.
 \Cref{tab:annos} shows how many of each annotation we wrote, across all three
 case studies.
 
@@ -198,26 +192,27 @@ case studies.
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Reason                            &      Count     \\
     \hline
-    add \<final> to a field           &     3   \\
-    re-order \<try> and null-check    &     2   \\
-    extract method calls into local   &     1   \\
   \end{tabularx}
 \end{table}
 
-When we made changes to the programs, they were small (the largest was \todo{4} lines)
-and localized. \Cref{tab:changes} gives the reasons that changes were made.
-\todo{These sentences must be in the same order as the table.}
+\todo{Double-check all numbers.}
+We also
+made 6 small, semantics-preserving changes to the programs to reduce
+false positives from our analysis.
 %
-Adding \<final> to a field allows our checker to verify it without using
+In 3 places, we added \<final> to a field; this allows our checker to verify it without using
 accumulation frames, which have stricter requirements.
 %
-Re-ordering a \<try>
-statement and a null-check makes reasoning more precise by removing an
+In 2 places, we re-ordered a \<try>
+statement and a null-check; this makes reasoning more precise by removing an
 infeasible control-flow-graph edge.
 %
-Extracting multiple calls to a method
-into a single call that is assigned to a local variable allows the local
-variable to be reasoned about flow-sensitively.
+In 1 place, we extracted multiple calls to a method
+into a single call that is assigned to a local variable; this allows
+flow-sensitive reasoning about the local
+variable.
+% , and the code is also more efficient.
+
 
 \subsection{Evaluating our enhancements}
 % \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
