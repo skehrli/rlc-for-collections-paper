@@ -36,10 +36,10 @@
     Project                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
     \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {5}       {10}       {47}   {1m 24s}        \\
-    \osstablerow{apache/hadoop:hdfs}                   {151,233}        {366}            {171}          {?}        {21}        {36}   {16m 21s}        \\
-    \osstablerow{apache/hbase:server}            {170,569}        {62}            {45}          {1}        {11}        {21}   {7m 45s}        \\
+    \osstablerow{apache/hadoop:hdfs}               {151,233}        {366}       {171}          {7}        {21}        {36}   {16m 21s}        \\
+    \osstablerow{apache/hbase:server}            {170,569}        {62}          {45}          {1}        {11}        {21}   {7m 45s}        \\
     \hline
-    \osstablerow{\textbf{Total}}                        {563,855}        {660}            {315}          {?}        {42}       {104}   {-}        \\
+    \osstablerow{\textbf{Total}}                 {563,855}        {660}         {315}          {13}        {42}       {104}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -195,11 +195,14 @@ case studies.  \todo{make the case that this is a low annotation burden?}
 
 \todo{Double-check all numbers.}
 We also
-made 6 small, semantics-preserving changes to the programs to reduce
+made 13 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
 %
-In 3 places, we added \<final> to a field; this allows our checker to verify it without using
-the rules for non-final owning field given in \cref{sec:reset-must-call}, which are stricter.
+In 8 places, we added \<final> to a field; this allows our checker to verify it without using
+the rules for non-final owning fields given in \cref{sec:reset-must-call}, which are stricter.
+In 3 of those, we also removed assignments to the field after it was closed whose right-hand
+side was \<null>; in 1 other we added an \<else> clause in the constructor that assigned the field
+a \<null> value.
 %
 In 2 places, we re-ordered a \<try>
 statement and a null-check; this makes reasoning more precise by removing an
@@ -210,6 +213,13 @@ into a single call that is assigned to a local variable; this allows
 flow-sensitive reasoning about the local
 variable.
 % , and the code is also more efficient.
+In 1 place, we extracted an expression into a local variable
+so that a \CreateObligation annotation could target it.
+%
+In 1 place, we re-ordered two calls to \<close()> that closed
+the same resource (via resource aliases). The first call in the
+unmodified code was conditional, but the second was
+not, leading to an infeasible control-flow graph edge.
 
 
 \subsection{Evaluating our enhancements}
