@@ -121,7 +121,7 @@ in our case studies.\looseness=-1
 \Cref{fig:hadoop-bug} contains code from Hadoop. If an IO error
 occurs any time between the allocation of the \<FileInputStream>
 in the first line of the method and the \<return> statement
-at the end---for example, if \<wrapInputStreamForCompression>
+at the end---for example, if \<channel.position(section.getOffset())>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
 assigned this bug a priority of ``Major'' and accepted our
