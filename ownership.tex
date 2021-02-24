@@ -13,8 +13,8 @@
 
 \Cref{sec:base-type-systems} describes a sound accumulation-based
 checker for resource leaks. However, that checker often encounters false
-positives caused by cases where a \MustCall obligation is satisfied
-in another procedure via parameter passing, return values, or object fields.
+positives in cases where a \MustCall obligation is satisfied
+in another procedure, via parameter passing, return values, or object fields.
 Consider the following code that safely closes a \<Socket>:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
@@ -70,14 +70,14 @@ of \cref{alg:helpers} are enhanced to handle ownership transfer as follows:
   \hspace*{6em} $\vee\ \textsc{PassedAsOwningParam}(s,p)$\newline
   \hspace*{6em} $\vee\ (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})$
   \EndProcedure
+  \Procedure{HasObligation}{$e$}
+  \State \Return $e$ has a declared \MustCall type and $e$'s declaration is \<@Owning>
+  \EndProcedure
   \Procedure{OwningReturn}{$CFG$}
   \State \Return $CFG$'s return declaration is \<@Owning>
   \EndProcedure
   \Procedure{PassedAsOwningParam}{s,p}
   \State \Return $s$ passes $p$ to an \<@Owning> parameter of a callee
-  \EndProcedure
-  \Procedure{HasObligation}{$e$}
-  \State \Return $e$ has a declared \MustCall type and $e$'s declaration is \<@Owning>
   \EndProcedure
 \end{algorithmic}
 \Cref{sec:owning-fields} discusses checking of \<@Owning> fields.
@@ -141,7 +141,7 @@ never assumes that passing an object to an unannotated library will satisfy its 
   checked by requiring an appropriate \EnsuresCalledMethods
   postcondition annotation on
   \<C.d()>, which is then enforced by the Called Methods
-  Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...} 
+  Checker~\cite{KelloggRSSE2020}.
 
   While this scheme suffices for verifying final fields, we observed cases
   in our benchmarks of non-final fields with \MustCall obligations.  Checking
