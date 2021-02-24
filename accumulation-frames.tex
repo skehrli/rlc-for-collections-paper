@@ -114,7 +114,7 @@ or \<connect()> that the must-call obligation is created.
 If all \<Socket>s are treated as \MustCall\<(\{"close"\})>,
 a false positive would be reported
 in code such as the below, which operates on an unconnected socket
-(simplified from real code in Apache Zookeeper\todo{cite}):
+(simplified from real code in Apache Zookeeper~\cite{zookeeper-create-socket}):
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   static Socket createSocket() {
