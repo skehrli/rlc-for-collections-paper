@@ -7,20 +7,20 @@ However, non-constructor methods may also create obligations
 when re-assigning non-final, owning fields or allocating
 new system-level resources.
 A post-condition annotation,
-\ResetMustCall,
+\CreateObligation,
 indicates for which expression an obligation is created.
 
-At each call to a method annotated as \ResetMustCall\<(>\|expr|\<)>, \Tool removes any
+At each call to a method annotated as \CreateObligation\<(>\|expr|\<)>, \Tool removes any
 inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
 % methods that are not in its the current must-call type, they are added.
-Since a \ResetMustCall annotation can only increase its target's obligations,
+Since a \CreateObligation annotation can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
 When checking a call to a method annotated as
-\ResetMustCall\<(>\|expr|\<)>,
+\CreateObligation\<(>\|expr|\<)>,
 (1) \Tool\todo{can we be more specific about which component of \Tool?} treats the \MustCall
 obligation of \|expr| as \emph{satisfied},
 and (2)
@@ -28,9 +28,9 @@ the Must Call Consistency Checker creates a fresh obligation to check.
 %
 In terms of our \cref{sec:must-call-invoked} pseudocode,
 assume we have\todo{Put this in the pseudocode} a routine \textsc{COTargets}$(c)$ that returns a set of all
-variables $p_i$ passed to a \ResetMustCall target parameter of the method
+variables $p_i$ passed to a \CreateObligation target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
-\cref{alg:helpers} to handle \ResetMustCall as follows:
+\cref{alg:helpers} to handle \CreateObligation as follows:
 \todo{I suggest putting the base code first and the addition with COTargets second.}
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
@@ -50,18 +50,18 @@ case to the extended \textsc{MCSatisfiedAfter} predicate given in
 \end{algorithmic}
 \noindent
 This is sound since the checker creates a new obligation for calls to
-\ResetMustCall methods, and the must-call obligation inference ensures the
+\CreateObligation methods, and the must-call obligation inference ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
-There is one exception to this consistency check: if a \ResetMustCall
-method is invoked within a method that also has an \ResetMustCall annotation
+There is one exception to this consistency check: if a \CreateObligation
+method is invoked within a method that also has an \CreateObligation annotation
 with the same target---thus imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.
 
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
-\ResetMustCall allows \Tool to verify uses of non-final fields
+\CreateObligation allows \Tool to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -90,7 +90,7 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with an \ResetMustCall that targets that object.
+  must be annotated with an \CreateObligation that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   its inferred \MustCall obligation must be contained in its \<@CalledMethods>
   type at the program point before $s$.
@@ -99,13 +99,13 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because calling
-a \ResetMustCall method like \<reconnect()> resets called-methods
+a \CreateObligation method like \<reconnect()> resets called-methods
 inference, calls to \<close> before the last call to \<reconnect()>
 are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
-\ResetMustCall can also handle cases where object creation
+\CreateObligation can also handle cases where object creation
 does not allocate a resource, but the object will allocate a resource
 later in its lifecycle. Consider the no-argument constructor
 to \<java.net.Socket>. This constructor does not allocate an
@@ -130,15 +130,15 @@ in code such as the below, which operates on an unconnected socket
 \end{lstlisting}
 
 The call to \<setSoTimeout> can throw a \<SocketException> if the
-socket is actually connected when it is called. Using \ResetMustCall,
+socket is actually connected when it is called. Using \CreateObligation,
 however, \Tool can soundly show that this socket is not connected:
 the type of the result of the no-argument constructor can be
-treated as \<@MustCall(\{\})>, and \ResetMustCall annotations
+treated as \<@MustCall(\{\})>, and \CreateObligation annotations
 on the methods that actually allocate the socket---\<connect()> or
 \<bind()>---enforce that as soon as the socket is actually open,
 it is treated as \<@MustCall("close")>.
 
-% LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall expr
+% LocalWords:  belowskip MustCall SocketContainer sc CreateObligation expr
 % LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied COTargets
 % LocalWords:  createSocket setSoTimeout SocketException FactsFromCall
 % LocalWords:  MCSatisfiedAfter CreateObligation isClosed CalledMethods
