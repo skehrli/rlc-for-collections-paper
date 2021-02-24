@@ -16,8 +16,8 @@
     Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
     ``Resources'' is the number of resources created by the program.
     % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
-    % > git diff --stat origin/with-checker -- '*.java'
-    % then subtract the deleted lines from the added lines and report that number
+    % > git diff origin/with-checker -- '*.java'
+    % then count the number of individual changesets and report that
     ``Annos.'' is number of manually-written annotations to specify
     existing methods.
     ``Code changes'' is the number of distinct changes program text we made,
@@ -35,8 +35,8 @@
     Project                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
     \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {5}       {10}       {47}   {?}        \\
-    \osstablerow{apache/hadoop:hdfs}                   {151233}        {366}            {171}          {?}        {21}        {36}   {?}        \\
-    \osstablerow{apache/hbase:server}            {170569}        {62}            {42}          {1}        {11}        {21}   {?}        \\
+    \osstablerow{apache/hadoop:hdfs}                   {151,233}        {366}            {171}          {?}        {21}        {36}   {?}        \\
+    \osstablerow{apache/hbase:server}            {170,569}        {62}            {45}          {1}        {11}        {21}   {?}        \\
     \hline
     \osstablerow{\textbf{Total}}                        {?}        {?}            {?}          {?}        {?}       {?}   {-}        \\
   \end{tabular}
@@ -175,15 +175,16 @@ support Java generics as future work.
     three case studies.\todo{Order these by how common they are, once
     we have final counts.}}
   \label{tab:annos}
+  % counts @InheritableMustCall as @MustCall, for simplicity of presentation
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Annotation          &      Count     \\
     \hline
-    \<@Owning>          &      28+      \\
-    \<@NotOwning>       &      8+       \\
-    \<@MustCallAlias>   &      6+       \\
-    \<@ResetMustCall>   &      19+      \\
-    \<@EnsuresCalledMethods> & 21+      \\
-    \<@MustCall>        &      13+      \\
+    \<@Owning>          &      42+      \\
+    \<@NotOwning>       &      13+       \\
+    \<@MustCallAlias>   &      16+       \\
+    \<@ResetMustCall>   &      21+      \\
+    \<@EnsuresCalledMethods> & 25+      \\
+    \<@MustCall>        &      23+      \\
     \<@PolyMustCall>    &      4+       \\
   \end{tabularx}
 \end{table}
@@ -202,7 +203,7 @@ case studies.
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Reason                            &      Count     \\
     \hline
-    add \<final> to a field           &     2   \\
+    add \<final> to a field           &     3   \\
     re-order \<try> and null-check    &     2   \\
     extract method calls into local   &     1   \\
   \end{tabularx}
