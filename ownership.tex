@@ -46,7 +46,7 @@ as either \<@Owning> or \<@NotOwning>.  In the Must Call Consistency Checker
 function $\textsc{OwningReturn}(CFG)$ that checks if the return type of $CFG$'s
 method is \<@Owning>, and $\textsc{PassedAsOwningParam}(s,p)$ that checks if $s$ is a
 call that passes $p$ to an \<@Owning> parameter of the callee.  Then,
-\textsc{MCSatisfied}$(P,s)$ of \Cref{alg:helpers} is enhanced to handle
+\textsc{MCSatisfiedAfter}$(P,s)$ of \Cref{alg:helpers} is enhanced to handle
 ownership transfer as follows:
 
 % \begin{align*}
@@ -56,7 +56,7 @@ ownership transfer as follows:
 %                   &\vee (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})\\
 % \end{align*}
 \begin{algorithmic}
-  \Procedure{MCSatisfied}{$P,s$}
+  \Procedure{MCSatisfiedAfter}{$P,s$}
   \State \Return $\exists p \in P .\ \textsc{MCAfter}(p,s) \subseteq \textsc{CMAfter}(p,s)$ \newline
   \hspace*{6em} $\vee\ (s \mathrm{\ is\ } \mathtt{return\ p} \wedge \textsc{OwningReturn}(CFG))$ \newline
   \hspace*{6em} $\vee\ \textsc{PassedAsOwningParam}(s,p)$\newline
@@ -66,16 +66,18 @@ ownership transfer as follows:
 \end{algorithmic}
 
 To ensure soundness, the analysis must ensure that the \<@MustCall> obligation
-of any \<@Owning> location is satisfied.  We discuss checking of \<@Owning>
-fields in \Cref{sec:owning-fields}.  For \<@Owning> method returns, we need only
-update the \textsc{Has\-MCReturn} routine used in \Cref{alg:helpers} to check that
-the return type both has a non-empty \<@MustCall> obligation \emph{and} is
-\<@Owning>.  For \<@Owning> parameters, the loop at
-Lines~\ref{li:start-init}--\ref{li:end-init} in \Cref{alg:consistency-checker}
-must be extended to also add each \<@Owning> formal parameter as a dataflow
-fact at the entry node of the CFG.  These relatively simple changes are all that
-is required to add lightweight ownership tracking to our technique.\todo{but we
-didn't discuss fields yet...}
+of any \<@Owning> location is satisfied.  For returns and parameters, we simply
+enhance the \textsc{HasObligation} routine of \Cref{alg:helpers} to check for
+ownership:
+\begin{algorithmic}
+  \Procedure{HasObligation}{$e$}
+  \State \Return $e$ has a declared \<@MustCall> type and $e$ is \<@Owning>
+  \EndProcedure
+\end{algorithmic}
+We discuss checking of \<@Owning> fields in \Cref{sec:owning-fields}.  
+% These relatively simple changes are all that
+% is required to add lightweight ownership tracking to our technique.\todo{but we
+% didn't discuss fields yet...}
 
 By default, our checker assumes that unannotated return types are \<@Owning>,
 but that parameter and field types are \<@NotOwning>.  These assumptions
@@ -86,9 +88,9 @@ object returned from such a library will be tracked by default, and the checker
 never assumes that passing an object to a library will satisfy its obligation.
 
 Programmers can override defaults by writing explicit \<@Owning> or
-\<@NotOwning> annotations on method returns (constructors are always
-\<@Owning>), parameters, and fields (though never both at the same
-location---they are mutually exclusive).  Such explicit annotations can
+\<@NotOwning> annotations on method returns, parameters, and fields (though never both at the same
+location---they are mutually exclusive).  (Note that constructor returns are always
+\<@Owning>.)  Such explicit annotations can
 \emph{never} compromise soundness.  If such an annotation is incorrect (e.g., an
 \<@Owning> annotation on a reference that does not satisfy an obligation), it
 can only lead to false positives, not false negatives.  Due to this design,
@@ -108,25 +110,31 @@ techniques in future work.
   consider instance fields in this paper; we have not observed resource leaks
   through static fields in our benchmarks, and we leave their handling to future
   work.} which cannot be overwritten after initialization of the enclosing
-  object.  Consider a final \<@Owning> field $f$ declared in class $C$, where
+  object.  Here, our checking enforces the "resource acquisition is
+  initialization (RAII)" programming idiom~\cite{raii}; a distinguished
+  ``destructor''-like method \<d()> must ensure the field's \<@MustCall> obligation is
+  satisfied, and the enclosing class must have a \<@MustCall("d")> obligation to
+  ensure the destructor is called.
+
+  More formally, consider a final \<@Owning> field $f$ declared in class $C$,
+  where
   $f$ has type \<@MustCall("m")>.  To
   verify that $f$'s \<@MustCall> obligation is satisfied, we check the following
   conditions:
   \begin{enumerate}
-    \item All $C$ objects must have a type \<@MustCall("n")> for some method $C.n$.
-    \item $C.n$ must always invoke \<this.f.m()>, thereby satisfying $f$'s
+    \item All $C$ objects must have a type \<@MustCall("d")> for some method \<C.d()>.
+    \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \<@MustCall> obligation.
   \end{enumerate}
-  In this manner, we verify the usage of $f$, by imposing
-  a \<@MustCall> obligation on clients using the $C$ class.  Condition 2 is
+  In this manner, we modularly verify the \<@MustCall> obligaation of $f$.  Condition 2 is
   checked by requiring an appropriate \<@EnsuresCalledMethods> annotation on
-  $C.n$, which is then enforced by the Called Methods
-  Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...} \todo{Mention RAII}
+  \<C.d()>, which is then enforced by the Called Methods
+  Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...} 
 
-  While this scheme suffices for verifying final fields, we observed many cases
+  While this scheme suffices for verifying final fields, we observed cases
   in our benchmarks of non-final fields with \<@MustCall> obligations.  Checking
   non-final fields requires additional techniques, as the checker must ensure
-  that overwriting the field does not lead to a \<@MustCall> violation.  We
+  that overwriting the field does not lead to an unsatisfied \<@MustCall> obligation.  We
   describe our novel handling of non-final fields in \Cref{sec:reset-must-call}.
 
 
