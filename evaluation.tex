@@ -269,7 +269,7 @@ ownership and resource aliases prevents more false positive errors than the tota
 of remaining false positives on the Zookeeper and HBase benchmarks, for example. \todo{Strengthen
   this claim when we have the results from the other benchmarks.} Though
 the accumulation frame feature prevents fewer errors (and even adds two more errors
-on HBase, which includes only two \<@ResetMustCall> annotations), it permits verification
+on HBase, which includes only two \ResetMustCall annotations), it permits verification
 of a complex pattern---the use of non-final, owning fields---that is used in a
 few critical places in each benchmark.
 

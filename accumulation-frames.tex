@@ -62,8 +62,8 @@ to clean up the resources that it overwrites---note the call
 to \<close()> in its implementation---this code is safe, even though \<sc>
 corresponds to two different resources: one for each frame.
 
-We introduce a new annotation, called \<@ResetMustCall>, to delineate
-an accumulation frame. \<@ResetMustCall> is written on a method
+We introduce a new annotation, called \ResetMustCall, to delineate
+an accumulation frame. \ResetMustCall is written on a method
 declaration, and takes one argument (the \emph{target}), which
 indicates to which in-scope program element the frame applies. The
 definition for \<reconnect()> above would then become:
@@ -75,7 +75,7 @@ definition for \<reconnect()> above would then become:
     void reconnect() { ... }
   }
 \end{lstlisting}
-When an \<@ResetMustCall>
+When an \ResetMustCall
 method is invoked, \Tool removes any
 inferred Called Methods information about the target (\<sc> in the example).
 This rule means that even if \<close()> has already been called on \<sc>
@@ -86,17 +86,17 @@ that a new accumulation frame ``resets'' the obligations of \<sc>.
 The inferred must-call methods for \<sc> could also increase:
 if the declared type of \<sc>'s default must-call type includes any
 methods that are not in the current must-call type for \<sc>, they are added.
-Since \<@ResetMustCall> annotations can only increase its target's obligations,
+Since \ResetMustCall annotations can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
-The Must Call Consistency Checker treats calls to \<@ResetMustCall> obligations
+The Must Call Consistency Checker treats calls to \ResetMustCall obligations
 as creating a fresh obligation to check, since they mark the beginning of a new
 accumulation frame.  In terms of our \cref{sec:must-call-invoked} pseudocode,
 assume we have a routine \textsc{RMCTargets}$(c)$ that returns a set of all
-variables $p_i$ passed to a \<@ResetMustCall> target parameter of the method
+variables $p_i$ passed to a \ResetMustCall target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
-\cref{alg:helpers} to handle \<@ResetMustCall> as follows:
+\cref{alg:helpers} to handle \ResetMustCall as follows:
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
@@ -104,7 +104,7 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure
   \end{algorithmic}
-Additionally, if during analysis, we encounter a call to a \<@ResetMustCall>
+Additionally, if during analysis, we encounter a call to a \ResetMustCall
 method on a variable $p \in P$, we treat the \<@MustCall>
 obligation of $p$ as \emph{satisfied}.  I.e., we add one more
 case to the extended \textsc{MCSatisfiedAfter} predicate given in
@@ -119,11 +119,11 @@ case to the extended \textsc{MCSatisfiedAfter} predicate given in
 %   \exists p \in P &.\ [\ldots] \vee p \in \textsc{RMCTargets}(s)
 % \end{align*}
 This is sound since the checker creates a new obligation for calls to
-\<@ResetMustCall> methods, and the must-call obligation inference ensures the
+\ResetMustCall methods, and the must-call obligation inference ensures the
 \<@MustCall> type for the target will have a \emph{superset} of any methods present
 before the call.
-There is one exception to this consistency check: if an \<@ResetMustCall>
-method is invoked within a method that also has an \<@ResetMustCall> annotation
+There is one exception to this consistency check: if an \ResetMustCall
+method is invoked within a method that also has an \ResetMustCall annotation
 with the same target---thus imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.
 
@@ -132,7 +132,7 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with an \<@ResetMustCall> that targets that object.
+  must be annotated with an \ResetMustCall that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$, its inferred \<@MustCall> obligation
 must be contained in its \<@CalledMethods> type at the program point before $s$.
 \end{itemize}
@@ -176,7 +176,7 @@ that path.  However, we can use an accumulation frame \emph{without an
 that extends from the constructor call to a method that connects the
 socket (such as \<connect()> or \<bind()>) to avoid this false
 positive, by annotating those methods (in the definition of
-\<java.net.Socket>) as \<@ResetMustCall("this")>.  When one of these
+\<java.net.Socket>) as \ResetMustCall\<("this")>.  When one of these
 methods is then called on the \<Socket> in client code that is being
 verified by \Tool, its inferred must-call obligations increase to include
 \<close()>, because by default an arbitrary \<Socket>'s type is
