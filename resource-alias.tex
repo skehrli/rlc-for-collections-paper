@@ -37,9 +37,12 @@ Previous work has shown that reasoning about wrapper types is
 required to avoid excessive false positive and duplicate
 reports~\cite{TorlakC10,ecj-resource-leak}.  Wrapper types in earlier
 work were handled with hard-coded specifications of which library
-types are wrappers and also a clustering technique to heuristically group warnings
-involving a resource and its wrappers~\cite{TorlakC10}. Unlike heuristic clustering,
-our approach is sound.
+types are wrappers, and heuristic clustering to avoid duplicate reports for
+wrappers~\cite{TorlakC10}.
+% and also a clustering technique to heuristically group warnings
+% involving a resource and its wrappers~\cite{TorlakC10}.
+% Unlike heuristic clustering,
+% our approach is sound.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
@@ -53,10 +56,9 @@ relationship between distinct objects, the programmer writes a pair of
 \MustCallAlias qualifiers:  one on a parameter
 of a method, and another on its return type.
 For example, one constructor of \<BufferedOutputStream> is:
-\begin{lstlisting}
+\begin{lstlisting}[aboveskip=0.5em,belowskip=0.5em]
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
 \end{lstlisting}
-
 \noindent
 \MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
 At a call site to a \MustCallAlias-annotated method, there are two effects.
@@ -69,17 +71,16 @@ obligations, either.
 Second,
 the Must Call Consistency Checker
 (\Cref{sec:must-call-choice}) treats the \MustCallAlias parameter and return as
-aliases.  For our \cref{sec:must-call-invoked} pseudocode, assume\todo{Put
-  this in the code snippet below instead of in text.} we have a
-predicate $\textsc{IsMust\-CallAliasParam}(s,p)$ that is true iff $s$ is a call that
-passes $p$ to a \MustCallAlias parameter of the callee.
-This modified
+aliases.  For our \cref{sec:must-call-invoked} pseudocode, this
 version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliases:
 \begin{algorithmic}
   \Procedure{CreatesAlias}{$P,s$}
     \State \Return $s$ is of the form \<p = q> $\wedge\ \mathtt{q} \in P$ \newline
          \hspace*{4.5em} $\vee\ \exists p_i \in P.\ \textsc{IsMustCallAliasParam}(s,p_i)$ 
-    \EndProcedure
+  \EndProcedure
+  \Procedure{IsMustCallAliasParam}{$s,p$}
+    \State \Return $s$ passes $p$ to a \MustCallAlias parameter of its callee
+  \EndProcedure
 \end{algorithmic}
 
 % With this change, \cref{alg:consistency-checker} treats the
@@ -131,21 +132,23 @@ A pair of \MustCallAlias annotations on a method or constructor \<m>'s return ty
 and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor in a
-  \MustCallAlias position, and \<m> returns the result of that method
+  \MustCallAlias position, and \<m> returns the result of that method,
   or the call is a \<super()> constructor call appropriately annotated
   with \MustCallAlias.
-\item \<p> is stored in an \<@Owning> field of the class, and the
-  class declaration has an \MustCall\<(>$A$\<)> annotation for some set
-  of methods $A$, and at least one of the methods in $A$ has an
-  \EnsuresCalledMethods postcondition annotation that names at least the
-  must-call obligations of \<p>'s static type.
+\item \<p> is stored in an \<@Owning> field of the enclosing class.  (\<@Owning>
+field verification is described in \cref{sec:owning-fields,sec:non-final-owning}.)
+% , and the
+%   class declaration has an \MustCall\<(>$A$\<)> annotation for some set
+%   of methods $A$, and at least one of the methods in $A$ has an
+%   \EnsuresCalledMethods postcondition annotation that names at least the
+%   must-call obligations of \<p>'s static type.
 \end{enumerate}
 These verification procedures permit a programmer to soundly specify a resource-aliasing
 relationship in their own code, a capability that was not present in prior work
-that relies on a hard-coded list of wrapper types.  we used this
+that relied on a hard-coded list of wrapper types; we used this
 % \todo{3 in Zookeeper + however many in the rest}
 multiple times
-in our case studies
+in our case studies.
 
 % The
 % must-call obligation for an arbitrary \<BufferedOutputStream> is
