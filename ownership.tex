@@ -38,10 +38,17 @@ through an alias, and hence has a minimal impact on the programming model.
 \label{sec:ownership-transfer}
 
 With lightweight ownership, a parameter, return, or field type may be annotated
-as either \<@Owning> or \<@NotOwning>.  In the Must Call Consistency Checker
+as either \<@Owning> or \<@NotOwning>.
+\todo{If this is a type system, state the type hierarchy.  It's not clear
+  whether this is actually a declaration annotation, however.  Please
+  clarify.  If it's a type system, then every type has (not ``may have'')
+  an \<@Owning> or \<@NotOwning> qualifier.}
+In the Must Call Consistency Checker
 (\Cref{sec:must-call-invoked}), if a tracked variable $p$ is assigned to such an
-\<@Owning> location $l$, we \emph{transfer} ownership to $l$, and $p$'s
-\<@MustCall> obligation is treated as satisfied. Assume we have a helper
+\<@Owning> location $l$, $p$'s
+\<@MustCall> obligation is treated as satisfied. Assume\todo{Remove their
+  description from here and put the two helper functions in the algorithmic
+  snippet.} we have a helper
 function $\textsc{OwningReturn}(CFG)$ that checks if the return type of $CFG$'s
 method is \<@Owning>, and $\textsc{PassedAsOwningParam}(s,p)$ that checks if $s$ is a
 call that passes $p$ to an \<@Owning> parameter of the callee.  Then,
