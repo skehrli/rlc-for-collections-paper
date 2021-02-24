@@ -1,25 +1,25 @@
 \section{Resource aliasing}
 \label{sec:must-call-choice}
 
-This section introduces a lightweight, specialized must-alias analysis
+This section introduces a sound, lightweight, specialized must-alias analysis
 that tracks \emph{resource alias} sets---sets of pointers that
-definitely correspond to the same underlying system resource.  Because
-resource aliases correspond to the same underlying resource, closing
-one alias also closes the other---so our sound resource alias analysis
-permits \Tool to avoid issuing false positive warnings about resources
-that have already been closed through their resource aliases.  Prior
+definitely correspond to the same underlying system resource.  Closing
+one alias also closes the others.  Thus,
+\Tool can avoid issuing false positive warnings about resources
+that have already been closed through a resource alias.  Prior
 work on accumulation analyses showed that limited, specialized forms
 of alias analysis can provide precision to an accumulation analysis
 where needed, without incurring the cost of a whole-program
-analysis~\cite{KelloggRSSE2020}; our resource alias analysis is no
-different.
+analysis~\cite{KelloggRSSE2020}; our resource alias analysis is an
+example.
 
 \subsection{Wrapper types}
 
-Precise leak detection for Java requires reasoning about \emph{wrapper types},
-which wrap another type that may contain a resource.  For example, the Java
-\<BufferedOutputStream> type adds buffering to some other \<OutputStream>, which
-may or may not represent a resource that needs closing.  Wrapper types
+Java programs extensively use \emph{wrapper types}.  For example, the Java
+\<BufferedOutputStream> wrapper adds buffering to some other delegate \<OutputStream>, which
+may or may not represent a resource that needs closing.  The wrapper's 
+\<close()> method invokes \<close()> on the delegate.
+Wrapper types
 introduce two additional complexities for \<@MustCall> checking:
 \begin{enumerate}
   \item If a wrapped object has no \<@MustCall> obligation, the corresponding
@@ -31,48 +31,49 @@ For example, if a \<BufferedOutputStream> $b$ wraps a stream with no underlying
 resource (e.g., a \<ByteArrayOutputStream>), $b$ should have an empty
 \<@MustCall> obligation, since $b$ has no resource of its own.  On the other
 hand, if $b$ wraps a stream managing a resource, like a \<FileOutputStream> $f$,
-then \<close()> must be invoked on \emph{either} $b$ or $f$. Calling \<close()> on $b$
-is sufficient since $b$\<.close()> invokes \<close()> on its wrapped stream $f$.
+then \<close()> must be invoked on \emph{either} $b$ or $f$.
 
-Previous work has shown that a reasoning about wrapper types is
+Previous work has shown that reasoning about wrapper types is
 required to avoid excessive false positive and duplicate
 reports~\cite{TorlakC10,ecj-resource-leak}.  Wrapper types in earlier
 work were handled with hard-coded specifications of which library
-types are wrappers and also, in the work of Torlak and
-Chandra~\cite{TorlakC10}, a clustering technique to group warnings
-involving a resource and its wrappers.  \manu{is our technique better than
+types are wrappers and also a clustering technique to heuristically group warnings
+involving a resource and its wrappers~\cite{TorlakC10}.  \manu{is our technique better than
 clustering?  i think we will only report one issue per resource, but not 100\% sure.}
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
-iff:
-\begin{itemize}
-\item satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
-  obligation, and vice-versa; or
-\item if $r_1$ and $r_2$ are must-aliased pointers.
-\end{itemize}
-We also introduce a new type
-qualifier \mccannot to indicate where an API method creates a resource-alias
-relationship between distinct objects, like a wrapper and the wrapped resource.
-\mccannot can be used to annotate a \<BufferedOutputStream> constructor as follows:
+if $r_1$ and $r_2$ are must-aliased pointers or if
+satisfying $r_1$'s \<@MustCall> obligation also satisfies $r_2$'s
+  obligation, and vice-versa.
+
+\paragraph{Introducing resource aliases}
+To indicate where an API method creates a resource-alias
+relationship between distinct objects, the programmer writes a pair of 
+\mccannot qualifiers:  one on a parameter
+of a method, and another on its return type.
+For example, one constructor of \<BufferedOutputStream> is:
 \begin{lstlisting}
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
 \end{lstlisting}
 
-\mccannot qualifiers must always appear in pairs---one on a parameter
-of a method, and another on its return type.  A pair of \mccannot
-annotations has two effects on our inference and checking.  First,
-must-call obligation inference (\Cref{sec:must-call}) treats the
-annotated elements as polymorphic---the must-call obligations of the
-parameter are copied to the return type. Therefore, if the wrapped
-type has no must-call obligations (like a \<ByteArrayOutputStream>),
-the wrapper will not have must-call obligations, either.
+\noindent
+\mccannot annotations are verified, not trusted; see \cref{sec:mccannot-verification}.
+At a call site to a \mccannot-annotated method, there are two effects.
 
-Second, at call sites, the Must Call Consistency Checker
+First, the method call's must-call type is the same as that of the
+argument.  If the type of the argument has no must-call obligations (like a
+\<ByteArrayOutputStream>), the returned wrapper will not have must-call
+obligations, either.
+
+Second,
+the Must Call Consistency Checker
 (\Cref{sec:must-call-choice}) treats the \mccannot parameter and return as
-aliases.  For our \Cref{sec:must-call-invoked} pseudocode, assume we have a
+aliases.  For our \Cref{sec:must-call-invoked} pseudocode, assume\todo{Put
+  this in the code snippet below instead of in text.} we have a
 predicate $\textsc{IsMust\-CallAliasParam}(s,p)$ that is true iff $s$ is a call that
-passes $p$ to a \mccannot parameter of the callee.  Then, this modified
+passes $p$ to a \mccannot parameter of the callee.
+This modified
 version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliases:
 \begin{algorithmic}
   \Procedure{CreatesAlias}{$P,s$}
@@ -80,10 +81,11 @@ version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliase
          \hspace*{4.5em} $\vee\ \exists p_i \in P.\ \textsc{IsMustCallAliasParam}(s,p_i)$ 
     \EndProcedure
 \end{algorithmic}
-With this change, \Cref{alg:consistency-checker} treats the
-assigned variable $p$ of a call statement as a new alias (just like a local
-variable alias) if a 
-variable in $P$ is passed to some \mccannot parameter.
+
+% With this change, \Cref{alg:consistency-checker} treats the
+% assigned variable $p$ of a call statement as a new alias (just like a local
+% variable alias) if a 
+% variable in $P$ is passed to some \mccannot parameter.
 
 % As shown in
 % \cref{alg:consistency-checker}, the returned set is added to the set of tracked
@@ -94,7 +96,7 @@ variable in $P$ is passed to some \mccannot parameter.
 \subsection{Beyond wrapper types}
 
 \mccannot can also be employed in scenarios beyond direct wrapper types, a
-capability not present in previous work.  In certain cases, a resource gets
+capability not present in previous work on resource leak detection.  In certain cases, a resource gets
 shared between objects via an intermediate object that cannot directly close the
 resource.  For example, \<java.io.RandomAccessFile> (which must be closed) has
 a method \<getFd()> that returns a \<FileDescriptor>
@@ -115,31 +117,35 @@ technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoo
     file.close();
   }
 \end{lstlisting}
-We assign \<FileDescriptor> a special \<@MustCall(?)> type that cannot be satisfied by any calls,
-but which is converted back into \<@MustCall("close")> when passed to the \<@MustCallAlias> constructor
-of \<FileInputStream>. We found this capability to be
-useful for verifying multiple code patterns in our case studies.
+\Tool assigns \<FileDescriptor>\todo{This seems wrong; I think \Tool
+  assigns the type to the expression \<file.getFD()>.  Please clarify.}
+a special \<@MustCall(?)> type that cannot be satisfied by any calls,
+but which is converted back\todo{This ``is converted back'' seems magical.
+  Please explain how it happens.} into \<@MustCall("close")> when passed to the \<@MustCallAlias> constructor
+of \<FileInputStream>. This capability enabled
+verifying multiple code patterns in our case studies.
 
-\subsection{Verification of \mccannot}
+\subsection{Verification of \mccannot}\label{sec:mccannot-verification}
 
 A pair of \mccannot annotations on a method or constructor \<m>'s return type
-and its parameter \<p> can be verified via one of two
-procedures:
+and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
-\item if \<p> is passed to another method or constructor in an
+\item \<p> is passed to another method or constructor in a
   \mccannot position, and \<m> returns the result of that method
-  (or the method is a \<super()> constructor call appropriately annotated
-  with \mccannot), then the code can be verified.
-\item if \<p> is stored in an \<@Owning> field of the class, and the
+  or the call is a \<super()> constructor call appropriately annotated
+  with \mccannot.
+\item \<p> is stored in an \<@Owning> field of the class, and the
   class declaration has an \<@MustCall(>$A$\<)> annotation for some set
   of methods $A$, and at least one of the methods in $A$ has an
-  \<@EnsuresCalledMethods> annotation naming at least the
-  must-call obligations of \<p>'s static type, then the code can be verified.
+  \<@EnsuresCalledMethods> postcondition annotation that names at least the
+  must-call obligations of \<p>'s static type.
 \end{enumerate}
 These verification procedures permit a programmer to soundly specify a resource-aliasing
 relationship in their own code, a capability that was not present in prior work
-that relies on a hard-coded list of wrapper types, and that we used in our case studies
-\todo{3 in Zookeeper + however many in the rest} times.
+that relies on a hard-coded list of wrapper types.  we used this
+% \todo{3 in Zookeeper + however many in the rest}
+multiple times
+in our case studies
 
 % As noted in previous work, p
 % The
