@@ -69,23 +69,23 @@ becomes unreachable).  We deem this a \emph{must-call} property.  Our
 key insight is that checking must-call properties are an extended version of an
 accumulation problem.
 Our contribution is an \emph{accumulation analysis} for the resource leak
-problem, which satisfies all 4 requirements:  it is applicable,
+problem, which satisfies all four requirements:  it is applicable,
 sound, precise, and fast.
 
 An accumulation analysis~\cite{KelloggRSSE2020}
 is a special-case of typestate analysis~\cite{StromY86}.
 Typestate analysis attaches a finite-state machine (FSM)
-to each program element of a given type, and transitions the state of each
+to each program element of a given type, and transitions the state of the
 FSM whenever a relevant operation is performed.
 In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
-permitted and executing more operations cannot add additional
+permitted, and executing more operations cannot add additional
 restrictions.  If it is applicable, accumulation analysis provides a major
 benefit over general typestate analysis: it does not
 require a whole-program alias analysis for soundness.
 Hence, we can build a sound, modular must-call
 checker without doing \emph{any} whole-program alias analysis.
-Accumulation enables a clean design, as we
+Accumulation also enables a clean design, as we
 can conceptually factor our checker into a sound core, and
 then enhance it with
 targeted alias reasoning to reduce false positives.
