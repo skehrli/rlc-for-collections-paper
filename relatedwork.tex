@@ -101,7 +101,7 @@ power of Rust's ownership type system is that it not only statically prevents
 resource leaks, but also other important issues like ``double-free'' bugs
 (releasing a resource more than once) and ``use-after-free'' bugs (using a
 resource after it has been released). However, this power comes with a cost; to
-enforce uniqueness, non-owning pointers must be invalidated after an assignment,
+enforce uniqueness, non-owning pointers must be invalidated after an ownership transfer,
 and can no longer be used to perform any operations.  Maintaining multiple
 usable pointers to a value requires use of language features like references and
 borrowing, and even then, borrowed pointers have restricted privileges.
