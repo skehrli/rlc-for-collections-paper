@@ -217,22 +217,23 @@ In 3 of those, we also removed assignments to the field after it was closed whos
 side was \<null>; in 1 other we added an \<else> clause in the constructor that assigned the field
 a \<null> value.
 %
-In 2 places, we re-ordered a \<try>
-statement and a null-check; this makes reasoning more precise by removing an
+In 3 places, we re-ordered two statements to remove an
 infeasible control-flow-graph edge.
+% In 2 places, we re-ordered a \<try> statement and a null-check.
+% % In 1 place, we re-ordered two calls to \<close()> that closed
+% the same resource (via resource aliases). The first call in the
+% unmodified code was conditional, but the second was
+% not, leading to an infeasible control-flow graph edge.
 %
-In 1 place, we extracted multiple calls to a method
-into a single call that is assigned to a local variable; this allows
-flow-sensitive reasoning about the local
-variable.
-% , and the code is also more efficient.
-In 1 place, we extracted an expression into a local variable
-so that a \CreateObligation annotation could target it.
-%
-In 1 place, we re-ordered two calls to \<close()> that closed
-the same resource (via resource aliases). The first call in the
-unmodified code was conditional, but the second was
-not, leading to an infeasible control-flow graph edge.
+In 2 places, we extracted an expression into a local variable, permitting
+flow-sensitive reasoning or targetting by a \CreateObligation annotation.
+% multiple calls to a method
+% into a single call that is assigned to a local variable; this allows
+% flow-sensitive reasoning about the local
+% variable.
+% % , and the code is also more efficient.
+% In 1 place, we extracted an expression into a local variable
+% so that a \CreateObligation annotation could target it.
 
 
 \subsection{Evaluating our enhancements}
