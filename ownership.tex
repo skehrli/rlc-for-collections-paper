@@ -76,7 +76,7 @@ of any \<@Owning> location is satisfied.  For returns and parameters, we simply
 enhance the \textsc{HasObligation} routine of \Cref{alg:helpers} to check for
 ownership:
 \todo{I'm not sure what ``$e$ is \<@Owning>'' means.  A type is \<@Owning>
-  or not (if \<@Owning> is a type qualifier}, but we cannot say that of an expression.}
+  or not (if \<@Owning> is a type qualifier), but we cannot say that of an expression.}
 \begin{algorithmic}
   \Procedure{HasObligation}{$e$}
   \State \Return $e$ has a declared \<@MustCall> type and $e$ is \<@Owning>
