@@ -115,9 +115,8 @@ and achieve precision in practice:
   not impact the privileges of other references.
 \item resource aliasing, for cases in which a resource's must-call obligations
   can be resolved by closing one of two or more references.
-\item \emph{accumulation frames}, an extension to the theory of
-  accumulation analysis which allow for ``resetting'' the must-call state
-  of a reference to handle lazy or multiple initialization.
+\item a system for creating new obligations at locations other than the
+  constructor, which allows \Tool to handle lazy or multiple initialization.
 \end{itemize}
 Variants of (some of) these ideas exist in previous work.  We bring
 them together in a general, modular manner, with full verification and
@@ -136,8 +135,8 @@ Our contributions are:
   innovations that improve the precision of our type
   systems: a lightweight ownership tracking system
   (\cref{sec:lightweight-ownership}), a lightweight resource-alias
-  tracking analysis (\cref{sec:must-call-choice}), and an extension to
-  accumulation analysis (\cref{sec:reset-must-call}).
+  tracking analysis (\cref{sec:must-call-choice}), and a system for
+  handling lazy or multiple initialization (\cref{sec:reset-must-call}).
 \item an open-source implementation for Java,
   called \Tool (\cref{sec:implementation}).
 \item an extensive empirical evaluation: case studies on heavily-used

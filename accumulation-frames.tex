@@ -1,106 +1,36 @@
-\section{Accumulation frames}
+\section{Creating new obligations}
 \label{sec:reset-must-call}
 
-This section describes an enhancement to the theory of accumulation
-analysis that allows \Tool to verify non-final, owning fields
-that contain one or more resources during their lifetime
-(\cref{sec:non-final-owning}).
-This approach is also useful for
-removing another set of false positives caused by unconnected sockets
-(\cref{sec:unconnected-sockets}).
+Every constructor of a class that has must-call obligations
+implicitly creates obligations for the newly-created object.
+However, non-constructor methods may also create obligations
+when re-assigning non-final, owning fields or allocating
+new system-level resources.
 
-\subsection{Non-final, owning fields}
-\label{sec:non-final-owning}
+This section describes a post-condition annotation,
+\ResetMustCall, that can be written on a method
+declaration and takes one argument (the \emph{target}), which
+indicates for which in-scope program element an obligation is created.
 
-The analyses we have described so far assume that a single program
-element will control at most one resource while it is in scope:
-the analyses always issue an error if a non-final field is assigned an expression
-that controls a resource.
-In practice, however, non-final fields
-may be assigned resources. Consider
-the following example:
-
-\begin{lstlisting}[frame=tb,belowskip=3mm]
-  @MustCall("close") // default qualifier for uses of SocketContainer
-  class SocketContainer {
-    private @Owning Socket sock;
-    public SocketContainer() { sock = ...; } 
-    void close() { sock.close() };
-    void reconnect() {
-      if (!sock.isClosed()) {
-        sock.close();
-      }
-      sock = ...;
-    }
-  }
-\end{lstlisting}
-In the lifetime of a \<SocketContainer> object, it might control any
-number of resources, depending on the number of calls to
-\<reconnect()>. In order to verify the code above (and uses of the
-class), we need \emph{accumulation frames}---distinct regions of the program in
-which a program element can be treated as the subject of an
-accumulation analysis. At the boundary between each frame, \Tool
-1) checks that the obligations of the old frame are fulfilled\todo{What is
-  this check?  How can it fail?}, and
-2) resets the obligations of the object.
-
-For example, consider the following use of the \<SocketContainer> class
-above:
-
-\begin{lstlisting}[frame=tb,belowskip=3mm]
-  SocketContainer sc = ...;
-  sc.close()
-  // frame boundary
-  sc.reconnect();
-  sc.close();
-\end{lstlisting}
-This code contains two accumulation frames: the first extends from the
-constructor call to the first call to \<reconnect()>, and the second
-extends from the call to \<reconnect()> (which creates another
-obligation) to the end of the block. Because \<reconnect()> is guaranteed
-to clean up the resources that it overwrites---note the call
-to \<close()> in its implementation---this code is safe, even though \<sc>
-corresponds to two different resources: one for each frame.
-
-We introduce a new annotation, called \ResetMustCall, to delineate
-an accumulation frame. \ResetMustCall is written on a method
-declaration, and takes one argument (the \emph{target}), which
-indicates to which in-scope program element the frame applies. The
-definition for \<reconnect()> above would then become:
-
-\begin{lstlisting}[frame=tb,belowskip=3mm]
-  class SocketContainer {
-    ...
-    @ResetMustCall("this")
-    void reconnect() { ... }
-  }
-\end{lstlisting}
-When an \ResetMustCall
-method is invoked, \Tool removes any
-inferred Called Methods information about the target (\<sc> in the example).
-This rule means that even if \<close()> has already been called on \<sc>
-(as in the example)
-when \<reconnect()>
-is called, \<close()> must be called again---corresponding to the intuition
-that a new accumulation frame ``resets'' the obligations of \<sc>.
-The inferred must-call methods for \<sc> could also increase:
-if the declared type of \<sc>'s default must-call type includes any
-methods that are not in the current must-call type for \<sc>, they are added.
+At each call to a method annotated as \ResetMustCall, \Tool removes any
+inferred Called Methods information about the target.
+The inferred must-call methods for the target could also increase:
+if the declared type of the target's default must-call type includes any
+methods that are not in its the current must-call type, they are added.
 Since \ResetMustCall annotations can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
 The Must Call Consistency Checker treats calls to \ResetMustCall obligations
-as creating a fresh obligation to check, since they mark the beginning of a new
-accumulation frame.  In terms of our \cref{sec:must-call-invoked} pseudocode,
-assume we have a routine \textsc{RMCTargets}$(c)$ that returns a set of all
+as creating a fresh obligation to check.  In terms of our \cref{sec:must-call-invoked} pseudocode,
+assume we have a routine \textsc{COTargets}$(c)$ that returns a set of all
 variables $p_i$ passed to a \ResetMustCall target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
 \cref{alg:helpers} to handle \ResetMustCall as follows:
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets s.LHS, c \gets s.RHS$
-  \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{RMCTargets}(c) \}$ \newline
+  \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{COTargets}(c) \}$ \newline
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure
   \end{algorithmic}
@@ -114,10 +44,7 @@ case to the extended \textsc{MCSatisfiedAfter} predicate given in
   \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{RMCTargets}(s)$
   \EndProcedure
 \end{algorithmic}
-
-% \begin{align*}
-%   \exists p \in P &.\ [\ldots] \vee p \in \textsc{RMCTargets}(s)
-% \end{align*}
+\noindent
 This is sound since the checker creates a new obligation for calls to
 \ResetMustCall methods, and the must-call obligation inference ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
@@ -127,24 +54,54 @@ method is invoked within a method that also has an \ResetMustCall annotation
 with the same target---thus imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.
 
-Finally, the checker must enforce two new rules to ensure that
+\subsection{Non-final, owning fields}
+\label{sec:non-final-owning}
+
+\ResetMustCall allows us to verify uses of non-final fields
+that contain a resource, even if they are re-assigned. Consider
+the following example:
+
+\begin{lstlisting}[frame=tb,belowskip=3mm]
+  @MustCall("close") // default qualifier for uses of SocketContainer
+  class SocketContainer {
+    private @Owning Socket sock;
+    public SocketContainer() { sock = ...; } 
+    void close() { sock.close() };
+    @CreateObligation("this")
+    void reconnect() {
+      if (!sock.isClosed()) {
+        sock.close();
+      }
+      sock = ...;
+    }
+  }
+\end{lstlisting}
+In the lifetime of a \<SocketContainer> object, \<sock>
+might be re-assigned arbitrarily-many times: once at each
+call to \<reconnect()>. This code is safe, however: \<reconnect()>
+ensures that \<sock> is closed before re-assigning it.
+
+The checker must enforce two new rules to ensure that
 re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with an \ResetMustCall that targets that object.
-\item when a non-final, owning field $f$ is re-assigned at statement $s$, its inferred \MustCall obligation
-must be contained in its \<@CalledMethods> type at the program point before $s$.
+\item when a non-final, owning field $f$ is re-assigned at statement $s$,
+  its inferred \MustCall obligation must be contained in its \<@CalledMethods>
+  type at the program point before $s$.
 \end{itemize}
 \noindent
-Together, these rules guarantee that any re-assignment to a non-final, owning
-field (1) ends the current accumulation frame with the obligation fulfilled,
-and (2) starts a new accumulation frame, with the obligation re-imposed on
-the target at the caller.
+The first rule ensures that \<close()> is called after the last call
+to \<reconnect()>, and the second rule ensures that \<reconnect()>
+safely closes \<sock> before re-assigning it. Because calling
+a \ResetMustCall method like \<reconnect()> resets called-methods
+inference, calls to \<close> before the last call to \<reconnect()>
+are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
-Accumulation frames can also handle cases where an object, when created,
+\ResetMustCall can also handle cases where an object, when created,
 does not actually allocate a resource---but it will allocate a resource
 later in its lifecycle. Consider, for example, the no-argument constructor
 to \<java.net.Socket>. This constructor does not actually allocate an
@@ -152,11 +109,11 @@ operating system-level socket, but instead just creates the container
 object, which permits the programmer to e.g. set options which will be used
 when creating the physical socket. When such a \<Socket> is created, it
 initially has no must-call obligation; it is only when the \<Socket> is
-actually connected\todo{How does that happen?} that the must-call obligation is created.
+actually connected via a call to a method such as \<bind()>
+or \<connect()> that the must-call obligation is created.
 
-If all \<Socket>s are treated as \MustCall\<(\{"close"\})>---that is,
-without the accumulation frames described in this section---a false positive
-would be reported
+If all \<Socket>s are treated as \MustCall\<(\{"close"\})>,
+a false positive would be reported
 in code such as the below, which operates on an unconnected socket
 (simplified from real code in Apache Zookeeper~\todo{cite}):
 
@@ -169,18 +126,13 @@ in code such as the below, which operates on an unconnected socket
 \end{lstlisting}
 
 The call to \<setSoTimeout> can throw a \<SocketException> if the
-socket is actually connected when it is called, so without an
-accumulation frame our analysis would report a possible leak along
-that path.  However, we can use an accumulation frame \emph{without an
-  obligation}---i.e. in which the \<Socket> is \MustCall\<({})>---that
-extends from the constructor call to a method that connects the
-socket (such as \<connect()> or \<bind()>) to avoid this false
-positive, by annotating those methods (in the definition of
-\<java.net.Socket>) as \ResetMustCall\<("this")>.  When one of these
-methods is then called on the \<Socket> in client code that is being
-verified by \Tool, its inferred must-call obligations increase to include
-\<close()>, because by default an arbitrary \<Socket>'s type is
-\MustCall\<("close")>.
+socket is actually connected when it is called. Using \ResetMustCall,
+however, we can soundly show that this socket is not connected:
+the type of the result of the no-argument constructor can be
+treated as \<@MustCall(\{\})>, and \ResetMustCall annotations
+on the methods that actually allocate the socket---\<connect()> or
+\<bind()>---enforce that as soon as the socket is actually open,
+it is treated as \<@MustCall("close")>.
 
 % LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall
 % LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied

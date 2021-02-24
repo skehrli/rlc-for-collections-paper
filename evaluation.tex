@@ -224,20 +224,20 @@ variable.
 \begin{table}
   \caption{The contribution of the lightweight
     ownership, resource aliasing,
-    and accumulation frames
-    features in reducing false positives. Each entry is the number of extra
+    and our system for creating obligations at points other than constructors
+    in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
   \posttablecaption
   
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
-    Project                              &      without LO & without RA & without AF     \\
+    Project                              &      without LO & without RA & without CO     \\
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
     \abltablerow{apache/hadoop}                   {95}            {113}             {0}                               \\
-    \abltablerow{apache/hbase}                  {52}            {57}             {?}                               \\
+    \abltablerow{apache/hbase}                  {52}            {57}             {0}                               \\
     \hline
-    \abltablerow{\textbf{Total}}                {213}            {267}             {?}                               \\
+    \abltablerow{\textbf{Total}}                {213}            {267}             {10}                               \\
   \end{tabularx}
 \end{table}
 
@@ -245,7 +245,7 @@ The base analysis of \cref{sec:base-type-systems} produces significantly
 more false positives, because it lacks 
 lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
-accumulation frames (\cref{sec:reset-must-call}).
+creating obligations at points other than constructors (\cref{sec:reset-must-call}).
 Each contributes to \Tool's precision by eliminating false positives.
 To evaluate the contribution of each enhancement, we individually disabled each
 feature and re-ran the experiments of \cref{sec:case-studies}.
@@ -255,13 +255,13 @@ by the feature.
 
 \Cref{tab:ablation} shows that each of lightweight
 ownership and resource aliases prevents more false positive errors than the total number
-of remaining false positives on the Zookeeper and HBase benchmarks, for example. \todo{Strengthen
-  this claim when we have the results from the other benchmarks.} Though
-the accumulation frame feature prevents fewer errors (and even adds two more errors
-on HBase, at its two \ResetMustCall annotations), it permits verification
-of a complex pattern---the use of non-final, owning fields---that is used in a
-few critical places in each\todo{Does this mean, ``in the other two
-  benchmarks but not in HBase''?} benchmark.
+of remaining false positives on each benchmarks---showing that removing either
+would make our technique produce an unreasonable number of false positives.
+The system for creating new obligations at points other than constructors reduces
+false positives by a smaller amount: non-final, owning field re-assignments are rare;
+and we encountered the unconnected socket pattern described in \cref{sec:unconnected-sockets}
+only in ZooKeeper. Nevertheless, this feature allows our tool to handle an important, if rare,
+coding pattern.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
