@@ -20,18 +20,19 @@ of a user-written warning suppression, \Tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
-The results of our experiments may not generalize, comprosing the
-external validity of the results presented in
-\cref{sec:evaluation}. In particular, our subject programs are
-heavily-used, heavily-tested, and contain a high-density of resource
-usage---so, in a sense, they represent a worst-case scenario for
-\Tool.  Nevertheless, \Tool may produce more false positives, require
+The results of our experiments may not generalize, compromising the
+external validity of the experimental results.
+% In particular, our subject programs are
+% heavily-used, heavily-tested, and contain a high-density of resource
+% usage---so, in a sense, they represent a worst-case scenario for
+% \Tool.  Nevertheless,
+\Tool may produce more false positives, require
 more annotations, or be more difficult to use if applied to other
 programs.  It would be both easier and more useful to use \Tool from
 the inception of a project, rather than applying it after the code had
 already be written, as we did in our case studies: code could be
-annotated as it was written, ensuring that the annotations truly match
-the intent of the programmers.
+annotated as it was written.  This would ensure that the annotations match
+the intent of the programmers and would guide the programmers to a better design.
 
 Like any practical system, it is possible that there might
 be bugs in the implementation of \Tool, or in the design of
@@ -44,4 +45,4 @@ test suite for \Tool:
 % then add up the ``code'' columns
 3,437 lines of non-comment, non-blank code.
 \todo{Update the numbers in the previous paragraph immediately before submission.}
-This test suite is publicly available and distruted with \Tool.
+This test suite is publicly available and distributed with \Tool.
