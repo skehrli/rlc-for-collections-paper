@@ -262,12 +262,9 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 \begin{algorithm}[h]
   \caption{Helper functions for \cref{alg:consistency-checker}.  Except for
-  \textsc{MCAfter} and \textsc{CMAfter}, all procedures\todo{Previous
-    sentence called these ``functions''.  Be consistent.} will be replaced with
+  \textsc{MCAfter} and \textsc{CMAfter}, all functions will be replaced with
   more sophisticated versions in
   \cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}.
-  \todo{MCSatisfiedAfter uses $\subseteq$ for types, which is a type
-    error.  Should MCAfter and CMAfter return sets instead?}
   \todo{Ensure the two algorithms appear on the same page.}
 }
   \label{alg:helpers}
@@ -292,10 +289,10 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
     \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}
   \EndProcedure
   \Procedure{MCAfter}{$p,s$}
-  \State \Return \<@MustCall> type of $p$ after program point $s$
+  \State \Return methods in \<@MustCall> type of $p$ after $s$
   \EndProcedure
   \Procedure{CMAfter}{$p,s$}
-  \State \Return \<@CalledMethods> type of $p$ after program point $s$
+  \State \Return methods in \<@CalledMethods> type of $p$ after $s$
   \EndProcedure
   \end{algorithmic}
 
@@ -360,10 +357,8 @@ node (\cref{li:end-scope}), the obligation for $e$ has not been satisfied, and
 an error is reported.  Otherwise, the algorithm checks if the obligation for $e$
 is satisfied after $s$ (\cref{li:check-satisfied}).  For the basic checker,
 \textsc{MCSatisfiedAfter} in \cref{alg:helpers} checks whether there is some $p
-\in P$ such that after $s$, the \<@MustCall> type for $p$ is contained
-in\todo{Types aren't contained in types; you mean that the set that is an
-  argument to the type is a subset of the set that is an argument to the
-  other type.} its
+\in P$ such that after $s$, the set of methods in $p$'s \<@MustCall> type are contained
+in the set of methods in its
 \<@CalledMethods> type; if true, all \<@MustCall> methods have already been
 invoked.  This check uses the inferred flow-sensitive \<@MustCall> and
 \<@CalledMethods> qualifiers described in
@@ -391,32 +386,28 @@ handles the case of a variable copy where the right-hand side is in $P$.
 continues until $D$ reaches a fixed point.
 
 \begin{figure}
-  \includegraphics[width=0.65\columnwidth,keepaspectratio]{cfg-example.pdf}
-  \caption{Example CFG for illustrating \cref{alg:consistency-checker}.
-    ``\<e>'' is ``\<new Socket(...)>''.
+  \begin{minipage}{0.4\columnwidth}
+    \begin{lstlisting}
+s = new Socket(...); // 1
+if (...) {
+  s = null; // 2
+} else {
+  t = s; // 3
+  close(t); // 4
 }
-  \todo{Use individual labels for the two arrows leading to the exit node.
-    Put the labels on the outside (not between the two arrows), so there is no ambiguity about which
-    arrow a label is associated with.}
-  \label{fig:cfg-example}
+\end{lstlisting}
+  \end{minipage}
+  \begin{minipage}{0.55\columnwidth}
+  \includegraphics[width=\linewidth,keepaspectratio]{cfg-example.pdf}
+  \end{minipage}
+  \caption{Example code and CFG for illustrating \cref{alg:consistency-checker}.
+    ``\<e>'' is ``\<new Socket(...)>''.
+} \label{fig:cfg-example}
 \end{figure}
 
-\todo{I suggest putting this side-by-side in \cref{fig:cfg-example}, which
-  will reduce confusion and save space.}
 \paragraph{Example} To illustrate our analysis, \cref{fig:cfg-example} shows a
-CFG for the following program in our small language (irrelevant details elided):
-\begin{lstlisting}[xleftmargin=5pt]
-1: s = makeSocket(...); // new Socket(...) in Java
-   if (...) {
-2:    s = null;
-   } else {
-3:    t = s;
-4:    close(t); // t.close() in Java
-   }
-\end{lstlisting}
-\todo{The above listing is ugly because the non-numbered lines are aligned
-  differently than the numbered lines.}
-\Cref{fig:cfg-example} shows the final state of $D$ before each node.
+simple program (irrelevant details elided) and its corresponding CFG.
+The CFG shows the dataflow facts propagated along each edge.
 For initialization, statement 1 introduces the fact $\langle \{ s \}, e
 \rangle$ (where $e$ is the \<new Socket(...)> call) to $D(2)$ and $D(3)$.  At
 statement 2, $s$ is killed, causing $\langle \emptyset , e \rangle$ to be added
