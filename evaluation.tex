@@ -96,7 +96,7 @@ serious resource leak bugs in every program. \Tool issues
 more false positives than true positives in each program, but
 the number is small enough to be examined by a single developer in a
 few hours.  This is a small price to pay for knowing that the program is
-definitely free of resource leaks.  The annotations in the program are
+free of resource leaks.  The annotations in the program are
 also a benefit: as a form of machine-checked documentation, they
 express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
@@ -121,13 +121,14 @@ at the end---for example, if \<wrapInputStreamForCompression>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
 assigned this bug a priority of ``Major'' and accepted our
-patch\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}.
+patch.\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}
 One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
 but we pointed out that
 the file needs to remain open if no error occurs so that it can be
-returned.  \todo{say something like we are in the process of submitting more bug
-reports and fixes?}
+returned.  \manu{this example is also interesting in that verifying the caller
+is non-trivial.  dunno if we have space, but if we do, we may want to include}
+\todo{say something like we are in the process of submitting more bug reports and fixes?}  
 
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
@@ -183,7 +184,7 @@ complex path conditions.
 % are inferred intra-procedurally, most annotations that we had to write in
 % the case studies pertained to ownership or the side-effects of procedures.
 \Cref{tab:annos} shows how many of each annotation we wrote, across all three
-case studies.
+case studies.  \todo{make the case that this is a low annotation burden?}
 
 \begin{table}
   \caption{The reasons we made code changes to the
@@ -236,10 +237,10 @@ variable.
     Project                              &      without LO & without RA & without AF     \\
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
-    \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
-    \abltablerow{apache/hbase}                  {52}            {57}             {-2}                               \\
+    \abltablerow{apache/hadoop}                   {95}            {113}             {?}                               \\
+    \abltablerow{apache/hbase}                  {52}            {57}             {?}                               \\
     \hline
-    \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
+    \abltablerow{\textbf{Total}}                {213}            {267}             {?}                               \\
   \end{tabularx}
 \end{table}
 
@@ -379,6 +380,8 @@ neither able to reproduce their results, nor to run Grapple on current
 versions of the programs.
 We requested the analysis and Grapple's output, but as of this writing
 (months later) the Grapple authors have not yet provided them.
+\manu{I think this is strictly-speaking true but a bit harsh.  We
+may want to tone it down a bit.}
 
 Note that the TP and FP numbers not perfectly comparable between a modular
 and a whole-program analysis.

@@ -57,10 +57,13 @@ unsound---but
 they can require hours to analyze a large-scale modern Java program, due
 to the costliness of precise whole-program analysis.
 Finally, ownership type
-systems~\cite{clarke2013ownership} as employed in languages like Rust
-\todo{cite} can prevent nearly all resource leaks, but require
-rewriting the program, a substantial task which is often infeasible
-and prevents them from being applicable to legacy codebases and coding styles.
+systems~\cite{clarke2013ownership} as employed in languages like
+Rust~\cite{klabnik2018rust} can prevent nearly all resource leaks (see
+\cref{sec:rw-language}), but using them would require a significant rewrite for
+a legacy Java codebase, a substantial task which is often infeasible.
+% require
+% significantly rewriting the program, 
+% and prevents them from being applicable to legacy codebases and coding styles.
 
 The essence of finding resource leaks in a Java-like language is
 checking that a particular method (typically \<close()>) is called on
