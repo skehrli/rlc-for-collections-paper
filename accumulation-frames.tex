@@ -20,17 +20,17 @@ no verification for them is needed: placing them anywhere in the program is soun
 (but may reduce precision).
 
 When checking a call to a method annotated as
-\CreateObligation\<(>\|expr|\<)>,
-(1) \Tool\todo{can we be more specific about which component of \Tool?} treats the \MustCall
+\CreateObligation\<(>\|expr|\<)>, the Must Call Consistency Checker
+(1) treats the \MustCall
 obligation of \|expr| as \emph{satisfied},
-and (2)
-the Must Call Consistency Checker creates a fresh obligation to check.
+and (2) creates a fresh obligation to check.
 %
 In terms of our \cref{sec:must-call-invoked} pseudocode,
 assume we have\todo{Put this in the pseudocode} a routine \textsc{COTargets}$(c)$ that returns a set of all
 variables $p_i$ passed to a \CreateObligation target parameter of the method
-invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
-\cref{alg:helpers} to handle \CreateObligation as follows:
+invoked by $c$.  Then, we can update the \textsc{FactsFromCall} and \textsc{MCSatisfiedAfter} procedures of
+\cref{alg:helpers} to handle \CreateObligation as follows ($[\ldots]$ stands for the cases shown previously,
+including those in \cref{sec:ownership-transfer}):
 \todo{I suggest putting the base code first and the addition with COTargets second.}
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
@@ -38,14 +38,8 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
   \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{COTargets}(c) \}$ \newline
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure
-  \end{algorithmic}
-\todo{Cut or move this text, making all the pseudocode a single \<algorithmic> block.}
-I.e., we add one more
-case to the extended \textsc{MCSatisfiedAfter} predicate given in
-\cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
-\begin{algorithmic}
   \Procedure{MCSatisfiedAfter}{$P,s$}
-  \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{RMCTargets}(s)$
+  \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{COTargets}(s)$
   \EndProcedure
 \end{algorithmic}
 \noindent
