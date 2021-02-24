@@ -14,14 +14,14 @@ removing another set of false positives caused by unconnected sockets
 
 The analyses we have described so far assume that a single program
 element will control at most one resource while it is in scope:
-they always issue an error if a non-final field is assigned an expression
+the analyses always issue an error if a non-final field is assigned an expression
 that controls a resource.
-In practice, however, this is not true---non-final fields
-may be assigned resources. Consider, for example,
-the following code:
+In practice, however, non-final fields
+may be assigned resources. Consider
+the following example:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
-  @MustCall("close")
+  @MustCall("close") // default qualifier for uses of SocketContainer
   class SocketContainer {
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
@@ -39,9 +39,10 @@ number of resources, depending on the number of calls to
 \<reconnect()>. In order to verify the code above (and uses of the
 class), we need \emph{accumulation frames}---distinct regions of the program in
 which a program element can be treated as the subject of an
-accumulation analysis. At the boundary between each frame, we check
-that 1) the obligations of the old frame are fulfilled, and 2)
-reset the obligations of the object.
+accumulation analysis. At the boundary between each frame, \Tool
+1) checks that the obligations of the old frame are fulfilled\todo{What is
+  this check?  How can it fail?}, and
+2) resets the obligations of the object.
 
 For example, consider the following use of the \<SocketContainer> class
 above:
@@ -151,7 +152,7 @@ operating system-level socket, but instead just creates the container
 object, which permits the programmer to e.g. set options which will be used
 when creating the physical socket. When such a \<Socket> is created, it
 initially has no must-call obligation; it is only when the \<Socket> is
-actually connected that the must-call obligation is created.
+actually connected\todo{How does that happen?} that the must-call obligation is created.
 
 If all \<Socket>s are treated as \<@MustCall(\{"close"\})>---that is,
 without the accumulation frames described in this section---a false positive
