@@ -20,21 +20,18 @@ deliberately unsound, unlike \Tool.
 The Eclipse Compiler for Java includes a simple dataflow-based
 bug-finder for resource leaks~\cite{ecj-resource-leak}. Their analysis
 uses a fixed set of ownership heuristics and a fixed list of wrapper
-classes; unlike \Tool, it is also unsound. It is fast and
-\todo{possibly} precise.  Similar analyses---with similar trade-offs
+classes; unlike \Tool, it is unsound. It is fast.  Similar analyses---with similar trade-offs
 compared to \Tool---are present in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
-PMD~\cite{pmd-resource-leak}, Infer~\cite{infer-resource-leak}, and others.
-We compare to the Eclipse analysis directly in \cref{sec:eclipse}.
+PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
+\Cref{sec:eclipse} experimentally evaluates the Eclipse analysis.
 
 Typestate analysis~\cite{StromY86,FinkYDRG2008} can be used to
 find resource leaks.  Grapple~\cite{zuo2019grapple} is the most recent system to
 use this approach, leveraging a disk-based graph engine to achieve unprecedented
 scalability on a single machine.  Compared to \Tool, Grapple is more precise but suffers
-from unsoundness and an order of magnitude longer run times.
-We compare directly to Grapple in \cref{sec:grapple}. \todo{Another pass on this
-after we look at specs}
-
+from unsoundness and much longer run times.
+\Cref{sec:grapple} gives a more detailed comparison to Grapple.
 
 Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
 resource-leak detection approaches \todo{similar to Eclipse,then?} that are
@@ -45,15 +42,18 @@ The CLOSER~\cite{dillig2008closer} automatically inserts Java code to dispose of
 resources when they are no longer ``live'' according to its dataflow analysis.
 Their approach requires an expensive alias analysis for soundness, as well as
 manually-provided aliasing specifications for linked libraries.
-
-\Tool relies on an accumulation
-analysis~\cite{KelloggRSSE2020,FahndrichLeino03} to avoid the need
-for a whole-program alias analysis, while retaining soundness.  We
+\todo{\Tool requires that too, though only lightweight specifications.
+  Mention that?}
+\Tool uses accumulation
+analysis~\cite{KelloggRSSE2020,FahndrichLeino03} to achieve soundness without
+the need
+for a whole-program alias analysis.
+We
 build on the core analysis described in~\cite{KelloggRSSE2020},
 adding the concept of accumulation frames.
 
 \paragraph{Dynamic analysis}
-Some approaches use dynamic analysis to ameliorate leaks.  Resco~\cite{dai2013resco}
+Some approaches use dynamic analysis to ameliorate leaks.  Resco \cite{dai2013resco}
 operates similarly to a garbage collector, tracking resources whose program
 elements have become unreachable. When a given resource (such as file
 descriptors) is close to exhaustion, the runtime runs Resco to clean up any
@@ -72,9 +72,8 @@ Testing can only show the presence of bugs, not their absence;
 \paragraph{Data sets and surveys}
 In terms of data sets for leak detection, The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
-leak bugs. Unfortunately, it includes only the compiled apps, not the source
-code, so we were unable to run \Tool on its contents (\Tool requires source code
-as its input).
+leak bugs. Unfortunately, it includes only the compiled apps.
+\Tool runs on source code, so we were unable to run \Tool on DroidLeaks.
 
 \todo{This~\cite{ghanavati2020memory} is a recent study on what kinds
   of resource and memory leak bugs happen in large Java projects. I'm
@@ -85,7 +84,7 @@ as its input).
 \subsection{Language-based approaches}\label{sec:rw-language}
 
 \paragraph{Ownership types and Rust} Ownership type
-systems~\cite{clarke2013ownership} generally impose control over aliasing, which
+systems~\cite{clarke2013ownership} impose control over aliasing, which
 in turn enables guaranteeing other high-level properties, like absence of
 resource leaks.  We do not discuss the vast literature on ownership type systems
 here (see Clarke et al.~\cite{clarke2013ownership} for a survey). Instead, we
@@ -96,9 +95,9 @@ For a detailed overview of ownership in Rust, see Chapter 4
 of~\cite{klabnik2018rust}; we give a brief overview here.  In Rust, ownership is
 used to manage both memory and other resources.  Every value associated with a
 resource must have a \emph{unique} owning pointer, and when an owning pointer's
-lifetime ends, the value is ``dropped,'' ensuring all resources are freed.  The
-power of Rust's ownership type system is that it not only statically prevents
-resource leaks, but also other important issues like ``double-free'' bugs
+lifetime ends, the value is ``dropped,'' ensuring all resources are freed.
+Rust's ownership type system statically prevents
+not only resource leaks, but also other important issues like ``double-free'' bugs
 (releasing a resource more than once) and ``use-after-free'' bugs (using a
 resource after it has been released). However, this power comes with a cost; to
 enforce uniqueness, non-owning pointers must be invalidated after an assignment,
@@ -115,10 +114,10 @@ resource leaks in existing, large Java code bases; adapting such programs to use
 a full Rust-style ownership type system would be an enormous and impractical
 undertaking.
 
-\paragraph{Other approaches} Weimer and Necula~\cite{WeimerN04} proposed
-\emph{compensation stacks}, a generalization of C++ destructors and Java's
+\paragraph{Other approaches} Compensation stacks~\cite{WeimerN04}
+generalize C++ destructors and Java's
 try-with-resources, to avoid resource leak problems in Java.  While
-compensation stacks make resource leaks much less likely, they do not provide a
+compensation stacks make resource leaks less likely, they do not provide a
 guarantee that leaks will not occur, unlike \Tool.
 
 An alternative to applying a typestate analysis to an existing program
@@ -140,3 +139,5 @@ of existing code impractical.
 % for soundness, making them impractical for resource leak detection
 % in industrial-size Java programs. \todo{However, people have probably tried
 %   so go figure that out.}
+
+% LocalWords:  Relda Relda2 Resco runtime DroidLeaks
