@@ -162,7 +162,9 @@ as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
 so we issue an error when \<Optional.of> is returned. In this case, the use
 of the \<Optional> class complicates the code; if \<Optional> was replaced
-by \<null>, as some advocate~\cite{ErnstNothingIsBetterThanOptional},
+by \<null>,
+%% Leave out of submitted version.
+% as some advocate~\cite{ErnstNothingIsBetterThanOptional},
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
 
