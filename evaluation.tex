@@ -168,8 +168,33 @@ support Java generics as future work.
 \subsubsection{Annotations and code changes}
 \label{sec:anno-burden}
 
+\begin{table}
+  \caption{The number of annotations of each
+    type supported by \Tool that we wrote, across all
+    three case studies.\todo{Order these by how common they are, once
+    we have final counts.}}
+  \label{tab:annos}
+  \begin{tabularx}{\columnwidth}{@{}Xr@{}}
+    Annotation          &      Count     \\
+    \hline
+    \<@Owning>          &      28+      \\
+    \<@NotOwning>       &      8+       \\
+    \<@MustCallAlias>   &      6+       \\
+    \<@ResetMustCall>   &      19+      \\
+    \<@EnsuresCalledMethods> & 21+      \\
+    \<@MustCall>        &      13+      \\
+    \<@PolyMustCall>    &      4+       \\
+  \end{tabularx}
+\end{table}
+
+Because most relevant \<@MustCall> and \<@CalledMethods> annotations
+are inferred intra-procedurally, most annotations that we had to write in
+the case studies pertained to ownership or the side-effects of procedures.
+\Cref{tab:annos} shows how many of each annotation we wrote, across all three
+case studies.
+
 \todo{Make a table of the reasons we made code changes, and discuss it here.}
-\todo{Discuss the annotations that had to be written by hand.}
+
 
 \subsection{Evaluating our enhancements}
 % \subsection{Ablating lightweight ownership, resource aliasing, and accumulation frames}
