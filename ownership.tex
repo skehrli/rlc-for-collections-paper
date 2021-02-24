@@ -75,18 +75,20 @@ To ensure soundness, the analysis must ensure that the \<@MustCall> obligation
 of any \<@Owning> location is satisfied.  For returns and parameters, we simply
 enhance the \textsc{HasObligation} routine of \Cref{alg:helpers} to check for
 ownership:
+\todo{I'm not sure what ``$e$ is \<@Owning>'' means.  A type is \<@Owning>
+  or not (if \<@Owning> is a type qualifier}, but we cannot say that of an expression.}
 \begin{algorithmic}
   \Procedure{HasObligation}{$e$}
   \State \Return $e$ has a declared \<@MustCall> type and $e$ is \<@Owning>
   \EndProcedure
 \end{algorithmic}
-We discuss checking of \<@Owning> fields in \Cref{sec:owning-fields}.  
+\Cref{sec:owning-fields} discusses checking of \<@Owning> fields.
 % These relatively simple changes are all that
 % is required to add lightweight ownership tracking to our technique.\todo{but we
 % didn't discuss fields yet...}
 
-By default, our checker assumes that unannotated return types are \<@Owning>,
-but that parameter and field types are \<@NotOwning>.  These assumptions
+\Tool's default for unannotated return types is \<@Owning>,
+and for unannotated parameter and field types is \<@NotOwning>.  These assumptions
 coincide well with coding patterns we observed in practice, reducing the
 annotation burden for programmers.  Further, this treatment of parameter and
 return types ensures sound handling of unannotated third-party libraries: any
