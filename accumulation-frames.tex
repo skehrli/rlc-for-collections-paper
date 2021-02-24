@@ -6,24 +6,22 @@ implicitly creates obligations for the newly-created object.
 However, non-constructor methods may also create obligations
 when re-assigning non-final, owning fields or allocating
 new system-level resources.
+A post-condition annotation,
+\ResetMustCall,
+indicates for which expression an obligation is created.
 
-This section describes a post-condition annotation,
-\ResetMustCall, that can be written on a method
-declaration and takes one argument (the \emph{target}), which
-indicates for which in-scope program element an obligation is created.
-
-At each call to a method annotated as \ResetMustCall, \Tool removes any
-inferred Called Methods information about the target.
-The inferred must-call methods for the target could also increase:
-if the declared type of the target's default must-call type includes any
-methods that are not in its the current must-call type, they are added.
+At each call to a method annotated as \ResetMustCall\<(\emph{expr})>, \Tool removes any
+inferred Called Methods information about \|expr|, reverting to
+the declared type of \|expr|.
+% if the target's default must-call type includes any
+% methods that are not in its the current must-call type, they are added.
 Since \ResetMustCall annotations can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
 The Must Call Consistency Checker treats calls to \ResetMustCall obligations
 as creating a fresh obligation to check.  In terms of our \cref{sec:must-call-invoked} pseudocode,
-assume we have a routine \textsc{COTargets}$(c)$ that returns a set of all
+assume we have\todo{Put this in the pseudocode} a routine \textsc{COTargets}$(c)$ that returns a set of all
 variables $p_i$ passed to a \ResetMustCall target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
 \cref{alg:helpers} to handle \ResetMustCall as follows:
@@ -34,6 +32,7 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure
   \end{algorithmic}
+\todo{Cut or move this text, making all the pseudocode a single \<algorithmic> block.}
 Additionally, if during analysis, we encounter a call to a \ResetMustCall
 method on a variable $p \in P$, \Tool treats the \MustCall
 obligation of $p$ as \emph{satisfied}.  I.e., we add one more
