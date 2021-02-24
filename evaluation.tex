@@ -61,49 +61,43 @@ Our evaluation has three parts:
 \subsection{Case studies on open-source projects}
 \label{sec:case-studies}
 
-We selected \todo{3} popular open-source projects with significant
-usage of resources that were analyzed by prior work~\cite{zuo2019grapple}.
+We selected 3 popular open-source projects that were analyzed by prior work~\cite{zuo2019grapple}.
 For each project, we selected and analyzed one module
 containing significant uses of leakable resources. We used
 the latest version of the source code that was available
 when we analyzed the code.
 
+Our methodology was:
+(1)
 We modified the
-build system to run our analysis on the module. We manually
+build system to run our analysis on the module, analyzing uses of resource
+classes that are defined in the JDK\@.
+It also reports the maximum possible number of resources that could be
+leaked:  each obligation at a formal parameter or method call.
+(2) We manually
 annotated each program with must-call, called-methods, and ownership
-annotations (the ``Annos'' column in \cref{tab:case-studies}).
-We also
-made small, semantics-preserving changes to the programs---such as adding
-\<final> modifiers to fields---to reduce
-false positives from our analysis. We report the total number
-of such changes to each project, excluding changes
-that have no impact on run-time behavior, such as annotations, comments,
-warning suppressions, or import statements (``Code changes'').
-The annotations and code changes are discussed further in \cref{sec:annos}.
-We ran the analysis and manually categorized each warning as revealing a
-real resource leak (a true positive or TP) or as correct code that our
-system is unable to prove correct (a false positive or FP\@).
-We discarded all warnings concerning uses of classes that are not
-part of the JDK.
+annotations (see \cref{sec:annos}).
 The
 annotated versions of the case study programs (including
 the commit hashes that we analyzed) are available at
 \todo{an anonymized fork of the projects}.
-While performing the case study, most of our time was spent
-understanding the code under analysis (which no authors were familiar
-with before beginning), writing annotations and especially categorizing
-warnings as true or false positives.
-
-We also measured the number of
-possible resource leaks in each project (``resources''),
-by instrumenting our analysis to record each time that
-a new obligation was introduced for an object whose declared type
-is part of the JDK.
-We measured the run time,
+% the ``Annos'' column in \cref{tab:case-studies}).
+% We also
+% made small, semantics-preserving changes to the programs---such as adding
+% \<final> modifiers to fields---to reduce
+% false positives from our analysis. We report the total number
+% of such changes to each project, excluding changes
+% that have no impact on run-time behavior, such as annotations, comments,
+% warning suppressions, or import statements (``Code changes'').
+% The annotations and code changes are discussed further in \cref{sec:annos}.
+(3) We iteratively ran the analysis to correct our annotations.
+We measured the run time
 as the median of 5 trials on
 % This is Mike's home machine.  Are there any other relevant parameters?
 a machine with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
-
+(4) We manually categorized each warning as revealing a
+real resource leak (a true positive or TP) or as correct code that our
+system is unable to prove correct (a false positive or FP\@).
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
 serious resource leak bugs in every program. \Tool issues
@@ -123,7 +117,7 @@ in our case studies.\looseness=-1
 
 \begin{figure}
   \lstinputlisting{hadoop-bug.txt}
-  \caption{A true positive that we found in Hadoop. Our pull request
+  \caption{A true positive that \Tool found in Hadoop. Our pull request
     to fix this bug was accepted by Hadoop's developers.}
   \label{fig:hadoop-bug}
 \end{figure}
@@ -190,7 +184,7 @@ support Java generics as future work.
   \end{tabularx}
 \end{table}
 
-Because most relevant \<@MustCall> and \<@CalledMethods> annotations
+Because most relevant \MustCall and \<@CalledMethods> annotations
 are inferred intra-procedurally, most annotations that we had to write in
 the case studies pertained to ownership or the side-effects of procedures.
 \Cref{tab:annos} shows how many of each annotation we wrote, across all three

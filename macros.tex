@@ -33,12 +33,12 @@
 % \protected\def\codeid#1{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
 \protected\def\codeid#1{\ifmmode{\mbox{\smaller\ttfamily{#1}}}\else{\smaller\ttfamily #1}\fi}
 
-\newcommand{\MustCallAlias}{\codeid{@Must\-Call\-Alias}\xspace}
-\newcommand{\EnsuresCalledMethods}{\<@En\-sures\-Call\-ed\-Meth\-ods>\xspace}
 \newcommand{\CalledMethodsBottom}{\<@Call\-ed\-Meth\-ods\-Bottom>\xspace}
+\newcommand{\EnsuresCalledMethods}{\<@En\-sures\-Call\-ed\-Meth\-ods>\xspace}
+\newcommand{\MustCall}{\codeid{@Must\-Call}\xspace}
+\newcommand{\MustCallAlias}{\codeid{@Must\-Call\-Alias}\xspace}
+\newcommand{\MustCallUnknown}{\codeid{@Must\-Call\-Unknown}\xspace}
 \newcommand{\ResetMustCall}{\<@Reset\-Must\-Call>\xspace}
-% Deprecated
-\newcommand{\mccannot}{\MustCallAlias}
 
 % "trule" stands for ``type rule''
 \newcommand{\trule}[2]{\[\frac{#1}{#2}\]}

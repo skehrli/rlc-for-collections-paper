@@ -106,23 +106,23 @@ a given object before the object is deallocated.
 This type system is general---it is not specific
 to resource leaks.
 
-The Must Call type system supports two qualifiers: \<@MustCall> and
-\<@MustCallUnknown>. The \<@MustCall> qualifier's arguments are the
+The Must Call type system supports two qualifiers: \MustCall and
+\MustCallUnknown. The \MustCall qualifier's arguments are the
 methods that the annotated type must call. The declaration
-\<@MustCall(\{"a"\}) Object obj> means that before \<obj> is
+\MustCall\<(\{"a"\}) Object obj> means that before \<obj> is
 deallocated, \<obj.a()> might need to be called.
 \Tool conservatively requires all these methods to be called,
 and it issues a warning if they are not.
 
 For example, consider \cref{fig:example}. The expression \<null> has type
-\<@MustCall(\{\})>---it has no obligations
+\MustCall\<(\{\})>---it has no obligations
 to call particular methods---so \<s> has that type after its initialization.
-The \<new> expression has type \<@MustCall("close")>, and therefore
+The \<new> expression has type \MustCall\<("close")>, and therefore
 \<s> has that type after the assignment.
 At the start of the \<finally> block, where both values for \<s> flow,
-the type of \<s> is their least upper bound, which is \<@MustCall("close")>.
+the type of \<s> is their least upper bound, which is \MustCall\<("close")>.
 
-% Note that the type \<@MustCall("close")>
+% Note that the type \MustCall\<("close")>
 % can represent anything that \emph{might} need to
 % call \<close()>: for example, at the entrance to
 % the \<finally> block in \cref{fig:example}, \<s>'s
@@ -130,15 +130,15 @@ the type of \<s> is their least upper bound, which is \<@MustCall("close")>.
 % need to call any methods, or an open \<Socket>, which does.
 % Thus, either the obligation to close or no obligation at all
 % can be represented by the static
-% type \<@MustCall(\{"close"\}) Socket>, which can be read as ``a
+% type \MustCall\<(\{"close"\}) Socket>, which can be read as ``a
 % Socket that might need to call close before it is deallocated''.
 
 Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
-All types are subtypes of \<@MustCallUnknown>.
-The subtyping relationship for \<@MustCall> types is:
-\trule{A \subseteq B}{\<@MustCall(A)> \sqsubseteq \<@MustCall(B)>}
+All types are subtypes of \MustCallUnknown.
+The subtyping relationship for \MustCall types is:
+\trule{A \subseteq B}{\MustCall\<(A)> \sqsubseteq \MustCall\<(B)>}
 
-The default type qualifier is \<@MustCall(\{\})> for base types without a
+The default type qualifier is \MustCall\<(\{\})> for base types without a
 programmer-written type qualifier.\footnote{For unannotated local variable types,
   flow-sensitive type refinement infers a qualifier.}
 % By writing another type qualifier on the declaration of a class, a
@@ -148,7 +148,7 @@ provides JDK annotations which require that every
 \<Closeable> object must have the \<close()> method called before
 it is deallocated.
 
-% also provides an ``inheritable'' version of the \<@MustCall> annotation,
+% also provides an ``inheritable'' version of the \MustCall annotation,
 % which allows us to annotate a class (or interface) and all of its subtypes.
 % For example, we use such an annotation on \<java.io.Closeable> to indicate
 % that all \<Closeable> objects must have the \<close()> method called before
@@ -215,7 +215,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \label{sec:must-call-invoked}
 
 \begin{algorithm}[t]
-  \caption{Finding unfulfilled \<@MustCall> obligations in a method.
+  \caption{Finding unfulfilled \MustCall obligations in a method.
     \Cref{alg:helpers} defines helper functions.}
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
@@ -271,7 +271,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \begin{algorithmic}[1]
   \State // \textit{Does e introduce a must-call obligation to check?}
   \Procedure{HasObligation}{$e$}
-  \State \Return $e$ has a declared \<@MustCall> type
+  \State \Return $e$ has a declared \MustCall type
   \EndProcedure
   \State // \textit{s must be a call statement p = m(p1, p2, ...)}
   \Procedure{FactsFromCall}{$s$}
@@ -289,7 +289,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
     \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}
   \EndProcedure
   \Procedure{MCAfter}{$p,s$}
-  \State \Return methods in \<@MustCall> type of $p$ after $s$
+  \State \Return methods in \MustCall type of $p$ after $s$
   \EndProcedure
   \Procedure{CMAfter}{$p,s$}
   \State \Return methods in \<@CalledMethods> type of $p$ after $s$
@@ -298,8 +298,8 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 \end{algorithm}
 
-Given \<@MustCall> and \<@CalledMethods> types, the Must
-Call Consistency Checker ensures that \<@MustCall> methods for each object
+Given \MustCall and \<@CalledMethods> types, the Must
+Call Consistency Checker ensures that \MustCall methods for each object
 are always invoked before the object becomes unreachable.  This property is
 checked via an intra-procedural dataflow analysis.  Here, we present
 a simple, sound version of the analysis, with limited reasoning about aliasing.
@@ -317,7 +317,7 @@ predicates as the consistency checker is path-insensitive.
 
 % \manu{Martin, is the
 % must-call checker path-sensitive?  As in, does it interpret null checks?}
-% Martin's response: the MustCall Checker is path sensitive in the sense that
+% Martin's response: the Must Call Checker is path sensitive in the sense that
 % it's flow sensitive and the type of null is bottom. It doesn't have any
 % special logic to handle null checks, but it ``does the right thing''
 % anyway.
@@ -336,11 +336,11 @@ high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
 a set of variables and $e$ is an expression.  The meaning
 of $D$ is as follows: if $\langle P, e \rangle
-\in D(s)$, then $e$ has a nonempty \<@MustCall> type, and all variables in $P$
+\in D(s)$, then $e$ has a nonempty \MustCall type, and all variables in $P$
 are \emph{must aliases} for the value of $e$ at the program point before $s$.
 Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$
-that does not have its \<@MustCall> obligation fulfilled, and reports an error.
+that does not have its \MustCall obligation fulfilled, and reports an error.
 
 \Cref{alg:consistency-checker} proceeds as follows.  \Cref{li:call-initial-obs}
 invokes \textsc{InitialObligations} to initialize $D$.  Only formal parameters
@@ -357,10 +357,10 @@ node (\cref{li:end-scope}), the obligation for $e$ has not been satisfied, and
 an error is reported.  Otherwise, the algorithm checks if the obligation for $e$
 is satisfied after $s$ (\cref{li:check-satisfied}).  For the basic checker,
 \textsc{MCSatisfiedAfter} in \cref{alg:helpers} checks whether there is some $p
-\in P$ such that after $s$, the set of methods in $p$'s \<@MustCall> type are contained
+\in P$ such that after $s$, the set of methods in $p$'s \MustCall type are contained
 in the set of methods in its
-\<@CalledMethods> type; if true, all \<@MustCall> methods have already been
-invoked.  This check uses the inferred flow-sensitive \<@MustCall> and
+\<@CalledMethods> type; if true, all \MustCall methods have already been
+invoked.  This check uses the inferred flow-sensitive \MustCall and
 \<@CalledMethods> qualifiers described in
 \cref{sec:must-call,sec:called-methods}.
 %% Mike doesn't see a way to resolve this comment.  Once MCAfter and
@@ -417,7 +417,7 @@ $s$, causing $\langle \{ s, t \}, e \rangle$ to be added to $D(4)$.  For
 statement 4, $\textsc{MCSatisfiedAfter}(\{s,t\},\mathtt{close(t)})$ holds, so no
 facts are propagated from 4 to $\mathit{exit}$.
 
-At this point, we have described a sound checker for \<@MustCall> obligations.
+At this point, we have described a sound checker for \MustCall obligations.
 % But for real code, this checker emits too many false positives.  In particular,
 % the dataflow analysis is purely intra-procedural, and it will report errors in
 % cases where obligations are satisfied via parameter passing, returns, or fields.
@@ -444,8 +444,8 @@ Subsequent sections make the checker more precise.
 % \begin{enumerate}
 %   \item The Ownership Checker requests a Must Call type from the Must
 %     Call Checker for \<expr> at $P$. Suppose this type is
-%     \<@MustCall(>$A$\<)> for some set of methods $A$ (if the type is
-%     \<@MustCallUnknown>, the Ownership Checker always issues an
+%     \MustCall\<(>$A$\<)> for some set of methods $A$ (if the type is
+%     \MustCallUnknown, the Ownership Checker always issues an
 %     error).
 %   \item The Ownership Checker requests a Called Methods type from the
 %     Called Methods Checker for \<expr> at $P$. Suppose this type is

@@ -105,7 +105,7 @@ invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
   \EndProcedure
   \end{algorithmic}
 Additionally, if during analysis, we encounter a call to a \ResetMustCall
-method on a variable $p \in P$, we treat the \<@MustCall>
+method on a variable $p \in P$, \Tool treats the \MustCall
 obligation of $p$ as \emph{satisfied}.  I.e., we add one more
 case to the extended \textsc{MCSatisfiedAfter} predicate given in
 \cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
@@ -120,7 +120,7 @@ case to the extended \textsc{MCSatisfiedAfter} predicate given in
 % \end{align*}
 This is sound since the checker creates a new obligation for calls to
 \ResetMustCall methods, and the must-call obligation inference ensures the
-\<@MustCall> type for the target will have a \emph{superset} of any methods present
+\MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
 There is one exception to this consistency check: if an \ResetMustCall
 method is invoked within a method that also has an \ResetMustCall annotation
@@ -133,7 +133,7 @@ above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with an \ResetMustCall that targets that object.
-\item when a non-final, owning field $f$ is re-assigned at statement $s$, its inferred \<@MustCall> obligation
+\item when a non-final, owning field $f$ is re-assigned at statement $s$, its inferred \MustCall obligation
 must be contained in its \<@CalledMethods> type at the program point before $s$.
 \end{itemize}
 \noindent
@@ -154,7 +154,7 @@ when creating the physical socket. When such a \<Socket> is created, it
 initially has no must-call obligation; it is only when the \<Socket> is
 actually connected\todo{How does that happen?} that the must-call obligation is created.
 
-If all \<Socket>s are treated as \<@MustCall(\{"close"\})>---that is,
+If all \<Socket>s are treated as \MustCall\<(\{"close"\})>---that is,
 without the accumulation frames described in this section---a false positive
 would be reported
 in code such as the below, which operates on an unconnected socket
@@ -172,15 +172,15 @@ The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called, so without an
 accumulation frame our analysis would report a possible leak along
 that path.  However, we can use an accumulation frame \emph{without an
-  obligation}---i.e. in which the \<Socket> is \<@MustCall({})>---
-that extends from the constructor call to a method that connects the
+  obligation}---i.e. in which the \<Socket> is \MustCall\<({})>---that
+extends from the constructor call to a method that connects the
 socket (such as \<connect()> or \<bind()>) to avoid this false
 positive, by annotating those methods (in the definition of
 \<java.net.Socket>) as \ResetMustCall\<("this")>.  When one of these
 methods is then called on the \<Socket> in client code that is being
 verified by \Tool, its inferred must-call obligations increase to include
 \<close()>, because by default an arbitrary \<Socket>'s type is
-\<@MustCall("close")>.
+\MustCall\<("close")>.
 
 % LocalWords:  belowskip MustCall SocketContainer sc ResetMustCall
 % LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied
