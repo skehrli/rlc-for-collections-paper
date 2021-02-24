@@ -112,7 +112,10 @@ techniques in future work.
 \subsection{Final owning fields}
 \label{sec:owning-fields}
 
-  Additional class-level checking is required for \<@Owning> fields, as the code
+  Additional class-level checking is required for \<@Owning>
+  fields\todo{There are only \<@Owning>
+  fields if \<@Owning>
+  is a declaration annotation.  Or should this be ``fields of \<@Owning> type''?}, as the code
   satisfying their \<@MustCall> obligations nearly always spans multiple
   procedures.  We first discuss the case of final fields,\footnote{We only
   consider instance fields in this paper; we have not observed resource leaks
