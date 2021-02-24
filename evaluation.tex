@@ -87,6 +87,8 @@ We measured the run time
 as the median of 5 trials on
 % This is Mike's home machine.  Are there any other relevant parameters?
 a machine with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
+Our analysis is embarassingly parallel, but our implementation is
+single-threaded because javac is single-threaded.
 (4) We manually categorized each warning as revealing a
 real resource leak (a true positive or TP) or as correct code that our
 system is unable to prove correct (a false positive or FP\@).
