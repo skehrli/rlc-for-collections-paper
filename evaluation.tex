@@ -245,7 +245,7 @@ variable to be reasoned about flow-sensitively.
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
     \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
-    \abltablerow{apache/hbase}                  {52}            {57}             {?}                               \\
+    \abltablerow{apache/hbase}                  {52}            {57}             {-2}                               \\
     \hline
     \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
   \end{tabularx}
@@ -265,9 +265,10 @@ by the feature.
 
 \Cref{tab:ablation} shows that each of lightweight
 ownership and resource aliases prevents more false positive errors than the total number
-of remaining false positives on the Zookeeper benchmark, for example. \todo{Strengthen
+of remaining false positives on the Zookeeper and HBase benchmarks, for example. \todo{Strengthen
   this claim when we have the results from the other benchmarks.} Though
-the accumulation frame feature prevents fewer errors, it permits verification
+the accumulation frame feature prevents fewer errors (and even adds two more errors
+on HBase, which includes only two \<@ResetMustCall> annotations), it permits verification
 of a complex pattern---the use of non-final, owning fields---that is used in a
 few critical places in each benchmark.
 
