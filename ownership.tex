@@ -1,11 +1,24 @@
 \section{Lightweight ownership tracking}
 \label{sec:lightweight-ownership}
 
+\todo{I suggest that throughout this section (including in the title), we
+  rename ``lightweight ownership tracking'' to ``lightweight ownership
+  transfer''.  Our system doesn't really \emph{track} ownership so much as
+  \emph{transfer} it.  Though I guess what is really being transferred is
+  MustCall obligations, so maybe that fact can inspire better naming.  Just
+  ``lightweight ownership'' is a bit too vague for my tastes, but I think
+  it is at least better than ``lightweight ownership tracking''.}
+
+
 \Cref{sec:base-type-systems} describes a sound accumulation-based
 checker for resource leaks. However, that checker often encounters false
 positives caused by cases where a \<@MustCall> obligation is satisfied
 in another procedure via parameter passing, return values, or object fields.
 Consider the following code that safely closes a \<Socket>:
+
+\todo{Although \<@MustCall("close")> is the default type for \<Socket t>, I
+  suggest we write it out explicitly, or write a comment, because I don't
+  think that will be obvious to readers.}
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
   void example(String myHost, int myPort) {
@@ -27,30 +40,31 @@ goes out of scope in \<example()>.
 % place to check.
 
 This section describes a \emph{lightweight ownership tracking} technique for reducing
-false positives in such cases.  With lightweight ownership, programmer
-annotations \emph{cannot} introduce any checker unsoundness; they can only
-reduce false positives.
-Lightweight ownership annotations are not types---rather, they represent
-hints to the consistency checker: each such annotation creates an obligation
-in one place in the program, and takes away an obligation somewhere else.
-Further, unlike ownership type systems\todo{cite},
+false positives in such cases.
+Programmers write annotations such as \<@Owning> that transfer an
+obligation:  they take away an obligation
+in one place in the program and create an obligation somewhere else.
+Programmer
+annotations \emph{cannot} introduce any checker unsoundness; at worst,
+incorrect \<@Owning> annotations will cause false positive warnings.
+Unlike ownership type systems\todo{cite},
 lightweight ownership imposes no restriction on what operations can be performed
 through an alias, and hence has a minimal impact on the programming model.
 
 \subsection{Ownership transfer}
 \label{sec:ownership-transfer}
 
-With lightweight ownership, a parameter, return, or field may be annotated
-as either \<@Owning> or \<@NotOwning>.
-%% MK: it's not a type system. I clarified above.
-%% \todo{If this is a type system, state the type hierarchy.  It's not clear
-%%   whether this is actually a declaration annotation, however.  Please
-%%   clarify.  If it's a type system, then every type has (not ``may have'')
-%%   an \<@Owning> or \<@NotOwning> qualifier.}
-In the Must Call Consistency Checker
-(\Cref{sec:must-call-invoked}), if a tracked variable $p$ is assigned to such an
-\<@Owning> location $l$, $p$'s
-\<@MustCall> obligation is treated as satisfied. Assume\todo{Remove their
+\<@Owning> is a declaration annotation, not a type qualifier; it can be
+written on a declaration such as a parameter, return, field, etc., but not
+on a type.
+A pseudo-assignment to an \<@Owning> lvalue transfers the right-hand side's
+\<@MustCall> obligation.
+More concretely, in the Must Call Consistency Checker
+(\Cref{sec:must-call-invoked}), at a (pseudo-)assignment to an lvalue with
+an \<@Owning> annotation, the right-hand side's
+\<@MustCall> obligation is treated as satisfied.
+
+Assume\todo{Remove their
   description from here and put the two helper functions in the algorithmic
   snippet.} we have a helper
 function $\textsc{OwningReturn}(CFG)$ that checks if the return type of $CFG$'s
@@ -73,16 +87,6 @@ ownership transfer as follows:
   \hspace*{6em} $\vee\ (s \mathrm{\ is\ } \mathtt{q.f\ =\ p} \wedge \mathtt{f} \mathrm{\ is\ } \mathtt{@Owning})$
   \EndProcedure
 
-\end{algorithmic}
-
-To ensure soundness, the analysis must ensure that the \<@MustCall> obligation
-of any \<@Owning> location is satisfied.  For returns and parameters, we simply
-enhance the \textsc{HasObligation} routine of \cref{alg:helpers} to check for
-ownership:
-%% MK: I think I've reworded this to be sufficiently clear, or at least to match the implementation.
-%% \todo{I'm not sure what ``$e$ is \<@Owning>'' means.  A type is \<@Owning>
-%%   or not (if \<@Owning> is a type qualifier), but we cannot say that of an expression.}
-\begin{algorithmic}
   \Procedure{HasObligation}{$e$}
   \State \Return $e$ has a declared \<@MustCall> type and $e$'s declaration is \<@Owning>
   \EndProcedure
@@ -92,27 +96,28 @@ ownership:
 % is required to add lightweight ownership tracking to our technique.\todo{but we
 % didn't discuss fields yet...}
 
-\Tool's default for unannotated returns is \<@Owning>,
+Constructor returns are always \<@Owning>.
+\Tool's default for unannotated method returns is \<@Owning>,
 and for unannotated parameters and fields is \<@NotOwning>.  These assumptions
 coincide well with coding patterns we observed in practice, reducing the
 annotation burden for programmers.  Further, this treatment of parameter and
 return types ensures sound handling of unannotated third-party libraries: any
 object returned from such a library will be tracked by default, and the checker
-never assumes that passing an object to a library will satisfy its obligation.
+never assumes that passing an object to an unannotated library will satisfy its obligation.
 
-Programmers can override defaults by writing explicit \<@Owning> or
-\<@NotOwning> annotations on method returns, parameters, and fields (though never both at the same
-location---they are mutually exclusive).  (Note that constructor returns are always
-\<@Owning>.)  Such explicit annotations can
-\emph{never} compromise soundness.  If such an annotation is incorrect (e.g., an
-\<@Owning> annotation on a reference that does not satisfy an obligation), it
-can only lead to false positives, not false negatives.  Due to this design,
-there is great scope for creating inference techniques for lightweight
-ownership, to further reduce annotation burden; we plan to pursue such
-techniques in future work.
-\todo{pointer to further discussion in evaluation?}
+%% This paragraph doesn't seem to add much -- the first part is redundant and
+%% the second part is vacuous (or at least better situated in a future work section).
+% Programmers can override defaults by writing explicit \<@Owning> or
+% \<@NotOwning> annotations on method returns, parameters, and fields (though never both at the same
+% location---they are mutually exclusive).    Such explicit annotations can
+% \emph{never} compromise soundness.  If such an annotation is incorrect (e.g., an
+% \<@Owning> annotation on a reference that does not satisfy an obligation), it
+% can only lead to false positives, not false negatives.  Due to this design,
+% there is great scope for creating inference techniques for lightweight
+% ownership, to further reduce annotation burden; we plan to pursue such
+% techniques in future work.
+% \todo{pointer to further discussion in evaluation?}
 
-\todo{Add a para comparing to Rust ownership and the like?}
 
 \subsection{Final owning fields}
 \label{sec:owning-fields}
@@ -120,12 +125,14 @@ techniques in future work.
   Additional class-level checking is required for \<@Owning>
   fields, as the code
   satisfying their \<@MustCall> obligations nearly always spans multiple
-  procedures.  We first discuss the case of final fields,\footnote{We only
-  consider instance fields in this paper; we have not observed resource leaks
+  procedures.  We first discuss the case of final fields,\footnote{This paper only
+  considers instance fields.  We have not observed\todo{How would we have
+    observed it?  Does this footnote want to say that our technique is sound but not
+    precise for static fields?} resource leaks
   through static fields in our benchmarks, and we leave their handling to future
   work.} which cannot be overwritten after initialization of the enclosing
-  object.  Here, our checking enforces the "resource acquisition is
-  initialization (RAII)" programming idiom~\cite{raii}; a distinguished
+  object.  Here, our checking enforces the ``resource acquisition is
+  initialization (RAII)'' programming idiom~\cite{raii}; a distinguished
   ``destructor''-like method \<d()> must ensure the field's \<@MustCall> obligation is
   satisfied, and the enclosing class must have a \<@MustCall("d")> obligation to
   ensure the destructor is called.
@@ -133,23 +140,24 @@ techniques in future work.
   More formally, consider a final \<@Owning> field $f$ declared in class $C$,
   where
   $f$ has type \<@MustCall("m")>.  To
-  verify that $f$'s \<@MustCall> obligation is satisfied, we check the following
+  verify that $f$'s \<@MustCall> obligation is satisfied, \Tool checks the following
   conditions:
   \begin{enumerate}
     \item All $C$ objects must have a type \<@MustCall("d")> for some method \<C.d()>.
     \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \<@MustCall> obligation.
   \end{enumerate}
-  In this manner, we modularly verify the \<@MustCall> obligaation of $f$.  Condition 2 is
-  checked by requiring an appropriate \<@EnsuresCalledMethods> annotation on
+  In this manner, \Tool modularly verifies the \<@MustCall> obligaation of $f$.  Condition 2 is
+  checked by requiring an appropriate \EnsuresCalledMethods
+  postcondition annotation on
   \<C.d()>, which is then enforced by the Called Methods
   Checker~\cite{KelloggRSSE2020}.  \todo{this all needs an example...} 
 
   While this scheme suffices for verifying final fields, we observed cases
   in our benchmarks of non-final fields with \<@MustCall> obligations.  Checking
   non-final fields requires additional techniques, as the checker must ensure
-  that overwriting the field does not lead to an unsatisfied \<@MustCall> obligation.  We
-  describe our novel handling of non-final fields in \cref{sec:reset-must-call}.
+  that overwriting the field does not lead to an unsatisfied \<@MustCall> obligation.
+  \Cref{sec:reset-must-call} describes our novel handling of non-final fields.
 
 
 % LocalWords:  MustCall belowskip myHost myPort closeSocket NotOwning

@@ -137,7 +137,7 @@ and its parameter \<p> can be verified if either of the following holds:
 \item \<p> is stored in an \<@Owning> field of the class, and the
   class declaration has an \<@MustCall(>$A$\<)> annotation for some set
   of methods $A$, and at least one of the methods in $A$ has an
-  \<@EnsuresCalledMethods> postcondition annotation that names at least the
+  \EnsuresCalledMethods postcondition annotation that names at least the
   must-call obligations of \<p>'s static type.
 \end{enumerate}
 These verification procedures permit a programmer to soundly specify a resource-aliasing
