@@ -36,7 +36,7 @@
     \hline
     \osstablerow{apache/zookeeper:zookeeper-server} {45,410}        {232}       {99}          {12}       {10}       {47}   {?}        \\
     \osstablerow{apache/hadoop:hdfs}                   {?}        {?}            {?}          {?}        {?}        {?}   {?}        \\
-    \osstablerow{apache/hbase:server}                       {410181}        {62}            {42}          {1}        {11}        {21}   {?}        \\
+    \osstablerow{apache/hbase:server}            {410,181}        {62}            {42}          {1}        {11}        {21}   {?}        \\
     \hline
     \osstablerow{\textbf{Total}}                        {?}        {?}            {?}          {?}        {?}       {?}   {-}        \\
   \end{tabular}
@@ -141,8 +141,29 @@ but we pointed out that that was impossible in this case, since
 the file needs to remain open if no error occurs so that it can be
 returned.
 
-\todo{Describe some examples of true and false positives.}
-\todo{Definitely discuss our confirmed bug that Narges got fixed.}
+\begin{figure}
+  \lstinputlisting{zookeeper-optional.txt}
+  \caption{Code from the ZooKeeper case study that causes our tool
+  to issue a false positive.}
+  \label{fig:zookeeper-optional}
+\end{figure}
+
+Most false positives were caused by unique coding patterns that
+each needed to be verified by hand; for example, a series of catch
+statements, each of which set an \<error> boolean to \<true>, followed
+by a \<finally> statement that closed the relevant socket if \<error>
+was true---\Tool reports an error because it cannot reason about arbitrarily
+complex path conditions. There were some similar patterns of false positives:
+for example, across all three benchmarks the most common (with 15 instances) false
+positive was caused by
+a generic container object like \<java.util.Optional> taking ownership of a resource, such
+as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
+system does not support transferring ownership to generic parameters,
+so we issue an error when \<Optional.of> is returned. In this case, the use
+of the \<Optional> class complicates the code; if \<Optional> was replaced
+by \<null>, as some advocate~\cite{ErnstNothingIsBetterThanOptional},
+\Tool could verify this code. We leave expanding the lightweight ownership system to
+support Java generics as future work.
 
 \subsubsection{Annotations and code changes}
 \label{sec:anno-burden}
@@ -172,7 +193,7 @@ returned.
     \hline
     \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
     \abltablerow{apache/hadoop}                   {?}            {?}             {?}                               \\
-    \abltablerow{apache/hbase}                  {?}            {?}             {?}                               \\
+    \abltablerow{apache/hbase}                  {52}            {?}             {?}                               \\
     \hline
     \abltablerow{\textbf{Total}}                {?}            {?}             {?}                               \\
   \end{tabularx}
