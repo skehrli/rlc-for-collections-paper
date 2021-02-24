@@ -261,11 +261,11 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \end{algorithm}
 
 \begin{algorithm}[h]
-  \caption{Helper functions for \Cref{alg:consistency-checker}.  Except for
+  \caption{Helper functions for \cref{alg:consistency-checker}.  Except for
   \textsc{MCAfter} and \textsc{CMAfter}, all procedures\todo{Previous
     sentence called these ``functions''.  Be consistent.} will be replaced with
   more sophisticated versions in
-  \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}.
+  \cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}.
   \todo{MCSatisfiedAfter uses $\subseteq$ for types, which is a type
     error.  Should MCAfter and CMAfter return sets instead?}
   \todo{Ensure the two algorithms appear on the same page.}
@@ -335,7 +335,7 @@ $s$ of the form \<p = e>, $\textsc{LHS}(s) = p$ and $\textsc{RHS}(s) = e$.
 \todo{I suggest we change LHS(s) to s.LHS and RHS(s) to s.RHS.} 
 
 \paragraph{Pseudocode} \Cref{alg:consistency-checker} gives pseudocode for the
-basic version of our checker, with helper functions in \Cref{alg:helpers}.  At a
+basic version of our checker, with helper functions in \cref{alg:helpers}.  At a
 high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
 a set of variables and $e$ is an expression.  The meaning
@@ -353,14 +353,14 @@ variables or fields).
 % \textsc{InitialObligations}
 % (lines~\ref{li:start-init}--\ref{li:end-init}) scans for such expressions and
 % adds initial facts as appropriate, using helper functions \textsc{HasObligation}
-% and \textsc{FactsFromCall} from \Cref{alg:helpers}.
+% and \textsc{FactsFromCall} from \cref{alg:helpers}.
 The fixed-point loop
 iterates over all facts $\langle P, e \rangle$ present in any
 $D(s)$ (our implementation uses a worklist for efficiency).  If $s$ is the exit
 node (\cref{li:end-scope}), the obligation for $e$ has not been satisfied, and
 an error is reported.  Otherwise, the algorithm checks if the obligation for $e$
 is satisfied after $s$ (\cref{li:check-satisfied}).  For the basic checker,
-\textsc{MCSatisfiedAfter} in \Cref{alg:helpers} checks whether there is some $p
+\textsc{MCSatisfiedAfter} in \cref{alg:helpers} checks whether there is some $p
 \in P$ such that after $s$, the \<@MustCall> type for $p$ is contained
 in\todo{Types aren't contained in types; you mean that the set that is an
   argument to the type is a subset of the set that is an argument to the
@@ -368,7 +368,7 @@ in\todo{Types aren't contained in types; you mean that the set that is an
 \<@CalledMethods> type; if true, all \<@MustCall> methods have already been
 invoked.  This check uses the inferred flow-sensitive \<@MustCall> and
 \<@CalledMethods> qualifiers described in
-\Cref{sec:must-call,sec:called-methods}.
+\cref{sec:must-call,sec:called-methods}.
 %% Mike doesn't see a way to resolve this comment.  Once MCAfter and
 %% CMAfter are defined in the algorithm, that will tip off readers that
 %% they are intended to be different and are not a typo.
@@ -385,15 +385,15 @@ simply consists of whatever variable (if any) appears on the left-hand side of
 $s$.  The gen set is computed by checking if $s$ creates a new must alias for
 some variable in $P$, using the \textsc{CreatesAlias} routine.  Since our
 analysis is accumulation, \textsc{CreatesAlias} could simply return false
-without impacting soundness.  In \Cref{alg:helpers}, \textsc{CreatesAlias}
+without impacting soundness.  In \cref{alg:helpers}, \textsc{CreatesAlias}
 handles the case of a variable copy where the right-hand side is in $P$.
 (\Cref{sec:must-call-choice} presents more sophisticated handling.) Finally,
-\Cref{li:prop-to-succs} propagates the new fact to successors.  The process
+\cref{li:prop-to-succs} propagates the new fact to successors.  The process
 continues until $D$ reaches a fixed point.
 
 \begin{figure}
   \includegraphics[width=0.65\columnwidth,keepaspectratio]{cfg-example.pdf}
-  \caption{Example CFG for illustrating \Cref{alg:consistency-checker}.
+  \caption{Example CFG for illustrating \cref{alg:consistency-checker}.
     ``\<e>'' is ``\<new Socket(...)>''.
 }
   \todo{Use individual labels for the two arrows leading to the exit node.
@@ -404,7 +404,7 @@ continues until $D$ reaches a fixed point.
 
 \todo{I suggest putting this side-by-side in \cref{fig:cfg-example}, which
   will reduce confusion and save space.}
-\paragraph{Example} To illustrate our analysis, \Cref{fig:cfg-example} shows a
+\paragraph{Example} To illustrate our analysis, \cref{fig:cfg-example} shows a
 CFG for the following program in our small language (irrelevant details elided):
 \begin{lstlisting}[xleftmargin=5pt]
 1: s = makeSocket(...); // new Socket(...) in Java

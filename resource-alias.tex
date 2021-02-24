@@ -69,7 +69,7 @@ obligations, either.
 Second,
 the Must Call Consistency Checker
 (\Cref{sec:must-call-choice}) treats the \mccannot parameter and return as
-aliases.  For our \Cref{sec:must-call-invoked} pseudocode, assume\todo{Put
+aliases.  For our \cref{sec:must-call-invoked} pseudocode, assume\todo{Put
   this in the code snippet below instead of in text.} we have a
 predicate $\textsc{IsMust\-CallAliasParam}(s,p)$ that is true iff $s$ is a call that
 passes $p$ to a \mccannot parameter of the callee.
@@ -82,7 +82,7 @@ version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliase
     \EndProcedure
 \end{algorithmic}
 
-% With this change, \Cref{alg:consistency-checker} treats the
+% With this change, \cref{alg:consistency-checker} treats the
 % assigned variable $p$ of a call statement as a new alias (just like a local
 % variable alias) if a 
 % variable in $P$ is passed to some \mccannot parameter.

@@ -92,11 +92,11 @@ no verification for them is needed: placing them anywhere in the program is soun
 
 The Must Call Consistency Checker treats calls to \<@ResetMustCall> obligations
 as creating a fresh obligation to check, since they mark the beginning of a new
-accumulation frame.  In terms of our \Cref{sec:must-call-invoked} pseudocode,
+accumulation frame.  In terms of our \cref{sec:must-call-invoked} pseudocode,
 assume we have a routine \textsc{RMCTargets}$(c)$ that returns a set of all
 variables $p_i$ passed to a \<@ResetMustCall> target parameter of the method
 invoked by $c$.  Then, we can update the \textsc{FactsFromCall} procedure of
-\Cref{alg:helpers} to handle \<@ResetMustCall> as follows:
+\cref{alg:helpers} to handle \<@ResetMustCall> as follows:
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets \textsc{LHS}(s), c \gets \textsc{RHS}(s)$
@@ -108,7 +108,7 @@ Additionally, if during analysis, we encounter a call to a \<@ResetMustCall>
 method on a variable $p \in P$, we treat the \<@MustCall>
 obligation of $p$ as \emph{satisfied}.  I.e., we add one more
 case to the extended \textsc{MCSatisfiedAfter} predicate given in
-\Cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
+\cref{sec:ownership-transfer} ($[\ldots]$ stands for the cases shown previously):
 \begin{algorithmic}
   \Procedure{MCSatisfiedAfter}{$P,s$}
   \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{RMCTargets}(s)$
