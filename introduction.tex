@@ -37,7 +37,7 @@ Ideally, a tool for preventing resource leaks would be:
 %% Extant approaches fail at least one of these: bug finders like the analysis
 %% in ecj are unsound; complex analyses based on typestate are either too slow
 %% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
-
+\noindent
 Extant approaches fail at least one of these criteria.
 Language-based features may not apply to all uses of resource variables:
 Java's try-with-resources statement~\cite{try-with-resources}, for example, can
@@ -80,8 +80,8 @@ An accumulation analysis~\cite{KelloggRSSE2020}
 is a special-case of typestate analysis~\cite{StromY86}.
 Typestate analysis attaches a finite-state machine (FSM)
 to each program element of a given type, and transitions the state of the
-FSM whenever a relevant operation is performed. \todo{say somewhere that ``going
-out of scope'' is an operation when formulating leaks as typestate?}
+FSM whenever a relevant operation---calling a method, going out of scope,
+etc.---is performed.
 In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
 permitted, and executing more operations cannot add additional
@@ -102,7 +102,7 @@ handle:
 \begin{itemize}
 \item passing of resources via parameters or returns;
 \item storing of resources in final fields, in a standard RAII
-manner~\cite{raii} \todo{The reference comes out oddy; there is no book title};
+manner~\cite{raii};
 \item wrapper types, which share their must-call obligations with one of their fields; and,
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
