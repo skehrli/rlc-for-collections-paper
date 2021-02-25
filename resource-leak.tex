@@ -287,12 +287,27 @@
 
 \input{relatedwork}
 
-% \section{Conclusions}
-% 
-% Conclusions.
-% 
-% \todo{Discuss future work on ownership inference, verifying that
-%   builders always call build, whatever else we can think of.}
+\section{Conclusion}
+
+We have developed a new, modular approach for detecting and preventing
+resource leaks based on a sound core of an accumulation analysis
+augmented by three new features to handle aliasing patterns that
+are relevant in practice: lightweight ownership transfer,
+resource aliasing, and obligation creation by non-constructor
+methods. There is exciting space for future work based on
+the these. For example, because our lightweight ownership annotations
+can be placed anywhere in the program while retaining soundness,
+there is ample space to explore inference techniques for them:
+possible approaches include genetic search (with the number of warnings
+issued by \Tool as the fitness function) or a trained classifier that
+detects whether a given program location is owning or non-owning.
+The version of \Tool described here-in is already effective:
+it discovered 45 bugs in heavily-used, heavily-tested Java code
+that makes extensive use of resources, with analysis speed
+orders of magnitude faster than a best-in-class whole-program analysis,
+a false positive rate similar to a state-of-the-practice heuristic bug-finder,
+and a manageable annotation burden of only 1 annotation per 2,000 lines
+of non-comment, non-blank code.
 
 \begin{acks}
 Thanks to Rashmi Mudduluru, Ben Kushigian, Chandrakana Nandi, and the
