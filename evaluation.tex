@@ -402,14 +402,15 @@ familiar with the programs.} of the case study programs in
 \cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces the
 results from their paper.  Based on these numbers, Grapple reports fewer false
 positives than \Tool.  Unfortunately, we were not able to successfully run
-Grapple's leak detection, and full details on their true and false-positive
-warnings are currently unavailable (we have requested them from the authors), so
-we cannot study the precision differences further.  The run times in
-\Cref{tab:grapple} show a stark difference with our work; \Tool runs in minutes,
-whereas Grapple can take many hours. Further, to our best knowledge, Grapple is
-not modular, so any code modification will necessitate a full re-analysis.
-\Tool only needs to re-analyze modified code and possibly its dependents after
-a change, not unmodified dependencies.
+Grapple's leak detection on our versions of the benchmarks, due to various
+hardcoded paths in its source code and limited documentation. Also, full details
+on Grapple's true and false-positive warnings are currently unavailable (we have
+requested them from the authors), so we cannot study the precision differences
+further.  The run times in \Cref{tab:grapple} show a stark difference with our
+work; \Tool runs in minutes, whereas Grapple can take many hours. Further, to
+our best knowledge, Grapple is not modular, so any code modification will
+necessitate a full re-analysis. \Tool only needs to re-analyze modified code and
+possibly its dependents after a change, not unmodified dependencies.
 
 % We requested the analysis and Grapple's output, but as of this writing
 % (months later) the Grapple authors have not yet provided them.
