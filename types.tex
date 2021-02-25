@@ -333,7 +333,7 @@ high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
 a set of variables and $e$ is an expression.  The meaning
 of $D$ is as follows: if $\langle P, e \rangle
-\in D(s)$, then $e$ has a nonempty \MustCall type, and all variables in $P$
+\in D(s)$, then $e$ has a declared \MustCall type, and all variables in $P$
 are \emph{must aliases} for the value of $e$ at the program point before $s$.
 Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$
