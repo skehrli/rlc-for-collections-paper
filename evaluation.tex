@@ -376,33 +376,41 @@ and less precise.
   \end{tabularx}
 \end{table}
 
-\todo{Be very sure that Grapple is unsound - read their paper again, and
-   point out why in this paragraph.}
-\todo{be sure to note that Grapple is not modular, unlike us}
+% \todo{Be very sure that Grapple is unsound - read their paper again, and
+%    point out why in this paragraph.}
+%\todo{be sure to note that Grapple is not modular, unlike us}
 Grapple~\cite{zuo2019grapple} is a modern typestate-based resource leak analysis
-focused on precision and (relative) scalability. Grapple models its alias and
-dataflow analyses as dynamic transitive-closure computation of graph
-representations of the target programs. Grapple, like all previous
-typestate-based analyses, requires a whole-program alias analysis. Grapple
-contains four checkers, of which two (IO and Socket) are useful for detecting
-resource leaks.
+focused on high precision and (relative) scalability. Grapple models its alias and
+dataflow analyses as dynamic transitive-closure computations over graphs, and
+leverages novel path encodings and techniques from predecessor-system
+Graspan~\cite{wang2017graspan} to achieve both context- and path-sensitivity.  
+% Grapple, like all previous
+% typestate-based analyses, requires a whole-program alias analysis.
+Grapple contains four checkers, of which two are useful for detecting
+resource leaks.  Unlike \Tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
+of loops to make path sensitivity tractable.
 
 The Grapple authors have already evaluated their tool on earlier
 versions\todo{Why don't we repeat our experiments on those earlier
   versions?  This should be easy to do since it's only a few hours of work
   and we are now familiar with the programs.}
  of the case study programs in
-\cref{sec:case-studies}~\cite{zuo2019grapple}.
-\Cref{tab:grapple} reproduces their claimed results.
-Unfortunately, we were
-neither able to reproduce their results, nor to run Grapple on current
-versions of the programs.
-We requested the analysis and Grapple's output, but as of this writing
-(months later) the Grapple authors have not yet provided them.
-\manu{I think this is strictly-speaking true but a bit harsh.  We
-may want to tone it down a bit.}
+\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
+the results from their paper.  Unfortunately, we were
+not able to successfully run Grapple's leak detection, and full details on their true and false-positive
+warnings are currently unavailable, so we cannot comment in detail on the
+differences in TP and FP warnings.  Still, the run times in \Cref{tab:grapple}
+show a stark difference with our work; \Tool runs in minutes, whereas Grapple
+can take many hours.  Further, to our best knowledge, Grapple is not modular, so
+any code modification will necessitate a full re-analysis.  \Tool only needs to
+re-analyzed modified code and possibly its dependents after a change, not unmodified libraries.
 
-Note that the TP and FP numbers not perfectly comparable between a modular
+% We requested the analysis and Grapple's output, but as of this writing
+% (months later) the Grapple authors have not yet provided them.
+% \manu{I think this is strictly-speaking true but a bit harsh.  We
+% may want to tone it down a bit.}
+
+\todo{Kill this?} Note that the TP and FP numbers not perfectly comparable between a modular
 and a whole-program analysis.
 Our tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
