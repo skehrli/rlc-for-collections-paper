@@ -45,7 +45,7 @@ including those in \cref{sec:ownership-transfer}):
 \end{algorithmic}
 \noindent
 This change is sound since the checker creates a new obligation for calls to
-\CreateObligation methods, and the must-call obligation inference (\cref{sec:must-call}) ensures the
+\CreateObligation methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
 There is one exception to this consistency check: if a \CreateObligation
@@ -85,7 +85,8 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with an \CreateObligation that targets that object.
+  must be annotated with an \CreateObligation annotation
+  that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   its inferred \MustCall obligation must be contained in its \<@CalledMethods>
   type at the program point before $s$.
@@ -94,7 +95,7 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because calling
-a \CreateObligation method like \<reconnect()> resets called-methods
+an \CreateObligation method like \<reconnect()> resets called-methods
 inference, calls to \<close> before the last call to \<reconnect()>
 are disregarded.
 
@@ -124,6 +125,7 @@ in code such as the below, which operates on an unconnected socket
   }
 \end{lstlisting}
 
+\noindent
 The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called. Using \CreateObligation,
 however, \Tool can soundly show that this socket is not connected:
