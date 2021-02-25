@@ -5,7 +5,10 @@ Like any tool that analyzes source code, \Tool can only
 give guarantees for code that it checks: the guarantee
 excludes native code, the implementation of unchecked libraries (such as the JDK),
 and code generated dynamically or by other annotation processors
-such as Lombok. Though the Checker Framework can handle
+such as Lombok.\todo{nit: is it annotation processors in general that cause an
+issue, or Lombok because of the insane things it does?  I think for a typical
+annotation processor doing code generation we shouldn't have problems?} Though
+the Checker Framework can handle 
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
 \Tool compromises this guarantee
 by assuming that objects resulting from reflective invocations
