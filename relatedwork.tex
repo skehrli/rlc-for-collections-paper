@@ -114,8 +114,13 @@ resource leaks in existing, large Java code bases; adapting such programs to use
 a full Rust-style ownership type system would be an enormous and impractical
 undertaking.
 
-\paragraph{Other approaches} Compensation stacks~\cite{WeimerN04}
-generalize C++ destructors and Java's
+\paragraph{Other approaches} Java's try-with-resources
+construct~\cite{try-with-resources} was discussed in \cref{sec:intro}.  Java
+also provides finalizer methods~\cite[Chapter 12]{gosling2014jls}, which execute before an object is
+garbage-collected, but they should not be used for resource management, as their
+execution may be delayed arbitrarily.
+
+Compensation stacks~\cite{WeimerN04} generalize C++ destructors and Java's
 try-with-resources, to avoid resource leak problems in Java.  While
 compensation stacks make resource leaks less likely, they do not provide a
 guarantee that leaks will not occur, unlike \Tool.

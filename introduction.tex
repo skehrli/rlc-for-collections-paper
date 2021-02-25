@@ -17,7 +17,7 @@ Microsoft engineers consider resource leak bugs to be one of the most
 significant development challenges~\cite{LoNZ2015}.  That
 resource leaks remain such a serious problem despite decades of
 research and improvements in languages and tooling shows that
-preventing resource leaks remains an urgent, difficult, open problem.
+preventing them remains an urgent, difficult, open problem.
 
 %% An ideal tool for preventing resource leaks would be fast, sound, and precise.
 
@@ -40,11 +40,10 @@ Ideally, a tool for preventing resource leaks would be:
 
 Extant approaches fail at least one of these criteria.
 Language-based features may not apply to all uses of resource variables:
-Java's try-with-resources statement, for example, can
+Java's try-with-resources statement~\cite{try-with-resources}, for example, can
 only close resource types that implement the \<java.lang.AutoCloseable> interface,
 and cannot handle
-common resource usage patterns that span multiple procedures. \manu{Also discuss
-finalizers somewhere?}
+common resource usage patterns that span multiple procedures. 
 Heuristic bug-finding tools for leaks, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak}, 
@@ -62,7 +61,7 @@ Finally, ownership type
 systems~\cite{clarke2013ownership} as employed in languages like
 Rust~\cite{klabnik2018rust} can prevent nearly all resource leaks (see
 \cref{sec:rw-language}), but using them would require a significant rewrite for
-a legacy Java codebase, a substantial task which is often infeasible.
+a legacy codebase, a substantial task which is often infeasible.
 % require
 % significantly rewriting the program, 
 % and prevents them from being applicable to legacy codebases and coding styles.
@@ -71,7 +70,7 @@ The essence of finding resource leaks in a Java-like language is
 checking that a particular method (typically \<close()>) is called on
 every object of a relevant class during its lifetime (i.e., before it
 becomes unreachable).  We deem this a \emph{must-call} property.  Our
-key insight is that checking must-call properties are an extended version of an
+key insight is that checking must-call properties is an
 accumulation problem.
 Our contribution is an \emph{accumulation analysis} for the resource leak
 problem, which satisfies all four requirements:  it is applicable,
@@ -81,7 +80,8 @@ An accumulation analysis~\cite{KelloggRSSE2020}
 is a special-case of typestate analysis~\cite{StromY86}.
 Typestate analysis attaches a finite-state machine (FSM)
 to each program element of a given type, and transitions the state of the
-FSM whenever a relevant operation is performed.
+FSM whenever a relevant operation is performed. \todo{say somewhere that ``going
+out of scope'' is an operation when formulating leaks as typestate?}
 In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
 permitted, and executing more operations cannot add additional
