@@ -20,7 +20,7 @@
     % then count the number of individual changesets and report that
     ``Annos.'' is number of manually-written annotations to specify
     existing methods.
-    ``Code changes'' is the number of distinct changes program text we made,
+    ``Code changes'' is the number of distinct changes to program text we made,
     not including changes that will be erased at compile time
     (such as annotations or warning suppressions).
     ``TPs'' is true positives.
@@ -247,7 +247,7 @@ flow-sensitive reasoning or targetting by a \CreateObligation annotation.
 \begin{table}
   \caption{The contribution of the lightweight
     ownership, resource aliasing,
-    and our system for creating obligations at points other than constructors
+    and obligation creation features
     in reducing false positives. Each entry is the number of extra
     false positive warnings reported by the variant with the given feature disabled on the given project.}
   \label{tab:ablation}
@@ -418,7 +418,7 @@ possibly its dependents after a change, not unmodified dependencies.
 % \manu{I think this is strictly-speaking true but a bit harsh.  We
 % may want to tone it down a bit.}
 
-\todo{Still keep this?} Note that the TP and FP numbers not perfectly comparable between a modular
+\todo{Still keep this?} Note that the TP and FP numbers are not perfectly comparable between a modular
 and a whole-program analysis.
 Our tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
