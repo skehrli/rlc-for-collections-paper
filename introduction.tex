@@ -101,7 +101,8 @@ reasoning about aliasing patterns.  We found several key patterns to
 handle:
 \begin{itemize}
 \item passing of resources via parameters or returns;
-\item storing of resources in final fields, in a standard RAII manner~\cite{raii};
+\item storing of resources in final fields, in a standard RAII
+manner~\cite{raii} \todo{The reference comes out oddy; there is no book title};
 \item wrapper types, which share their must-call obligations with one of their fields; and,
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
@@ -112,7 +113,7 @@ and achieve precision in practice:
 \item a lightweight, heuristic ownership transfer system. This system
   indicates which reference is responsible for resolving a must-call
   obligation. Unlike typical ownership type systems, our approach does
-  not impact the privileges of other references.
+  not impact the privileges of non-owning references.
 \item resource aliasing, for cases in which a resource's must-call obligations
   can be resolved by closing one of two or more references.
 \item a system for creating new obligations at locations other than the
