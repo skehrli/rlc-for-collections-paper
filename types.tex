@@ -39,12 +39,10 @@ enhance its precision.
 \item an accumulation type system (\cref{sec:called-methods}) computes
   a conservative \emph{underapproximation} of the set of methods that are
   actually called on each expression in the program.
-\item a dataflow analysis (\cref{sec:must-call-invoked}) computes, for
-  every resource, a nonempty set of owning pointers.
-  For each program point at which any owning pointer might go out of scope,
-  it checks the consistency of the results of the two above-mentioned type systems.
-  If any method that might need to be called is not in the set of methods
-  that definitely were called, it issues an error.
+\item a dataflow analysis (\cref{sec:must-call-invoked}) determines whether the
+  methods that might need to be called on each expression are always invoked before the
+  expression goes out of scope, by checking consistency of the results of the two
+  above-mentioned type systems; it issues errors when this condition does not hold.
 \end{enumerate}
 
 \begin{figure}
@@ -335,7 +333,7 @@ high level, the dataflow analysis computes a map $D$ from each statement $s$ in
 a CFG to a \emph{set} of facts of the form $\langle P, e \rangle$, where $P$ is
 a set of variables and $e$ is an expression.  The meaning
 of $D$ is as follows: if $\langle P, e \rangle
-\in D(s)$, then $e$ has a nonempty \MustCall type, and all variables in $P$
+\in D(s)$, then $e$ has a declared \MustCall type, and all variables in $P$
 are \emph{must aliases} for the value of $e$ at the program point before $s$.
 Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$

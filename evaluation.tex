@@ -33,13 +33,13 @@
   \posttablecaption
 
   \begin{tabular}{@{}lrr|rr|rr|r@{}}
-    Project:module                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
+    Project:module                                               &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server}       {45,410}        {232}       {99}          {5}       {10}       {47}   {1m 24s}        \\
-    \osstablerow{apache/hadoop:hadoop-hdfs-project}       {151,233}        {366}       {129}          {7}        {21}        {36}   {16m 21s}        \\
-    \osstablerow{apache/hbase:hbase-server, hbase-client} {170,569}        {62}          {35}          {1}        {11}        {21}   {7m 45s}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server}                   {45,410}        {232}       {98}          {5}          {12}       {47}   {1m 24s}        \\
+    \osstablerow{apache/hadoop:hadoop-hdfs-project/hadoop-hdfs}       {151,233}        {366}       {129}          {7}        {22}        {37}   {16m 21s}        \\
+    \osstablerow{apache/hbase:hbase-server, hbase-client}             {170,569}        {62}          {35}          {1}        {11}        {27}   {7m 45s}        \\
     \hline
-    \osstablerow{\textbf{Total}}                          {563,855}        {660}         {263}          {13}        {42}       {104}   {-}        \\
+    \osstablerow{\textbf{Total}}                                      {563,855}        {660}         {262}          {13}        {45}       {111}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -81,7 +81,7 @@ annotations (see \cref{sec:annos}).
 The
 annotated versions of the case study programs (including
 the commit hashes that we analyzed) are available at
-\todo{an anonymized fork of the projects}.
+\url{https://github.com/fse-main-307}.
 % the ``Annos'' column in \cref{tab:case-studies}).
 (3) We iteratively ran the analysis to correct our annotations.
 We measured the run time
@@ -173,10 +173,10 @@ complex path conditions.
 %% NotOwning      8   5   17  30  = 113
 %% ----
 %% MustCall       13  7   11  31
-%% InheritableMC  0   2   7   9   = 40
+%% InheritableMC  1   2   7   9   = 41
 %% ---
-%% MustCallChoice 6   0   28  34
-%% PolyMustCall   4   0   0   4   = 38
+%% MustCallChoice 4   0   28  34
+%% PolyMustCall   4   0   0   4   = 36
 %% ---
 %% ResetMustCall  19  5   5   29  = 29
 %% ---
@@ -194,8 +194,8 @@ complex path conditions.
     \hline
     \<@Owning> and \<@NotOwning>            &      113   \\
     \<@EnsuresCalledMethods>                &      43       \\
-    \<@MustCall>                            &      40       \\
-    \<@MustCallAlias>                       &      38       \\
+    \<@MustCall>                            &      41       \\
+    \<@MustCallAlias>                       &      36       \\
     \CreateObligation                       &      29      \\
   \end{tabularx}
 \end{table}
@@ -327,10 +327,10 @@ to legacy code and it is fast---nearly instantaneous once Eclipse
 has loaded the project.
 
 In ``high-confidence'' mode on zookeeper-server, Eclipse reports 3
-warnings: 1 true positive (thus, it misses 9 real resource leaks) and 2
+warnings: 1 true positive (thus, it misses 11 real resource leaks) and 2
 false positives.
 In ``potential'' leak mode, the analysis reported 180
-warnings:  3 true positives (it misses 7 real resource leaks) and 177 false
+warnings:  3 true positives (it misses 9 real resource leaks) and 177 false
 positives.
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
@@ -338,11 +338,15 @@ at method invocations: it warned at each call that returns a resource-alias, suc
 \<Socket\#getInputStream>.
 
 These results demonstrate that the Eclipse bug-finder is unsound in both
-modes: it misses 7 real warnings. Further, the analysis is imprecise: in potential leak mode,
-the vast majority of warnings are false positives. However, this sort
-of bug-finding tool does have two advantages: it is fast, and it is easily
-applicable to legacy code. Compared to our tool, the Eclipse analysis
-is much faster and equally applicable to legacy code, but both less sound
+modes: it misses 9 real warnings. Further, the analysis is imprecise: in potential leak mode,
+the vast majority of warnings are false positives.
+%% MK: I think this sentence is redundant
+%% However, this sort
+%% of bug-finding tool does have two advantages: it is fast, and it is easily
+%% applicable to legacy code.
+Compared to our tool, the Eclipse analysis
+is much faster and easier to apply to legacy code
+(no annotations are required), but both less sound
 and less precise.
 
 %% Chandra rightly pointed out that this para make us look lazy. Let's just
@@ -356,7 +360,7 @@ and less precise.
 \label{sec:grapple}
 
 % a line in tab:grapple
-% these numbers come from tables 2 and 3 in the grapple paper from EuroSys.
+% these numbers come from tables 2 and 3 in the grapple paper from EuroSys '19.
 % for TPs and FPs, I added together the IO and Socket columns of table 2.
 \newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 
