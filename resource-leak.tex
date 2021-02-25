@@ -201,13 +201,15 @@
 
   Our approach occupies a unique slice of the design space when compared
   to prior approaches: it is sound
-  and runs quickly compared to heavier-weight\todo{mention ``unsound''?} approaches.
+  and runs quickly compared to heavier-weight
+  \todo{mention ``unsound''?}
+  approaches (running in minutes even on large programs that a
+  state-of-the-art approach
+  took hours to analyze).
   We implemented our techniques for Java in an open-source tool
   called \Tool.
   \Tool revealed real bugs in widely-deployed software.
-  It scales well---running in minutes even on large programs that a
-  state-of-the-art approach
-  took hours to analyze---has a manageable false positive rate, and
+  It scales well, has a manageable false positive rate, and
   imposes only a small additional annotation burden (1/2000 LoC) for developers.
 \end{abstract}
 
