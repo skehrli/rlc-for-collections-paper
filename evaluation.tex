@@ -391,26 +391,27 @@ resource leaks.  Unlike \Tool, Grapple is unsound; e.g., it performs a fixed bou
 of loops to make path sensitivity tractable.
 
 The Grapple authors have already evaluated their tool on earlier
-versions\todo{Why don't we repeat our experiments on those earlier
-  versions?  This should be easy to do since it's only a few hours of work
-  and we are now familiar with the programs.}
- of the case study programs in
-\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
-the results from their paper.  Unfortunately, we were
-not able to successfully run Grapple's leak detection, and full details on their true and false-positive
-warnings are currently unavailable, so we cannot comment in detail on the
-differences in TP and FP warnings.  Still, the run times in \Cref{tab:grapple}
-show a stark difference with our work; \Tool runs in minutes, whereas Grapple
-can take many hours.  Further, to our best knowledge, Grapple is not modular, so
-any code modification will necessitate a full re-analysis.  \Tool only needs to
-re-analyzed modified code and possibly its dependents after a change, not unmodified libraries.
+versions\todo{Why don't we repeat our experiments on those earlier versions?
+This should be easy to do since it's only a few hours of work and we are now
+familiar with the programs.} of the case study programs in
+\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces the
+results from their paper.  Based on these numbers, Grapple reports fewer false
+positives than \Tool.  Unfortunately, we were not able to successfully run
+Grapple's leak detection, and full details on their true and false-positive
+warnings are currently unavailable (we have requested them from the authors), so
+we cannot study the precision differences further.  The run times in
+\Cref{tab:grapple} show a stark difference with our work; \Tool runs in minutes,
+whereas Grapple can take many hours. Further, to our best knowledge, Grapple is
+not modular, so any code modification will necessitate a full re-analysis.
+\Tool only needs to re-analyze modified code and possibly its dependents after
+a change, not unmodified dependencies.
 
 % We requested the analysis and Grapple's output, but as of this writing
 % (months later) the Grapple authors have not yet provided them.
 % \manu{I think this is strictly-speaking true but a bit harsh.  We
 % may want to tone it down a bit.}
 
-\todo{Kill this?} Note that the TP and FP numbers not perfectly comparable between a modular
+\todo{Still keep this?} Note that the TP and FP numbers not perfectly comparable between a modular
 and a whole-program analysis.
 Our tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
