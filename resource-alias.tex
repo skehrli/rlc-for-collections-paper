@@ -63,14 +63,15 @@ For example, one constructor of \<BufferedOutputStream> is:
 \MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
 At a call site to a \MustCallAlias-annotated method, there are two effects.
 
-First, the method call's must-call type is the same as that of the
+First, the must-call type of the method call's return value
+is the same as that of the \MustCallAlias
 argument.  If the type of the argument has no must-call obligations (like a
 \<ByteArrayOutputStream>), the returned wrapper will not have must-call
 obligations, either.
 
 Second,
 the Must Call Consistency Checker
-(\Cref{sec:must-call-choice}) treats the \MustCallAlias parameter and return as
+(\Cref{sec:must-call-invoked}) treats the \MustCallAlias parameter and return as
 aliases.  For our \cref{sec:must-call-invoked} pseudocode, this
 version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliases:
 \begin{algorithmic}
@@ -118,7 +119,8 @@ technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoo
     file.close();
   }
 \end{lstlisting}
-Because must-call obligation inference treats \MustCallAlias annotations
+Because the must-call obligation checker (\cref{sec:must-call})
+treats \MustCallAlias annotations
 polymorphically, regardless of the associated base type,
 \Tool can verify that the same resource is held by
 the \<Random\-Access\-File> and the \<File\-Input\-Stream>, even though it
