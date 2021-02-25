@@ -27,7 +27,7 @@ lines of the program.
 \label{sec:base-type-systems}
 
 This section presents a sound, modular, accumulation-based
-resource leak checker.
+resource leak checker (``\Tool'').
 \Cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}
 enhance its precision.
 
@@ -135,7 +135,6 @@ Part of the type hierarchy appears in \cref{fig:must-call-hierarchy}.
 All types are subtypes of \MustCallUnknown.
 The subtyping relationship for \MustCall types is:
 \trule{A \subseteq B}{\MustCall\<(A)> \sqsubseteq \MustCall\<(B)>}
-
 The default type qualifier is \MustCall\<(\{\})> for base types without a
 programmer-written type qualifier.\footnote{For unannotated local variable types,
   flow-sensitive type refinement infers a qualifier.}
@@ -205,7 +204,7 @@ The qualifier \CalledMethodsBottom is a subtype of every \<@CalledMethods> quali
 
 Thanks to flow-sensitive type refinement,
 Called Methods types are inferred within method bodies.
-In \cref{fig:example} the type of \<s> is initially \<@CalledMethods({})>,
+In \cref{fig:example} the type of \<s> is initially \<@CalledMethods(\{\})>,
 but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 
@@ -296,7 +295,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \end{algorithm}
 
 Given \MustCall and \<@CalledMethods> types, the Must
-Call Consistency Checker ensures that \MustCall methods for each object
+Call Consistency Checker ensures that the \MustCall methods for each object
 are always invoked before the object becomes unreachable.  This property is
 checked via an intra-procedural dataflow analysis.  Here, we present
 a simple, sound version of the analysis, with limited reasoning about aliasing.
