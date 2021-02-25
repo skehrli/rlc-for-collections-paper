@@ -25,6 +25,10 @@ compared to \Tool---are present in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
 \Cref{sec:eclipse} experimentally evaluates the Eclipse analysis.
+Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
+resource-leak detection approaches that are specialized to the Android framework
+by augmentation with call graphs to model the framework's use of callbacks for
+releasing resources.
 
 Typestate analysis~\cite{StromY86,FinkYDRG2008} can be used to
 find resource leaks.  Grapple~\cite{zuo2019grapple} is the most recent system to
@@ -34,23 +38,15 @@ is more precise but
 suffers from unsoundness and much longer run times.
 \Cref{sec:grapple} gives a more detailed comparison to Grapple.
 
-Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
-resource-leak detection approaches \todo{similar to Eclipse,then?} that are
-augmented with call graphs to model the Android framework's use of callbacks for
-releasing resources.
-
-The CLOSER~\cite{dillig2008closer} automatically inserts Java code to dispose of
-resources when they are no longer ``live'' according to its dataflow analysis.
-Their approach requires an expensive alias analysis for soundness, as well as
-manually-provided aliasing specifications for linked libraries.
-\todo{\Tool requires that too, though only lightweight specifications.
-  Mention that?}
-\Tool uses accumulation
-analysis~\cite{KelloggRSSE2020,FahndrichLeino03} to achieve soundness without
-the need
-for a whole-program alias analysis.
-We
-build on the core analysis described in~\cite{KelloggRSSE2020}.
+The CLOSER~\cite{dillig2008closer} automatically inserts Java code to
+dispose of resources when they are no longer ``live'' according to its
+dataflow analysis.  Their approach requires an expensive alias
+analysis for soundness, as well as manually-provided aliasing
+specifications for linked libraries.\todo{\Tool requires that too,
+  though only lightweight specifications.  Mention that?} \Tool uses
+accumulation analysis~\cite{KelloggRSSE2020,FahndrichLeino03} to
+achieve soundness without the need for a whole-program alias analysis.
+We build on the core analysis described in~\cite{KelloggRSSE2020}.
 
 \paragraph{Dynamic analysis}
 Some approaches use dynamic analysis to ameliorate leaks.  Resco \cite{dai2013resco}
@@ -62,7 +58,7 @@ ours, a tool like Resco becomes unnecessary---leaks become impossible.
 
 Automated test generation can also be used to try to detect resource
 leaks. For example, leaks in Android applications can be found by
-repeatedly running neutral---eventually returning to the same
+repeatedly running neutral---i.e. eventually returning to the same
 state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
 Other techniques focus on taking advantage of common misuse of
 the Android activity lifecycle~\cite{amalfitano2020memories}.
