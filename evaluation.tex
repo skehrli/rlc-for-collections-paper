@@ -35,11 +35,11 @@
   \begin{tabular}{@{}lrr|rr|rr|r@{}}
     Project:module                                    &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
     \hline
-    \osstablerow{apache/zookeeper:zookeeper-server}       {45,410}        {232}       {99}          {5}       {10}       {47}   {1m 24s}        \\
+    \osstablerow{apache/zookeeper:zookeeper-server}       {45,410}        {232}       {98}          {5}       {10}       {47}   {1m 24s}        \\
     \osstablerow{apache/hadoop:hadoop-hdfs-project}       {151,233}        {366}       {129}          {7}        {21}        {36}   {16m 21s}        \\
     \osstablerow{apache/hbase:hbase-server, hbase-client} {170,569}        {62}          {35}          {1}        {11}        {21}   {7m 45s}        \\
     \hline
-    \osstablerow{\textbf{Total}}                          {563,855}        {660}         {263}          {13}        {42}       {104}   {-}        \\
+    \osstablerow{\textbf{Total}}                          {563,855}        {660}         {262}          {13}        {42}       {104}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -173,10 +173,10 @@ complex path conditions.
 %% NotOwning      8   5   17  30  = 113
 %% ----
 %% MustCall       13  7   11  31
-%% InheritableMC  0   2   7   9   = 40
+%% InheritableMC  1   2   7   9   = 41
 %% ---
-%% MustCallChoice 6   0   28  34
-%% PolyMustCall   4   0   0   4   = 38
+%% MustCallChoice 4   0   28  34
+%% PolyMustCall   4   0   0   4   = 36
 %% ---
 %% ResetMustCall  19  5   5   29  = 29
 %% ---
@@ -194,8 +194,8 @@ complex path conditions.
     \hline
     \<@Owning> and \<@NotOwning>            &      113   \\
     \<@EnsuresCalledMethods>                &      43       \\
-    \<@MustCall>                            &      40       \\
-    \<@MustCallAlias>                       &      38       \\
+    \<@MustCall>                            &      41       \\
+    \<@MustCallAlias>                       &      36       \\
     \CreateObligation                       &      29      \\
   \end{tabularx}
 \end{table}
