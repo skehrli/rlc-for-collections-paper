@@ -75,8 +75,8 @@ aliases.  For our \cref{sec:must-call-invoked} pseudocode, this
 version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliases:
 \begin{algorithmic}
   \Procedure{CreatesAlias}{$P,s$}
-    \State \Return $s$ is of the form \<p = q> $\wedge\ \mathtt{q} \in P$ \newline
-         \hspace*{4.5em} $\vee\ \exists p_i \in P.\ \textsc{IsMustCallAliasParam}(s,p_i)$ 
+    \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}\newline
+         \hspace*{8em} $\vee\ \textsc{IsMustCallAliasParam}(s,q)$ 
   \EndProcedure
   \Procedure{IsMustCallAliasParam}{$s,p$}
     \State \Return $s$ passes $p$ to a \MustCallAlias parameter of its callee
