@@ -219,7 +219,6 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
     \Cref{alg:helpers} defines helper functions.}
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
-  \State \textit{// CFG represents a method}
   \Procedure{FindMissedCalls}{$CFG$}
   \State \textit{// D maps each statement s to a set of dataflow facts reaching}
   \State \textit{// s.  Each fact is of the form $\langle P, e \rangle$, where P is a set of variables}
