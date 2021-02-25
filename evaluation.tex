@@ -160,8 +160,8 @@ Most false positives were caused by unique coding patterns.
 One example is a series of catch
 statements, each of which set an \<error> boolean to \<true>, followed
 by a \<finally> statement that closed the relevant socket if \<error>
-was true.  \Tool reports an error because it cannot reason about arbitrarily
-complex path conditions.
+was true.  \Tool reports an error because it does not reason about path
+conditions (we plan to add limited support to handle such cases in the future).
 
 
 \subsubsection{Annotations and code changes}
@@ -295,6 +295,7 @@ This section compares our approach with two other modern tools that detect resou
 \begin{itemize}
 \item The analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
   for detecting resource leaks in the Eclipse IDE~\cite{ecj-resource-leak}.
+  We used version 4.18.0.
 \item Grapple~\cite{zuo2019grapple} represents a significant, recent
   improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
 \end{itemize}

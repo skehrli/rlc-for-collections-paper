@@ -72,14 +72,11 @@ Testing can only show the presence of bugs, not their absence;
 \paragraph{Data sets and surveys}
 In terms of data sets for leak detection, The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
-leak bugs. Unfortunately, it includes only the compiled apps.
-\Tool runs on source code, so we were unable to run \Tool on DroidLeaks.
-
-\todo{This~\cite{ghanavati2020memory} is a recent study on what kinds
-  of resource and memory leak bugs happen in large Java projects. I'm
-  sure we can use it somewhere.}
-
-
+leak bugs. Unfortunately, it includes only the compiled apps. \Tool runs on
+source code, so we were unable to run \Tool on DroidLeaks. Ghanavati et
+al.~\cite{ghanavati2020memory} performed a detailed recent study of resource
+leaks and their repairs in Java projects, showing the pressing need for better
+tooling for resource leak prevention.
 
 \subsection{Language-based approaches}\label{sec:rw-language}
 
