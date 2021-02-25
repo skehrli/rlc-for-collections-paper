@@ -1,9 +1,9 @@
 \section{Related Work}
 \label{sec:relatedwork}
 
-Previous work on resource leak detection has typically been based on either
-using program analysis to detect leaks or adding language features to prevent
-them. Here we discuss the most relevant work from each of these categories.
+Most prior work on resource leak detection either uses
+program analysis to detect leaks or adds language features to prevent
+them. Here we focus on the most relevant work from these categories.\looseness=-1
 
 \subsection{Analysis-based approaches}\label{sec:rw-analysis}
 
@@ -17,17 +17,17 @@ whole-program alias analysis to improve scalability, instead using a local,
 access-path-based approach.  While Tracker scales well to large programs, it is
 deliberately unsound, unlike \Tool.
 
-The Eclipse Compiler for Java includes a simple dataflow-based
-bug-finder for resource leaks~\cite{ecj-resource-leak}. Their analysis
+The Eclipse Compiler for Java includes a dataflow-based
+bug-finder for resource leaks~\cite{ecj-resource-leak}. Its analysis
 uses a fixed set of ownership heuristics and a fixed list of wrapper
 classes; unlike \Tool, it is unsound. It is fast.  Similar analyses---with similar trade-offs
-compared to \Tool---are present in other heuristic bug-finding tools,
+compared to \Tool---exist in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
 \Cref{sec:eclipse} experimentally evaluates the Eclipse analysis.
 Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
 resource-leak detection approaches that are specialized to the Android framework
-by augmentation with call graphs to model the framework's use of callbacks for
+with call graphs that model the framework's use of callbacks for
 releasing resources.
 
 Typestate analysis~\cite{StromY86,FinkYDRG2008} can be used to
@@ -66,7 +66,7 @@ Testing can only show the presence of bugs, not their absence;
 \Tool verifies that no resource leaks are present.
 
 \paragraph{Data sets and surveys}
-In terms of data sets for leak detection, The DroidLeaks
+The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
 leak bugs. Unfortunately, it includes only the compiled apps. \Tool runs on
 source code, so we were unable to run \Tool on DroidLeaks. Ghanavati et
@@ -84,7 +84,7 @@ here (see Clarke et al.~\cite{clarke2013ownership} for a survey). Instead, we
 focus on ownership types in Rust~\cite{klabnik2018rust} as the most popular
 practical example of using ownership to prevent resource leaks.
 
-For a detailed overview of ownership in Rust, see Chapter 4
+For a detailed overview of ownership in Rust, see chapter 4
 of~\cite{klabnik2018rust}; we give a brief overview here.  In Rust, ownership is
 used to manage both memory and other resources.  Every value associated with a
 resource must have a \emph{unique} owning pointer, and when an owning pointer's
@@ -92,20 +92,19 @@ lifetime ends, the value is ``dropped,'' ensuring all resources are freed.
 Rust's ownership type system statically prevents
 not only resource leaks, but also other important issues like ``double-free'' bugs
 (releasing a resource more than once) and ``use-after-free'' bugs (using a
-resource after it has been released). However, this power comes with a cost; to
+resource after it has been released). But, this power comes with a cost; to
 enforce uniqueness, non-owning pointers must be invalidated after an ownership transfer,
-and can no longer be used to perform any operations.  Maintaining multiple
+and can no longer be used.  Maintaining multiple
 usable pointers to a value requires use of language features like references and
 borrowing, and even then, borrowed pointers have restricted privileges.
 
-\Tool has less power than Rust's ownership types; it cannot prevent resources
-from being closed multiple times or being used after they are closed.  However,
+\Tool has less power than Rust's ownership types; it cannot prevent double-free
+or use-after-free bugs.  But,
 \Tool's lightweight ownership annotations impose \emph{no} restrictions on
-aliasing; they are simply an aid to help the tool identify how a resource will
-be closed.  Hence, lightweight ownership is much better suited to preventing
+aliasing; they simply aid the tool in identifying how a resource will
+be closed.  Lightweight ownership is better suited to preventing
 resource leaks in existing, large Java code bases; adapting such programs to use
-a full Rust-style ownership type system would be an enormous and impractical
-undertaking.
+a full Rust-style ownership type system would be impractical.\looseness=-1
 
 \paragraph{Other approaches} Java's try-with-resources
 construct~\cite{try-with-resources} was discussed in \cref{sec:intro}.  Java
