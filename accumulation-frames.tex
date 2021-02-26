@@ -1,6 +1,50 @@
 \section{Creating new obligations}
 \label{sec:reset-must-call}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This table is here instead of the evaluation section
+%% so that it is placed on the appropriate page.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% a line in tab:case-studies
+% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
+\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
+
+\begin{table*}
+  \caption{Verifying the absence of resource leaks in case studies.
+    % LoC is computed using scc. Be careful when computing LoC to run scc from relevant top-level
+    % directory that only contains source code (not test code!) to make sure that the count is accurate.
+    % for Zookeeper, this directory is zookeeper/zookeeper-server/src/main/java
+    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
+    ``Resources'' is the number of resources created by the program.
+    % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
+    % > git diff origin/with-checker -- '*.java'
+    % then count the number of individual changesets and report that
+    ``Annos.'' is number of manually-written annotations to specify
+    existing methods.
+    ``Code changes'' is the number of distinct changes to program text we made,
+    not including changes that will be erased at compile time
+    (such as annotations or warning suppressions).
+    ``TPs'' is true positives.
+    ``FPs'' is false positives, where the our analysis could not
+  guarantee that the call was safe, but manual analysis revealed that no
+  run-time failure was possible.
+  % ``RT(s)'' is the wall-clock run time of our analysis.
+  }
+  \label{tab:case-studies}
+  \posttablecaption
+
+  \begin{tabular}{@{}lrr|rr|rr|r@{}}
+    Project:module                                               &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
+    \hline
+    \osstablerow{apache/zookeeper:zookeeper-server}                   {45,410}        {232}       {98}          {5}          {12}       {47}   {1m 24s}        \\
+    \osstablerow{apache/hadoop:hadoop-hdfs-project/hadoop-hdfs}       {151,233}        {366}       {129}          {7}        {22}        {37}   {16m 21s}        \\
+    \osstablerow{apache/hbase:hbase-server, hbase-client}             {170,569}        {62}          {35}          {1}        {11}        {27}   {7m 45s}        \\
+    \hline
+    \osstablerow{\textbf{Total}}                                      {563,855}        {660}         {262}          {13}        {45}       {111}   {-}        \\
+  \end{tabular}
+\end{table*}
+
 Every constructor of a class that has must-call obligations
 implicitly creates obligations for the newly-created object.
 However, non-constructor methods may also create obligations

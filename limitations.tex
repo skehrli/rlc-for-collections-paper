@@ -1,8 +1,8 @@
 \section{Limitations and threats to validity}
 \label{sec:threats}
 
-Like any tool that analyzes source code, \Tool can only
-give guarantees for code that it checks: the guarantee
+Like any tool that analyzes source code, \Tool only
+gives guarantees for code that it checks: the guarantee
 excludes native code, the implementation of unchecked libraries (such as the JDK),
 and code generated dynamically or by other annotation processors
 such as Lombok.
@@ -17,9 +17,9 @@ Though
 the Checker Framework can handle 
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
 \Tool compromises this guarantee
-by assuming that objects resulting from reflective invocations
-do not carry must-call obligations, though this behavior can
-be disabled.
+by assuming that objects returned by reflective invocations
+do not carry must-call obligations (but this behavior can
+be disabled).
 % Like any sound static analysis, \Tool does
 % issue some false positives; these must be suppressed by
 % the programmer and the correctness of the relevant code

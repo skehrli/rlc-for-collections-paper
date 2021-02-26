@@ -1,48 +1,10 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-% TODO: if this table is after tab:case-studies, then it doesn't appear? WTF
-
-
-% a line in tab:case-studies
-% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
-\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
-
-\begin{table*}
-  \caption{Verifying the absence of resource leaks in case studies.
-    % LoC is computed using scc. Be careful when computing LoC to run scc from relevant top-level
-    % directory that only contains source code (not test code!) to make sure that the count is accurate.
-    % for Zookeeper, this directory is zookeeper/zookeeper-server/src/main/java
-    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
-    ``Resources'' is the number of resources created by the program.
-    % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
-    % > git diff origin/with-checker -- '*.java'
-    % then count the number of individual changesets and report that
-    ``Annos.'' is number of manually-written annotations to specify
-    existing methods.
-    ``Code changes'' is the number of distinct changes to program text we made,
-    not including changes that will be erased at compile time
-    (such as annotations or warning suppressions).
-    ``TPs'' is true positives.
-    ``FPs'' is false positives, where the our analysis could not
-  guarantee that the call was safe, but manual analysis revealed that no
-  run-time failure was possible.
-  % ``RT(s)'' is the wall-clock run time of our analysis.
-  }
-  \label{tab:case-studies}
-  \posttablecaption
-
-  \begin{tabular}{@{}lrr|rr|rr|r@{}}
-    Project:module                                               &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
-    \hline
-    \osstablerow{apache/zookeeper:zookeeper-server}                   {45,410}        {232}       {98}          {5}          {12}       {47}   {1m 24s}        \\
-    \osstablerow{apache/hadoop:hadoop-hdfs-project/hadoop-hdfs}       {151,233}        {366}       {129}          {7}        {22}        {37}   {16m 21s}        \\
-    \osstablerow{apache/hbase:hbase-server, hbase-client}             {170,569}        {62}          {35}          {1}        {11}        {27}   {7m 45s}        \\
-    \hline
-    \osstablerow{\textbf{Total}}                                      {563,855}        {660}         {262}          {13}        {45}       {111}   {-}        \\
-  \end{tabular}
-\end{table*}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% tab:case-studies is in accumulation-frames.tex so that it
+%% appears on the first page of the eval.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Our evaluation has three parts:
 \begin{itemize}
@@ -105,6 +67,40 @@ also a benefit: as a form of machine-checked documentation, they
 express the programmer's intent and, unlike traditional comments,
 cannot become out-of-date if the checker is passing.
 
+%% Here's the full table of annotations:
+
+%% -              ZK  HB  HD  Total
+%% Owning         28  12  43  83
+%% NotOwning      8   5   17  30  = 113
+%% ----
+%% MustCall       13  7   11  31
+%% InheritableMC  1   2   7   9   = 41
+%% ---
+%% MustCallChoice 4   0   28  34
+%% PolyMustCall   4   0   0   4   = 36
+%% ---
+%% ResetMustCall  19  5   5   29  = 29
+%% ---
+%% EnsuresCM      21  4   18  43  = 43
+
+
+\begin{table}
+  \caption{The total number of annotations that we wrote.}
+  \label{tab:annos}
+  \posttablecaption
+  % counts @InheritableMustCall as @MustCall, for simplicity of presentation
+  % counts @polymustcall with MCC, for the same reason
+  \begin{tabularx}{\columnwidth}{@{}Xr@{}}
+    Annotation                           &      Count     \\
+    \hline
+    \<@Owning> and \<@NotOwning>            &      113   \\
+    \<@EnsuresCalledMethods>                &      43       \\
+    \<@MustCall>                            &      41       \\
+    \<@MustCallAlias>                       &      36       \\
+    \CreateObligation                       &      29      \\
+  \end{tabularx}
+\end{table}
+
 \subsubsection{True and false positive examples}
 \label{sec:examples}
 
@@ -163,43 +159,13 @@ by a \<finally> statement that closed the relevant socket if \<error>
 was true.  \Tool reports an error because it does not reason about path
 conditions (we plan to add limited support to handle such cases in the future).
 
-
 \subsubsection{Annotations and code changes}
 \label{sec:annos}
 
-%% Here's the full table of annotations:
-
-%% -              ZK  HB  HD  Total
-%% Owning         28  12  43  83
-%% NotOwning      8   5   17  30  = 113
-%% ----
-%% MustCall       13  7   11  31
-%% InheritableMC  1   2   7   9   = 41
-%% ---
-%% MustCallChoice 4   0   28  34
-%% PolyMustCall   4   0   0   4   = 36
-%% ---
-%% ResetMustCall  19  5   5   29  = 29
-%% ---
-%% EnsuresCM      21  4   18  43  = 43
-
-
-\begin{table}
-  \caption{The total number of annotations that we wrote.}
-  \label{tab:annos}
-  \posttablecaption
-  % counts @InheritableMustCall as @MustCall, for simplicity of presentation
-  % counts @polymustcall with MCC, for the same reason
-  \begin{tabularx}{\columnwidth}{@{}Xr@{}}
-    Annotation                           &      Count     \\
-    \hline
-    \<@Owning> and \<@NotOwning>            &      113   \\
-    \<@EnsuresCalledMethods>                &      43       \\
-    \<@MustCall>                            &      41       \\
-    \<@MustCallAlias>                       &      36       \\
-    \CreateObligation                       &      29      \\
-  \end{tabularx}
-\end{table}
+%%%%%%%%%%%%%%%%
+%% This is where tab:annos belongs, but I moved it earlier in this file
+%% to make the figures line up nicely.
+%%%%%%%%%%%%%%%%
 
 % Because most relevant \MustCall and \<@CalledMethods> annotations
 % are inferred intra-procedurally, most annotations that we had to write in
@@ -408,9 +374,9 @@ The Grapple authors have already evaluated their tool on earlier
 versions\todo{Why don't we repeat our experiments on those earlier versions?
 This should be easy to do since it's only a few hours of work and we are now
 familiar with the programs.} of the case study programs in
-\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces the
+\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
 results from their paper.  Based on these numbers, Grapple reports fewer false
-positives than \Tool.  Unfortunately, we were not able to successfully run
+positives than \Tool.  Unfortunately, we could not run
 Grapple's leak detection on our versions of the benchmarks, due to various
 hardcoded paths in its source code and limited documentation. Also, full details
 on Grapple's true and false-positive warnings are currently unavailable (we have
@@ -419,7 +385,7 @@ further.  The run times in \Cref{tab:grapple} show a stark difference with our
 work; \Tool runs in minutes, whereas Grapple can take many hours. Further, to
 our best knowledge, Grapple is not modular, so any code modification will
 necessitate a full re-analysis. \Tool only needs to re-analyze modified code and
-possibly its dependents after a change, not unmodified dependencies.
+possibly its dependents after a change, not unmodified dependencies.\looseness=-1
 
 % We requested the analysis and Grapple's output, but as of this writing
 % (months later) the Grapple authors have not yet provided them.
