@@ -28,10 +28,11 @@ introduce two additional complexities for \MustCall checking:
   wrapper object is sufficient.
 \end{enumerate}
 For example, if a \<BufferedOutputStream> $b$ wraps a stream with no underlying
-resource (e.g., a \<ByteArrayOutputStream>), $b$ should have an empty
-\MustCall obligation, since $b$ has no resource of its own.  On the other
-hand, if $b$ wraps a stream managing a resource, like a \<FileOutputStream> $f$,
-then \<close()> must be invoked on \emph{either} $b$ or $f$.
+resource (e.g., a \<ByteArrayOutputStream>), $b$'s
+\MustCall obligation should be empty,
+as $b$ has no resource of its own.  By contrast,
+if $b$ wraps a stream managing a resource, like a \<File\-Out\-put\-Stream> $f$,
+then \<close()> must be invoked on \emph{either} $b$ or $f$.\looseness=-1
 
 Previous work has shown that reasoning about wrapper types is
 required to avoid excessive false positive and duplicate
@@ -45,7 +46,7 @@ wrappers~\cite{TorlakC10}.
 % our approach is sound.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
-aliases} during analysis.  Two references $r_1$ and $r_2$ are resource aliases
+aliases}.  Two references $r_1$ and $r_2$ are resource aliases
 if $r_1$ and $r_2$ are must-aliased pointers or if
 satisfying $r_1$'s \MustCall obligation also satisfies $r_2$'s
   obligation, and vice-versa.
@@ -61,7 +62,7 @@ For example, one constructor of \<BufferedOutputStream> is:
 \end{lstlisting}
 \noindent
 \MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
-At a call site to a \MustCallAlias-annotated method, there are two effects.
+At call sites to \MustCallAlias methods, there are two effects.
 
 First, the must-call type of the method call's return value
 is the same as that of the \MustCallAlias
@@ -134,9 +135,9 @@ A pair of \MustCallAlias annotations on a method or constructor \<m>'s return ty
 and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor in a
-  \MustCallAlias position, and \<m> returns the result of that method,
-  or the call is a \<super()> constructor call appropriately annotated
-  with \MustCallAlias.
+  \MustCallAlias position, and \<m> returns that method's result,
+  or the call is a \<super()> constructor call annotated
+  with \MustCallAlias.\looseness=-1
 \item \<p> is stored in an \<@Owning> field of the enclosing class.  (\<@Owning>
 field verification is described in \cref{sec:owning-fields,sec:non-final-owning}.)
 % , and the

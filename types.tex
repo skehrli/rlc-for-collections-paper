@@ -296,8 +296,8 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 Given \MustCall and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that the \MustCall methods for each object
-are always invoked before the object becomes unreachable.  This property is
-checked via an intra-procedural dataflow analysis.  Here, we present
+are always invoked before it becomes unreachable,
+via an intra-procedural dataflow analysis.  Here, we present
 a simple, sound version of the analysis, with limited reasoning about aliasing.
 \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
 describe enhancements to this basic approach.

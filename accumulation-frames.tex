@@ -88,14 +88,14 @@ including those in \cref{sec:ownership-transfer}):
   \EndProcedure
 \end{algorithmic}
 \noindent
-This change is sound since the checker creates a new obligation for calls to
+This change is sound: the checker creates a new obligation for calls to
 \CreateObligation methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
-There is one exception to this consistency check: if a \CreateObligation
-method is invoked within a method that also has an \CreateObligation annotation
-with the same target---thus imposing the obligation on its caller---then
-the new obligation can be treated as satisfied immediately.
+There is an exception to this check: if an \CreateObligation
+method is invoked within a method that has an \CreateObligation annotation
+with the same target---imposing the obligation on its caller---then
+the new obligation can be treated as satisfied immediately.\looseness=-1
 
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
