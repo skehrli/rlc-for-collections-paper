@@ -10,7 +10,7 @@ Our evaluation has three parts:
 \begin{itemize}
 \item case studies on open-source projects, which show that our approach
   is scalable and finds real bugs (\cref{sec:case-studies}).
-\item an evaluation of the contributions of our enhancements:
+\item an evaluation of the contributions of
   lightweight ownership, % (\cref{sec:lightweight-ownership}),
   resource aliasing, % (\cref{sec:must-call-choice}), and
   and obligation creation % (\cref{sec:reset-must-call})
@@ -30,10 +30,10 @@ are publicly available at \url{https://github.com/fse-main-307}.
 \label{sec:case-studies}
 
 We selected 3 popular open-source projects that were analyzed by prior work~\cite{zuo2019grapple}.
-For each project, we selected and analyzed one or two modules
-containing significant uses of leakable resources. We used
+For each, we selected and analyzed one or two modules
+with many uses of leakable resources. We used
 the latest version of the source code that was available
-when we analyzed the code.
+when we began.
 
 Our methodology was:
 (1)
@@ -152,12 +152,12 @@ by \<null>,
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
 
-Most false positives were caused by unique coding patterns.
+Most false positives involve unique coding patterns.
 One example is a series of catch
-statements, each of which set an \<error> boolean to \<true>, followed
-by a \<finally> statement that closed the relevant socket if \<error>
+statements that each sets an \<error> boolean to \<true>, and
+a \<finally> statement that closes the relevant socket if \<error>
 was true.  \Tool reports an error because it does not reason about path
-conditions (we plan to add limited support to handle such cases in the future).
+conditions, and handling such reasoning is future work.\looseness=-1
 
 \subsubsection{Annotations and code changes}
 \label{sec:annos}
@@ -234,7 +234,7 @@ The base analysis of \cref{sec:base-type-systems} produces significantly
 more false positives, because it lacks 
 lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
-creating obligations at points other than constructors (\cref{sec:reset-must-call}).
+obligation creation (\cref{sec:reset-must-call}).
 Each contributes to \Tool's precision by eliminating false positives.
 To evaluate the contribution of each enhancement, we individually disabled each
 feature and re-ran the experiments of \cref{sec:case-studies}.
@@ -279,21 +279,21 @@ their priorities.
 \label{sec:eclipse}
 
 The Eclipse analysis is a simple dataflow analysis
-augmented with heuristics. Because it is tightly integrated with
-the compiler, it scales well and runs quickly. It contains
+augmented with heuristics. Since it is tightly integrated with
+the compiler, it scales well and runs quickly. It has
 heuristics for ownership, resource wrappers, and resource-free
 closeables, among others; these are all hard-coded into the analysis and cannot
 be adjusted by the user. It does not support annotations to express
 specifications that differ from its defaults.
 It supports two levels of analysis: detecting high-confidence resource
 leaks and detecting ``potential'' resource
-leaks (a superset of high-confidence resource leaks).
+leaks (a superset of high-confidence resource leaks).\looseness=-1
 
-We ran these analyses on the same versions of our case study programs
+We ran Eclipse's analysis on the same versions of our case study programs
 that we ran \Tool on in \cref{sec:case-studies}, and examined
 the same modules. It is easy to apply
 to legacy code and it is fast---nearly instantaneous once Eclipse
-has loaded the project.
+has loaded the project.\looseness=-1
 
 In ``high-confidence'' mode on the three projects, Eclipse reports 9
 warnings related to classes defined in the JDK:
@@ -310,11 +310,11 @@ at method invocations:
 the potential leak mode warned at each call that returns a resource-alias, such as
 \<Socket\#getInputStream>.
 
-These results demonstrate that the Eclipse bug-finder is unsound in both
+These results show that the Eclipse bug-finder is unsound in both
 modes: it misses 9 real warnings on ZooKeeper even in potential leak mode.
-Further, the analysis is imprecise: in potential leak mode,
+The analysis is imprecise, too: in potential leak mode,
 the vast majority of warnings are false positives, and even in high-confidence
-mode its ratio of true to false positives is higher than \Tool's: (2/9 = 22\%
+mode its ratio of true to total warnings is higher than \Tool's: (2/9 = 22\%
 vs. 45/156 = 29\%).
 %% MK: I think this sentence is redundant
 %% However, this sort
@@ -323,7 +323,7 @@ vs. 45/156 = 29\%).
 Compared to our tool, the Eclipse analysis
 is much faster and easier to apply to legacy code
 (no annotations are required), but both less sound
-and less precise.
+and less precise.\looseness=-1
 
 %% Chandra rightly pointed out that this para make us look lazy. Let's just
 %% say what we did, not why we did it.
