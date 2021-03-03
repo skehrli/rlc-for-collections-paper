@@ -117,12 +117,15 @@ try-with-resources, to avoid resource leak problems in Java.  While
 compensation stacks make resource leaks less likely, they do not provide a
 guarantee that leaks will not occur, unlike \Tool.
 
-An alternative to applying a typestate analysis to an existing program
-is to rewrite the program in a typestate-oriented programming
-language~\cite{AldrichSSS2009,garcia2014typestate}.  The type systems of such
-languages are expressive enough to prevent resource leaks, but they impose
-restrictions on aliasing and a high type annotation burden, making translation
-of existing code impractical.
+Previous work has performed modular typestate analysis for annotated Java
+programs~\cite{BierhoffA2007} or proposed typestate-oriented programming
+languages that include modular typestate
+checking~\cite{AldrichSSS2009,garcia2014typestate}.  The type systems of these
+approaches are richer than those proposed here and can express arbitrary
+typestate properties, beyond what can be checked with \Tool.
+However, these systems impose restrictions on aliasing and a
+higher type annotation burden than \Tool, making adoption for existing code
+more challenging.
 
 %\todo{Is there other relevant related work? Find out.}
 
