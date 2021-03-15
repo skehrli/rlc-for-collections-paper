@@ -51,27 +51,27 @@ However, non-constructor methods may also create obligations
 when re-assigning non-final, owning fields or allocating
 new system-level resources.
 A post-condition annotation,
-\CreateObligation,
+\CreatesObligation,
 indicates for which expression an obligation is created.
 
-At each call to a method annotated as \CreateObligation\<(>\|expr|\<)>, \Tool removes any
+At each call to a method annotated as \CreatesObligation\<(>\|expr|\<)>, \Tool removes any
 inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
 % methods that are not in its the current must-call type, they are added.
-Since a \CreateObligation annotation can only increase its target's obligations,
+Since a \CreatesObligation annotation can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
 When checking a call to a method annotated as
-\CreateObligation\<(>\|expr|\<)>, the Must Call Consistency Checker
+\CreatesObligation\<(>\|expr|\<)>, the Must Call Consistency Checker
 (1) treats the \MustCall
 obligation of \|expr| as \emph{satisfied},
 and (2) creates a fresh obligation to check.
 %
 In terms of our \cref{sec:must-call-invoked} pseudocode,
 we can update the \textsc{FactsFromCall} and \textsc{MCSatisfiedAfter} procedures of
-\cref{alg:helpers} to handle \CreateObligation as follows ($[\ldots]$ stands for the cases shown previously,
+\cref{alg:helpers} to handle \CreatesObligation as follows ($[\ldots]$ stands for the cases shown previously,
 including those in \cref{sec:ownership-transfer}):
 %\todo{I suggest putting the base code first and the addition with COTargets second.}
 \begin{algorithmic}
@@ -84,23 +84,23 @@ including those in \cref{sec:ownership-transfer}):
   \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{COTargets}(s)$
   \EndProcedure
   \Procedure{COTargets}{$c$}
-  \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreateObligation target for $c$'s callee \}
+  \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreatesObligation target for $c$'s callee \}
   \EndProcedure
 \end{algorithmic}
 \noindent
 This change is sound: the checker creates a new obligation for calls to
-\CreateObligation methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
+\CreatesObligation methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
-There is an exception to this check: if an \CreateObligation
-method is invoked within a method that has an \CreateObligation annotation
+There is an exception to this check: if an \CreatesObligation
+method is invoked within a method that has an \CreatesObligation annotation
 with the same target---imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.\looseness=-1
 
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
-\CreateObligation allows \Tool to verify uses of non-final fields
+\CreatesObligation allows \Tool to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -110,7 +110,7 @@ the following example:
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
     void close() { sock.close() };
-    @CreateObligation("this")
+    @CreatesObligation("this")
     void reconnect() {
       if (!sock.isClosed()) {
         sock.close();
@@ -129,7 +129,7 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with an \CreateObligation annotation
+  must be annotated with an \CreatesObligation annotation
   that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   its inferred \MustCall obligation must be contained in its \<@CalledMethods>
@@ -139,13 +139,13 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because calling
-an \CreateObligation method like \<reconnect()> resets called-methods
+an \CreatesObligation method like \<reconnect()> resets called-methods
 inference, calls to \<close> before the last call to \<reconnect()>
 are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
-\CreateObligation can also handle cases where object creation
+\CreatesObligation can also handle cases where object creation
 does not allocate a resource, but the object will allocate a resource
 later in its lifecycle. Consider the no-argument constructor
 to \<java.net.Socket>. This constructor does not allocate an
@@ -171,10 +171,10 @@ in code such as the below, which operates on an unconnected socket
 
 \noindent
 The call to \<setSoTimeout> can throw a \<SocketException> if the
-socket is actually connected when it is called. Using \CreateObligation,
+socket is actually connected when it is called. Using \CreatesObligation,
 however, \Tool can soundly show that this socket is not connected:
 the type of the result of the no-argument constructor can be
-treated as \<@MustCall(\{\})>, and \CreateObligation annotations
+treated as \<@MustCall(\{\})>, and \CreatesObligation annotations
 on the methods that actually allocate the socket---\<connect()> or
 \<bind()>---enforce that as soon as the socket is actually open,
 it is treated as \<@MustCall("close")>.

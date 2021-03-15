@@ -97,7 +97,7 @@ cannot become out-of-date if the checker is passing.
     \<@EnsuresCalledMethods>                &      43       \\
     \<@MustCall>                            &      41       \\
     \<@MustCallAlias>                       &      36       \\
-    \CreateObligation                       &      29      \\
+    \CreatesObligation                       &      29      \\
   \end{tabularx}
 \end{table}
 
@@ -192,14 +192,14 @@ infeasible control-flow-graph edge.
 % not, leading to an infeasible control-flow graph edge.
 %
 In 2 places, we extracted an expression into a local variable, permitting
-flow-sensitive reasoning or targetting by a \CreateObligation annotation.
+flow-sensitive reasoning or targetting by a \CreatesObligation annotation.
 % multiple calls to a method
 % into a single call that is assigned to a local variable; this allows
 % flow-sensitive reasoning about the local
 % variable.
 % % , and the code is also more efficient.
 % In 1 place, we extracted an expression into a local variable
-% so that a \CreateObligation annotation could target it.
+% so that a \CreatesObligation annotation could target it.
 
 
 \subsection{Evaluating our enhancements}
