@@ -98,11 +98,12 @@ it is deallocated.
 \label{fig:must-call-hierarchy}
 \end{figure}
 
-The Must Call type system tracks
-which methods might need to be called on
-a given object before the object is deallocated.
-This type system is general---it is not specific
-to resource leaks.
+The Must Call type system tracks which methods might need to be called
+on a given object before the object is deallocated.  This type system
+is general---it is not specific to resource leaks\footnote{Another such
+  property, for example, is that the
+  \<build()> method of a builder~\cite{designpatterns} should always
+  be called, to avoid unnecessary computation.}.
 
 The Must Call type system supports two qualifiers: \MustCall and
 \MustCallUnknown. The \MustCall qualifier's arguments are the
