@@ -100,13 +100,10 @@ it is deallocated.
 
 The Must Call type system tracks which methods might need to be called
 on a given object before the object is deallocated.  This type system
-is general---it is not specific to resource leaks\footnote{The
-  approach described in this section is sufficient to check any
-  property of the form ``object O must always call method M before it
-  is de-allocated.'' Another such property, for example, is that the
+is general---it is not specific to resource leaks\footnote{Another such
+  property, for example, is that the
   \<build()> method of a builder~\cite{designpatterns} should always
-  be called, to avoid unnecessary computation. We leave applying this
-  system to other such properties as future work.}.
+  be called, to avoid unnecessary computation.}.
 
 The Must Call type system supports two qualifiers: \MustCall and
 \MustCallUnknown. The \MustCall qualifier's arguments are the
