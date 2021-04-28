@@ -1,0 +1,193 @@
+ESEC/FSE 2021 Paper #307 Reviews and Comments
+===========================================================================
+Paper #307 Lightweight and Modular Resource Leak Verification
+
+
+Review #307A
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Paper summary
+-------------
+This paper presents a new approach to resource leak detection. The basic idea is to use annotation to modularize resource leak detection. In particular, with the help of the annotations, resource leak detection can be reduced to a special kind of type analysis, which can be performed in an efficient way. This paper also presents an empirical study to evaluate the proposed approach.
+
+Strengths and weaknesses
+------------------------
++ Important problem
++ New approach
+- Unsatisfactory evaluation
+- Unclear benefits and costs
+
+Comments for authors
+--------------------
+To my knowledge, the proposed approach is novel and the target problem is an important problem. However, I have some concerns with the paper in the current form.
+1. The real benefits of the proposed approach are unclear to me. Generally speaking, the proposed approach actually provides a new tradeoff between precision and efficiency with the help of annotation. However, it is unclear whether this tradeoff is better than existing ones. For example, the authors seem to indicate that the proposed approach is more efficient conceding more false positives. But this paper does not provide evidence that SOTA approaches with similar false positives would be much more inefficient or SOTA approaches that are similar in efficiency would concede much more false positives. If we further consider the cost of providing the annotations, things may become even worse. I understand that a fair comparison may be very difficult to perform, but according to the evidence presented in the paper, the situation seems like that the proposed technique provides an alternative solution that may not be better than existing ones while conceding obvious manual efforts for providing annotations. Furthermore, the costs of providing the annotations are not evaluated in the paper.
+2. The evaluation is not performed in a repeatable way. First, it is unclear how the ground truth is obtained in the evaluation. In my opinion, obtaining the ground truth for resource leak detection may somehow involve some manual work and/or inaccuracy. Without a clear description of how the ground truth is obtained, readers may find the evaluation results very hard to be repeatable. Second, it is also unclear how the annotations are obtained, and thus the cost of obtaining the annotations is unclear as well. Without knowing the cost of obtaining the annotations, it is hard for readers to know whether the proposed technique would work with a specific given project.
+3. The novelty of the proposed approach seems to be limited. Although the proposed approach as a whole is novel to me, its major components are from existing research. Therefore, the proposed approach looks more like a novel combination/application of existing techniques than a brand new approach.
+
+Questions for authors
+---------------------
+1. Is there any evidence that the proposed approach is superior to SOTA techniques?
+2. How is the ground truth used in the evaluation obtained?
+3. How are annotations are obtained in the evaluation? What is the cost to obtain the annotations?
+
+
+
+Review #307B
+===========================================================================
+
+Overall merit
+-------------
+3. Weak accept
+
+Paper summary
+-------------
+The paper proposes a type-system based solution for verifying absence of
+resource leak issues in Java programs. In Java, it is common that classes that
+correspond to resources (e.g., File, Socket, OutputBuffer), must be explicitly
+released (e.g., by a call to close() method) before they are garbage collected.
+Not doing so causes a resource leak. This is a common issue, however, current
+Java compiler does not provide any support for the program for this.
+
+The paper proposes a type system and analysis to annotate objects by what
+functions must be called on them before they are collected, and to statically
+check that the required methods are called. The type system and analysis are
+implemented in a well-known Checker Framework for Java.
+
+An extensive evaluation shows that the proposed solutions strikes a reasonable
+balance between precision and scalability. Run times on a large project is in
+the order of minutes. Number of false positives is relatively high but
+manageable. A substantial number of true positives are found in high quality
+projects.
+
+Strengths and weaknesses
+------------------------
++ Effective solution for well-known problem
++ Positive evaluation on real high quality system
+
+- The combination of supported features seems ad-hoc
+- Exact limitations and supported/unsupported features are unclear
+
+Comments for authors
+--------------------
+I appreciate the work that was put into the development of the tool and the
+technique. However, overall, the presentation seems a bit ad-hoc. The base
+system is clear, but is very limited. It is then extended motivated by examples
+that the system cannot handle. For each example that is handled, I can come up
+with similar examples that are still not handled. Overall, the reader is left
+wondering whether this is a combination of tricks that happen to work on the
+examples tried, or something more principled.
+
+This can be addressed by a better presentation of limitations of the current
+technique.
+
+For instance, I don't think that store objects in a collection is supported.
+There is no place to attach the type annotation. For example, what happens if
+there is a List of sockets?
+
+Similarly, the problem caused by Optional (page 8) seems to be related more to
+the fact that the MustCall type annotation is not suitable, than to the use of
+generics.
+
+Another instance is ownership transfer. In the example in the paper, a function
+takes complete ownership of the object. However, it is also possible that the
+function takes only partial ownership, sometimes releasing resources and
+sometimes leaving the object alone. The current type system will not be able to
+handle this as well.
+
+I think that for every example shown, I can construct a code pattern that is
+somewhat similar but cannot be handled. This makes the technique look like a bag
+of tricks. Perhaps the tricks are only good for the projects on which the
+technique was evaluated.
+
+Other commetns
+
+on p1: Plumber is mentioned before it is introduced
+
+Sec. 4: you say that onwership annotations do not impose any restrictions, but
+they implicitly impose a restriction that resource releasing functions are not
+called on non-owning pointers. If they are, it is likely to cause false
+positives in the analysis. If it does not, then the analysis itself is unsound.
+
+Questions for authors
+---------------------
+1. What makes your system not ad-hoc?
+    See examples in my review for detailed examples for the question.
+
+2. I could not see how accumulation analysis plays a role in the technique.
+
+
+
+Review #307C
+===========================================================================
+
+Overall merit
+-------------
+3. Weak accept
+
+Paper summary
+-------------
+The article presents a technique to detect resource leakage.
+The authors see the resource-leak problem as an accumulation problem, 
+and have developed a lightweight analysis for it.
+At first, a baseline analysis is described and then, three enhancements on top of it are explained.
+
+The analysis requires annotating the program manually,
+but the authors argue that the effort of annotation is minor and outweighs the benefits of the analysis.
+The basic analysis is a data-flow analysis.
+The enhancements on top of it allows it to deal with: 
+1) lightweight ownership transfer system to tackle the resources passed via parameters or return statements,
+2) resource aliasing to deal with wrapper types, and
+3) creating new obligations to deal with the cases where fields storing resources are overwritten.
+
+The proposed analysis is implemented in a tool called Plumber.
+
+The work is evaluated on three open-source projects as case studies.
+Additionally, the article also provides a comparison with the two previous tools on these case studies.
+The authors claim to have found about 45 bugs in these case studies.
+At least one of this bug has also been accepted as a major bug 
+by the developers of the Hadoop (one of the case studies) project.
+
+Strengths and weaknesses
+------------------------
++ well written and easy to understand
++ nice tool that brings together different approaches
+- related-work discussion could be a bit more diplomatic
+
+Comments for authors
+--------------------
+The paper is well written and easy to understand.
+
+The article does not propose anything ground breaking,
+but it brings some of the existing ideas together
+(also mentioned by the authors in the introduction).
+The composition of these ideas seem to make this tool stronger in comparison to the existing tools.
+This is valuable in my opinion.
+
+The evaluation seems reasonable to substantiate the claims made by the authors for the tool.
+I also liked the discussion on limitations, specifically, the article mentions that the results might not generalize.
+
+Suggestions for improvements:
+- Algo 1, line 12-13, kill-gen:
+   Please clarify the difference between "s assigns a variable" and CreatesAlias.
+   According to my understanding, you kill the variable if the assigned value in not a var in P,
+   whereas you "gen" it if the assigned value is a var in P. Both cases assume assignment statement.
+- Algo1, line 20: <{p}, p> -> {<{p}, p>}
+- Section 3.3, around line 404: Please add a figure to show the CFG after 
+  calling InitialObligations, i.e, after line 6 of Algo 1.
+- Table 3: Instead of having extra false positive, please phrase it as "false positive removed/filtered".
+  This would also make the column headings shorter.
+- Evaluation: Please describe the experimental setup also -- OS, CPU, memory, etc.
+  And did you use any benchmarking tool?
+- Section 8.3.2, Grapple: please try to solicit a response from the Grapple team.
+  The comparison seems a little bit too harsh to the Grapple developers.
+  I would hesitant to have this piece of text in the article without a response from the developers of Grapple.
+
+Questions for authors
+---------------------
+1. Can you please shed more light on the experimental setup and data?
+2. How was the benchmarking performed and how were the experiments controlled?
+3. What do you think about the concerns/critique of the Grapple tool?
