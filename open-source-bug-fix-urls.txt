@@ -11,4 +11,8 @@ https://github.com/apache/hbase/pull/3036
 
 Zookeeper
 ---------
-https://github.com/apache/zookeeper/pull/1638
+3 resource leaks fixed in https://github.com/apache/zookeeper/pull/1638
+
+plume-util
+----------
+6 resource leaks fixed in https://github.com/plume-lib/plume-util/pull/114

@@ -5,6 +5,7 @@ Paper #307 Lightweight and Modular Resource Leak Verification
 
 Review #307A
 ===========================================================================
+* Updated: 12 May 2021 1:44:18pm AoE
 
 Overall merit
 -------------
@@ -27,6 +28,10 @@ To my knowledge, the proposed approach is novel and the target problem is an imp
 1. The real benefits of the proposed approach are unclear to me. Generally speaking, the proposed approach actually provides a new tradeoff between precision and efficiency with the help of annotation. However, it is unclear whether this tradeoff is better than existing ones. For example, the authors seem to indicate that the proposed approach is more efficient conceding more false positives. But this paper does not provide evidence that SOTA approaches with similar false positives would be much more inefficient or SOTA approaches that are similar in efficiency would concede much more false positives. If we further consider the cost of providing the annotations, things may become even worse. I understand that a fair comparison may be very difficult to perform, but according to the evidence presented in the paper, the situation seems like that the proposed technique provides an alternative solution that may not be better than existing ones while conceding obvious manual efforts for providing annotations. Furthermore, the costs of providing the annotations are not evaluated in the paper.
 2. The evaluation is not performed in a repeatable way. First, it is unclear how the ground truth is obtained in the evaluation. In my opinion, obtaining the ground truth for resource leak detection may somehow involve some manual work and/or inaccuracy. Without a clear description of how the ground truth is obtained, readers may find the evaluation results very hard to be repeatable. Second, it is also unclear how the annotations are obtained, and thus the cost of obtaining the annotations is unclear as well. Without knowing the cost of obtaining the annotations, it is hard for readers to know whether the proposed technique would work with a specific given project.
 3. The novelty of the proposed approach seems to be limited. Although the proposed approach as a whole is novel to me, its major components are from existing research. Therefore, the proposed approach looks more like a novel combination/application of existing techniques than a brand new approach.
+
+------------------------------------------------
+Additional comments after discussion:
+I think the proposed technique is novel and the empirical results seem promising. However, the under-evaluation of the involved manual effort remains an issue to me. So, the authors should provide in-depth discussion to further qualify the contribution of the manual effort to the overall empirical results in the CR version. The authors should also explicitly acknowledge the threat that the involvement of unevaluated manual effort may bring to the validity of the empirical results.
 
 Questions for authors
 ---------------------
@@ -191,3 +196,83 @@ Questions for authors
 1. Can you please shed more light on the experimental setup and data?
 2. How was the benchmarking performed and how were the experiments controlled?
 3. What do you think about the concerns/critique of the Grapple tool?
+
+
+
+First-Response-Period Response by Martin Kellogg <kelloggm@cs.washington.edu>
+---------------------------------------------------------------------------
+Thanks to the reviewers for their helpful comments! Below, we answer reviewers’ specific questions; we will address all other comments when revising the paper.
+
+> A1. Is there any evidence that the proposed approach is superior to SOTA techniques?
+
+In brief, there is no comparable SOTA tool (see section 8.3).  Soundness is required in order to prevent all resource leaks, but previous tools are unsound and miss bugs that Plumber finds.  Extant approaches are fast, unsound, and imprecise (like Eclipse) or are slow, unsound, and precise (like Grapple).  Plumber uses novel techniques to achieve soundness along with relatively good performance and precision:  a new point in the design space that was not achievable using previous techniques.
+
+> A2. How is the ground truth used in the evaluation obtained?
+
+We determined ground truth via manual examination (line 794).
+
+We validated our determinations by submitting bug reports.  So far, 8 bugs have been acknowledged, and our fixes approved, by developers.  No bug report has been rejected as a false positive by the maintainers.
+
+> A3. How are annotations obtained in the evaluation? What is the cost to obtain the annotations?
+
+We wrote the annotations ourselves (line 787).
+
+We spent almost all our time understanding the program and fixing bugs.  Once we understood the design, writing the annotations took only moments.  The effort to write annotations has benefits beyond bug-finding and verification:  they serve as machine-checked documentation.  For more on annotation burden, please see section “Additional experiment” below.
+
+> B1. What makes your system not ad-hoc?
+
+We are not 100% sure what the reviewer means by "ad hoc".  Plumber is a sound verification tool, and every sound tool suffers from some false positives.  We built our analysis using a standard methodology:  build an initial sound tool, and then use real-world experience to determine where to soundly improve its precision.  It seems most likely that the reviewer is concerned that our approach is tuned to our specific case studies and our tool would perform poorly on any other program.  Our main techniques to improve precision handle ownership tracking and wrapper types, issues that commonly arise in work on leak detection/prevention; see, e.g., Rust (section 10.2) and references [7,29].  Hence, our techniques are likely to be broadly applicable.  Still, we acknowledge generalizability as a threat (line 1011).  Please also see the "Additional experiment" section below.
+
+> B2.  I could not see how accumulation analysis plays a role in the technique.
+
+Section 3.2 describes an accumulation analysis that is part of our technique. The use of accumulation within a resource-leak analysis is a key insight of this work. It enables a sound, modular analysis (i.e., without a whole-program alias analysis).
+
+> C1. Can you please shed more light on the experimental setup and data?
+> C2. How was the benchmarking performed and how were the experiments controlled?
+
+Line 791 says, “an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM”.  The machine was running Ubuntu Linux 20.10.  We used the linux `time` program to record wall clock time.  We reported the median of five runs while the machine was otherwise mostly idle.  This methodology is sufficient because the timing numbers differ in orders of magnitude (Eclipse runs in seconds, our tool runs in minutes, Grapple runs in hours).
+
+> C3. What do you think about the concerns/critique of the Grapple tool?
+
+We have communicated multiple times with the Grapple authors via email, and they have made significant efforts to answer our questions.  In terms of running Grapple, unfortunately the primary student author has graduated and is unable or unwilling to assist.  The other authors are only able to point us to the relevant source code, which is spread across multiple git branches and suffers from the issues mentioned in lines 979--982.  Hence, at this point the Grapple results cannot be reproduced nor can Grapple be applied to new programs -- either by us or by the Grapple authors.  We will continue to correspond with Grapple authors and include a response from them when revising.
+
+Additional experiment
+
+To answer the reviewers’ questions about our tool's generalizability and the annotation overhead, one author used Plumber to analyze a library (written years ago for a different project) containing 10,393 non-comment non-blank lines of code.
+Plumber identified 6 resource leaks, then verified that no more remained, with only one false positive warning.  The process took about two hours, largely because the author already understood both Plumber and the program.  The annotations were valuable enough that they are now committed to that codebase, and Plumber runs in CI on every commit to prevent the introduction of new resource leaks.  This example is *not* a proof, but it is suggestive of our tool's generality and that the annotation burden is reasonable.
+
+
+Additional comments
+
+> For instance, I don't think that storing objects in a collection is supported.
+> There is no place to attach the type annotation. For example, what happens if
+> there is a List of sockets?
+
+In Java, there is a place to attach the type annotation.  Since Java 8, type annotations can be written on type arguments, as in
+  List<@MustCall("close") Socket>
+
+Like most type systems, ours handles homogeneous lists.  For example, it cannot precisely represent a list in which the elements before some index i have had close() called, but the elements at later indices have not.  Such a list would have type
+  List<CalledMethods({}) Socket>
+which is sound but is imprecise for the first half of the list.
+
+> it is also possible that the
+> function takes only partial ownership, sometimes releasing resources and
+> sometimes leaving the object alone.
+
+Yes, you are correct; in general, a program can have arbitrarily complex and hard-to-verify behavior.  A side benefit of verification is that it encourages programmers to use simpler, cleaner code.  Code that is simple enough for an analysis to understand is also easier for people to understand and maintain.
+
+> Sec. 4: you say that ownership annotations do not impose any restrictions, but
+> they implicitly impose a restriction that resource releasing functions are not
+> called on non-owning pointers. If they are, it is likely to cause false
+> positives in the analysis. If it does not, then the analysis itself is unsound.
+
+Your first alternative is correct:  incorrectly-marked ownership annotations can lead to false positives (line 438, two lines above the text you are quoting).  These can often be eliminated by correcting the ownership annotations.
+
+
+
+Review #307D
+===========================================================================
+
+Metareview
+----------
+The paper addresses an important problem with a combination of analysis techniques.  The reviewers find value in the paper, but expect the authors to either qualify their findings, i.e., through a detailed threats to validity analysis, or better contextualize their findings, i.e., by adding additional information in the narrative, as relates to: (1) the manual effort required to apply their technique, and (b) the generality of the technique.  The reviews provide more detail on what is missing in regard to these points.
