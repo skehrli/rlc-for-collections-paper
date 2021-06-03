@@ -1,7 +1,7 @@
 \section{Limitations and threats to validity}
 \label{sec:threats}
 
-Like any tool that analyzes source code, \Tool only
+Like any tool that analyzes source code, \tool only
 gives guarantees for code that it checks: the guarantee
 excludes native code, the implementation of unchecked libraries (such as the JDK),
 and code generated dynamically or by other annotation processors
@@ -16,7 +16,7 @@ such as Lombok.
 Though
 the Checker Framework can handle 
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
-\Tool compromises this guarantee
+\tool compromises this guarantee
 by assuming that objects returned by reflective invocations
 do not carry must-call obligations (but this behavior can
 be disabled).
@@ -25,7 +25,7 @@ be disabled).
 % the programmer and the correctness of the relevant code
 % must be proved using another method.
 Within the bounds
-of a user-written warning suppression, \Tool assumes that 1)
+of a user-written warning suppression, \tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
@@ -37,19 +37,19 @@ external validity of the experimental results.
 % \Tool.  Nevertheless,
 \Tool may produce more false positives, require
 more annotations, or be more difficult to use if applied to other
-programs.  It would be both easier and more useful to use \Tool from
+programs.  It would be both easier and more useful to use \tool from
 the inception of a project, rather than applying it after the code had
 already be written, as we did in our case studies: code could be
 annotated as it was written.  This would ensure that the annotations match
 the intent of the programmers and would guide the programmers to a better design.
 
 Like any practical system, it is possible that there might
-be bugs in the implementation of \Tool, or in the design of
+be bugs in the implementation of \tool, or in the design of
 its analyses. We have mitigated this threat with code review and an extensive
-test suite for \Tool:
+test suite for \tool:
 % to collect these numbers, run scc in the tests directory of
 % object-construction-checker and must-call-checker subprojects of
 % fse-main-307/plumber and sum the results
 110 test classes containing 3,458 lines of non-comment, non-blank code.
 \todo{Update the numbers in the previous paragraph immediately before submission.}
-This test suite is publicly available and distributed with \Tool.
+This test suite is publicly available and distributed with \tool.

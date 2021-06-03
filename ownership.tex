@@ -130,14 +130,14 @@ never assumes that passing an object to an unannotated library will satisfy its 
   More formally, consider a final \<@Owning> field $f$ declared in class $C$,
   where
   $f$ has type \MustCall\<("m")>.  To
-  verify that $f$'s \MustCall obligation is satisfied, \Tool checks the following
+  verify that $f$'s \MustCall obligation is satisfied, \tool checks the following
   conditions:
   \begin{enumerate}
     \item All $C$ objects must have a type \MustCall\<("d")> for some method \<C.d()>.
     \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \MustCall obligation.
   \end{enumerate}
-  In this manner, \Tool modularly verifies the \MustCall obligaation of $f$.  Condition 2 is
+  In this manner, \tool modularly verifies the \MustCall obligaation of $f$.  Condition 2 is
   checked by requiring an appropriate \EnsuresCalledMethods
   postcondition annotation on
   \<C.d()>, which is then enforced by the Called Methods

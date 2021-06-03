@@ -1,7 +1,7 @@
 \section{Implementation}
 \label{sec:implementation}
 
-We implemented \Tool on top of the Checker Framework~\cite{PapiACPE2008},
+We implemented \tool on top of the Checker Framework~\cite{PapiACPE2008},
 an industrial-strength framework for building pluggable type systems
 for Java. The checkers which propagate and infer \MustCall and
 \<@CalledMethods> annotations are implemented
@@ -12,5 +12,5 @@ produced by the Checker Framework's dataflow analysis, which is invoked
 when the other two checkers terminate. The framework provides the
 checkers with flow-sensitive local type
 inference, support for Java generics and qualifier polymorphism, and
-other conveniences. Our implementation is open-source and available
-at \url{https://github.com/fse-main-307/plumber}.
+other conveniences. Our implementation is open-source and
+distributed as part of the Checker Framework (\url{checkerframework.org}).

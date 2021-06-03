@@ -117,7 +117,7 @@ and achieve precision in practice:
 \item resource aliasing, for cases in which a resource's must-call obligations
   can be resolved by closing one of two or more references.
 \item a system for creating new obligations at locations other than the
-  constructor, which allows \Tool to handle lazy or multiple initialization.
+  constructor, which allows \tool to handle lazy or multiple initialization.
 \end{itemize}
 Variants of (some of) these ideas exist in previous work.  We bring
 them together in a general, modular manner, with full verification and
@@ -139,11 +139,11 @@ Our contributions are:
   tracking analysis (\cref{sec:must-call-choice}), and a system for
   handling lazy or multiple initialization (\cref{sec:reset-must-call}).
 \item an open-source implementation for Java,
-  called \Tool (\cref{sec:implementation}).
+  called \tool (\cref{sec:implementation}).
 \item an extensive empirical evaluation: case studies on heavily-used
   Java programs that handle many resources (\cref{sec:case-studies}),
   an ablation study that shows the contributions of each innovation to
-  \Tool's precision (\cref{sec:ablation}), and a comparison to
+  \tool's precision (\cref{sec:ablation}), and a comparison to
   other state-of-the-art approaches that demonstrates the unique strengths
   of our approach (\cref{sec:compare}).
 %% \item a comparison to alternative approaches to resource leak

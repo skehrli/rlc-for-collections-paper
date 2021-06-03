@@ -22,9 +22,9 @@ Our evaluation has three parts:
 \end{itemize}
 \noindent
 \paragraph{Results} All code and data for the experiments described
-in this section, including \Tool's implementation, our experimental
+in this section, including \tool's implementation, our experimental
 machinery, and the annotated versions of our case study programs,
-are publicly available at \url{https://github.com/fse-main-307}.
+are publicly available at \todo{permanent artifact URL}.
 
 \subsection{Case studies on open-source projects}
 \label{sec:case-studies}
@@ -33,7 +33,10 @@ We selected 3 popular open-source projects that were analyzed by prior work~\cit
 For each, we selected and analyzed one or two modules
 with many uses of leakable resources. We used
 the latest version of the source code that was available
-when we began.
+when we began. We also analyzed a smaller open-source project
+maintained by one of the authors, to better simulate \tool's
+expected use case, where the user is already familiar with the
+code under analysis (see \cref{sec:plume-util}).
 
 Our methodology was:
 (1)
@@ -93,24 +96,24 @@ cannot become out-of-date if the checker is passing.
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Annotation                           &      Count     \\
     \hline
-    \<@Owning> and \<@NotOwning>            &      113   \\
-    \<@EnsuresCalledMethods>                &      43       \\
-    \<@MustCall>                            &      41       \\
-    \<@MustCallAlias>                       &      36       \\
-    \CreatesObligation                       &      29      \\
+    \<@Owning> and \<@NotOwning>            &      \todo{113}   \\
+    \<@EnsuresCalledMethods>                &      \todo{43}       \\
+    \<@MustCall>                            &      \todo{41}       \\
+    \<@MustCallAlias>                       &      \todo{36}       \\
+    \CreatesObligation                       &      \todo{29}      \\
   \end{tabularx}
 \end{table}
 
 \subsubsection{True and false positive examples}
 \label{sec:examples}
 
-This section describes some examples of warnings reported by \Tool
+This section describes some examples of warnings reported by \tool
 in our case studies.\looseness=-1
 
 \begin{figure}
   \lstinputlisting{hadoop-bug.txt}
   \prefigcaption
-  \caption{A true positive that \Tool found in Hadoop. Our pull request
+  \caption{A true positive that \tool found in Hadoop. Our pull request
     to fix this bug was accepted by Hadoop's developers.}
   \label{fig:hadoop-bug}
 \end{figure}
@@ -134,23 +137,27 @@ is non-trivial.  dunno if we have space, but if we do, we may want to include}
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
   \prefigcaption
-  \caption{Code from the ZooKeeper case study that causes \Tool
+  \caption{Code from the ZooKeeper case study that causes \tool
   to issue a false positive.}
   \label{fig:zookeeper-optional}
 \end{figure}
 
 The most common false
-positive pattern (with 15 instances) was caused by
+positive pattern (with \todo{15} instances) was caused by
 a generic container object like \<java.util.Optional> taking ownership of a resource, such
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
-so \Tool issues an error when \<Optional.of> is returned. In this case, the use
+so \tool issues an error when \<Optional.of> is returned. In this case, the use
 of the \<Optional> class complicates the code; if \<Optional> was replaced
 by \<null>,
 %% Leave out of submitted version.
 % as some advocate~\cite{ErnstNothingIsBetterThanOptional},
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
+
+Another common false positive pattern (with \todo{?} instances)
+was caused by the Checker Framework’s overly-conservative
+type inference algorithm for Java generics~\cite{issue979}.
 
 Most false positives involve unique coding patterns.
 One example is a series of catch
@@ -170,9 +177,9 @@ conditions, and handling such reasoning is future work.\looseness=-1
 % Because most relevant \MustCall and \<@CalledMethods> annotations
 % are inferred intra-procedurally, most annotations that we had to write in
 % the case studies pertained to ownership or the side-effects of procedures.
-We wrote less than one annotation per 2,000 lines of code (\cref{tab:annos}).
+We wrote less than one annotation per \todo{2,000} lines of code (\cref{tab:annos}).
 
-\todo{Double-check all numbers.}
+\todo{Double-check all numbers and incorporate plume-util code changes.}
 We also
 made 13 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
@@ -201,6 +208,22 @@ flow-sensitive reasoning or targetting by a \CreatesObligation annotation.
 % In 1 place, we extracted an expression into a local variable
 % so that a \CreatesObligation annotation could target it.
 
+\subsubsection{Simulating the user experience}
+\label{sec:plume-util}
+
+To better simulate the user experience of a typical user,
+one author used \tool to analyze plume-util,
+a library (written years ago for a different project).
+The process only took about two hours (including running the tool,
+writing annotations, and fixing the bugs that were discovered by the tool),
+largely because the author already understood
+both \tool and the program.  The annotations were valuable enough that they
+are now committed to that codebase, and \tool runs in CI on every commit
+to prevent the introduction of new resource leaks.
+This example is \emph{not} a proof, but it is suggestive of
+our tool's generality and that the annotation burden is reasonable---when
+the user is familiar with both \tool and the code being analyzed, writing
+annotations is fast (even when real bugs are discovered and must be fixed).
 
 \subsection{Evaluating our enhancements}
 \label{sec:ablation}
@@ -230,14 +253,17 @@ flow-sensitive reasoning or targetting by a \CreatesObligation annotation.
   \end{tabularx}
 \end{table}
 
+\todo{Recompute all numbers in table 3.}
+
 The base analysis of \cref{sec:base-type-systems} produces significantly
 more false positives, because it lacks 
 lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
 obligation creation (\cref{sec:reset-must-call}).
-Each contributes to \Tool's precision by eliminating false positives.
+Each contributes to \tool's precision by eliminating false positives.
 To evaluate the contribution of each enhancement, we individually disabled each
-feature and re-ran the experiments of \cref{sec:case-studies}.
+feature and re-ran the experiments of \cref{sec:case-studies}
+(except the plume-util micro-benchmark, which barely uses these features).
 Since all variants are sound (no false
 negatives), any difference in warnings is a false positive that is prevented
 by the feature.
@@ -270,7 +296,7 @@ Both tools are applicable to legacy code. % , without the need to write annotati
 Eclipse is very fast (nearly instantaneous) and suffers 67--98\% false
 positives. % while missing 70-90\% of resource leaks.
 According to its authors, Grapple is precise (13\% false positive rate) but orders
-of magnitude slower than \Tool.
+of magnitude slower than \tool.
 Different users can select whichever tool matches
 their priorities.
 
@@ -290,7 +316,7 @@ leaks and detecting ``potential'' resource
 leaks (a superset of high-confidence resource leaks).\looseness=-1
 
 We ran Eclipse's analysis on the same versions of our case study programs
-that we ran \Tool on in \cref{sec:case-studies}, and examined
+that we ran \tool on in \cref{sec:case-studies}, and examined
 the same modules. It is easy to apply
 to legacy code and it is fast---nearly instantaneous once Eclipse
 has loaded the project.\looseness=-1
@@ -314,7 +340,7 @@ These results show that the Eclipse bug-finder is unsound in both
 modes: it misses 9 real warnings on ZooKeeper even in potential leak mode.
 The analysis is imprecise, too: in potential leak mode,
 the vast majority of warnings are false positives, and even in high-confidence
-mode its ratio of true to total warnings is higher than \Tool's: (2/9 = 22\%
+mode its ratio of true to total warnings is higher than \tool's: (2/9 = 22\%
 vs. 45/156 = 29\%).
 %% MK: I think this sentence is redundant
 %% However, this sort
@@ -368,7 +394,7 @@ Graspan~\cite{wang2017graspan} to achieve both context- and path-sensitivity.
 % Grapple, like all previous
 % typestate-based analyses, requires a whole-program alias analysis.
 Grapple contains four checkers, of which two are useful for detecting
-resource leaks.  Unlike \Tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
+resource leaks.  Unlike \tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
 of loops to make path sensitivity tractable.
 
 The Grapple authors have already evaluated their tool on earlier
@@ -377,13 +403,13 @@ This should be easy to do since it's only a few hours of work and we are now
 familiar with the programs.} of the case study programs in
 \cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
 results from their paper.  Based on these numbers, Grapple reports fewer false
-positives than \Tool.  Unfortunately, we could not run
+positives than \tool.  Unfortunately, we could not run
 Grapple's leak detection on our versions of the benchmarks, due to various
 hardcoded paths in its source code and limited documentation. Also, full details
 on Grapple's true and false-positive warnings are currently unavailable (we have
 requested them from the authors), so we cannot study the precision differences
 further.  The run times in \Cref{tab:grapple} show a stark difference with our
-work; \Tool runs in minutes, whereas Grapple can take many hours. Further, to
+work; \tool runs in minutes, whereas Grapple can take many hours. Further, to
 our best knowledge, Grapple is not modular, so any code modification will
 necessitate a full re-analysis. \Tool only needs to re-analyze modified code and
 possibly its dependents after a change, not unmodified dependencies.\looseness=-1

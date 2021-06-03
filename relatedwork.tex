@@ -15,13 +15,13 @@ resource leaks, with various additional features to make their tool practical,
 including issue prioritization and handling of wrapper types.  Tracker avoids
 whole-program alias analysis to improve scalability, instead using a local,
 access-path-based approach.  While Tracker scales well to large programs, it is
-deliberately unsound, unlike \Tool.
+deliberately unsound, unlike \tool.
 
 The Eclipse Compiler for Java includes a dataflow-based
 bug-finder for resource leaks~\cite{ecj-resource-leak}. Its analysis
 uses a fixed set of ownership heuristics and a fixed list of wrapper
-classes; unlike \Tool, it is unsound. It is fast.  Similar analyses---with similar trade-offs
-compared to \Tool---exist in other heuristic bug-finding tools,
+classes; unlike \tool, it is unsound. It is fast.  Similar analyses---with similar trade-offs
+compared to \tool---exist in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
 \Cref{sec:eclipse} experimentally evaluates the Eclipse analysis.
@@ -33,7 +33,7 @@ releasing resources.
 Typestate analysis~\cite{StromY86,FinkYDRG2008} can be used to
 find resource leaks.  Grapple~\cite{zuo2019grapple} is the most recent system to
 use this approach, leveraging a disk-based graph engine to achieve unprecedented
-scalability on a single machine.  Compared to \Tool, Grapple
+scalability on a single machine.  Compared to \tool, Grapple
 is more precise but
 suffers from unsoundness and much longer run times.
 \Cref{sec:grapple} gives a more detailed comparison to Grapple.
@@ -63,13 +63,13 @@ state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
 Other techniques focus on taking advantage of common misuse of
 the Android activity lifecycle~\cite{amalfitano2020memories}.
 Testing can only show the presence of bugs, not their absence;
-\Tool verifies that no resource leaks are present.
+\tool verifies that no resource leaks are present.
 
 \paragraph{Data sets and surveys}
 The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
 leak bugs. Unfortunately, it includes only the compiled apps. \Tool runs on
-source code, so we were unable to run \Tool on DroidLeaks. Ghanavati et
+source code, so we were unable to run \tool on DroidLeaks. Ghanavati et
 al.~\cite{ghanavati2020memory} performed a detailed recent study of resource
 leaks and their repairs in Java projects, showing the pressing need for better
 tooling for resource leak prevention.
@@ -100,7 +100,7 @@ borrowing, and even then, borrowed pointers have restricted privileges.
 
 \Tool has less power than Rust's ownership types; it cannot prevent double-free
 or use-after-free bugs.  But,
-\Tool's lightweight ownership annotations impose \emph{no} restrictions on
+\tool's lightweight ownership annotations impose \emph{no} restrictions on
 aliasing; they simply aid the tool in identifying how a resource will
 be closed.  Lightweight ownership is better suited to preventing
 resource leaks in existing, large Java code bases; adapting such programs to use
@@ -115,16 +115,16 @@ execution may be delayed arbitrarily.
 Compensation stacks~\cite{WeimerN04} generalize C++ destructors and Java's
 try-with-resources, to avoid resource leak problems in Java.  While
 compensation stacks make resource leaks less likely, they do not provide a
-guarantee that leaks will not occur, unlike \Tool.
+guarantee that leaks will not occur, unlike \tool.
 
 Previous work has performed modular typestate analysis for annotated Java
 programs~\cite{BierhoffA2007} or proposed typestate-oriented programming
 languages that include modular typestate
 checking~\cite{AldrichSSS2009,garcia2014typestate}.  The type systems of these
 approaches are richer than those proposed here and can express arbitrary
-typestate properties, beyond what can be checked with \Tool.
+typestate properties, beyond what can be checked with \tool.
 However, these systems impose restrictions on aliasing and a
-higher type annotation burden than \Tool, making adoption for existing code
+higher type annotation burden than \tool, making adoption for existing code
 more challenging.
 
 %\todo{Is there other relevant related work? Find out.}

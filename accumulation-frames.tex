@@ -11,7 +11,9 @@
 \newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
 
 \begin{table*}
-  \caption{Verifying the absence of resource leaks in case studies.
+  \caption{
+    \todo{Recompute all numbers in the docker image, except wall-clock time.}
+    Verifying the absence of resource leaks in case studies.
     % LoC is computed using scc. Be careful when computing LoC to run scc from relevant top-level
     % directory that only contains source code (not test code!) to make sure that the count is accurate.
     % for Zookeeper, this directory is zookeeper/zookeeper-server/src/main/java
@@ -40,8 +42,9 @@
     \osstablerow{apache/zookeeper:zookeeper-server}                   {45,248}        {232}       {98}          {5}          {12}       {47}   {1m 24s}        \\
     \osstablerow{apache/hadoop:hadoop-hdfs-project/hadoop-hdfs}       {151,595}        {366}       {129}          {7}        {22}        {37}   {16m 21s}        \\
     \osstablerow{apache/hbase:hbase-server, hbase-client}             {220,828}        {62}          {35}          {1}        {11}        {27}   {7m 45s}        \\
+    \osstablerow{plume-lib/plume-util}             {10,393}        {?}          {?}          {?}        {8}        {1}   {?m ?s}        \\
     \hline
-    \osstablerow{\textbf{Total}}                                      {417,671}        {660}         {262}          {13}        {45}       {111}   {-}        \\
+    \osstablerow{\textbf{Total}}                                      {428,064}        {660}         {262}          {13}        {45}       {111}   {-}        \\
   \end{tabular}
 \end{table*}
 
@@ -54,7 +57,7 @@ A post-condition annotation,
 \CreatesObligation,
 indicates for which expression an obligation is created.
 
-At each call to a method annotated as \CreatesObligation\<(>\|expr|\<)>, \Tool removes any
+At each call to a method annotated as \CreatesObligation\<(>\|expr|\<)>, \tool removes any
 inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
@@ -100,7 +103,7 @@ the new obligation can be treated as satisfied immediately.\looseness=-1
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
-\CreatesObligation allows \Tool to verify uses of non-final fields
+\CreatesObligation allows \tool to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -172,7 +175,7 @@ in code such as the below, which operates on an unconnected socket
 \noindent
 The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called. Using \CreatesObligation,
-however, \Tool can soundly show that this socket is not connected:
+however, \tool can soundly show that this socket is not connected:
 the type of the result of the no-argument constructor can be
 treated as \<@MustCall(\{\})>, and \CreatesObligation annotations
 on the methods that actually allocate the socket---\<connect()> or
