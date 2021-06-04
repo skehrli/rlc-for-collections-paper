@@ -72,19 +72,19 @@ cannot become out-of-date if the checker is passing.
 
 %% Here's the full table of annotations:
 
-%% -              ZK  HB  HD  Total
-%% Owning         28  12  43  83
-%% NotOwning      8   5   17  30  = 113
+%% -              ZK  HB  HD PU  Total
+%% Owning         34  12  43 0 83
+%% NotOwning      8   5   17 0 30  = 113
 %% ----
-%% MustCall       13  7   11  31
-%% InheritableMC  1   2   7   9   = 41
+%% EnsuresCM      25  4   18 0 43  = 43
 %% ---
-%% MustCallChoice 4   0   28  34
-%% PolyMustCall   4   0   0   4   = 36
+%% MustCall       13  7   11 0 31
+%% InheritableMC  5   2   7  0 9   = 41
 %% ---
-%% ResetMustCall  19  5   5   29  = 29
+%% MustCallAlias  4   0   28 2 34
+%% PolyMustCall   4   0   0  0 4   = 36
 %% ---
-%% EnsuresCM      21  4   18  43  = 43
+%% CO             29  5   5  0 29  = 29
 
 
 \begin{table}
@@ -179,10 +179,14 @@ conditions, and handling such reasoning is future work.\looseness=-1
 % the case studies pertained to ownership or the side-effects of procedures.
 We wrote less than one annotation per \todo{2,000} lines of code (\cref{tab:annos}).
 
-\todo{Double-check all numbers and incorporate plume-util code changes.}
 We also
-made 13 small, semantics-preserving changes to the programs to reduce
+made 38 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
+%
+In 19 places in plume-util, we added an explict \<extends> bound to a generic type.
+The Checker Framework uses different defaulting rules for implicit and explicit
+upper bounds, and a common pattern in this benchmark caused our checker to issue
+an error on uses of implicit bounds.
 %
 In 8 places, we added \<final> to a field; this allows our checker to verify it without using
 the rules for non-final owning fields given in \cref{sec:reset-must-call}, which are stricter.
@@ -249,11 +253,9 @@ annotations is fast (even when real bugs are discovered and must be fixed).
     \abltablerow{apache/hadoop}                   {48}            {135}             {3}                               \\
     \abltablerow{apache/hbase}                  {60}            {71}             {4}                               \\
     \hline
-    \abltablerow{\textbf{Total}}                {\todo{174}}            {\todo{303}}             {\todo{17}}                               \\
+    \abltablerow{\textbf{Total}}                {174}            {303}             {17}                               \\
   \end{tabularx}
 \end{table}
-
-\todo{Recompute all numbers in table 3.}
 
 The base analysis of \cref{sec:base-type-systems} produces significantly
 more false positives, because it lacks 
