@@ -73,18 +73,18 @@ cannot become out-of-date if the checker is passing.
 %% Here's the full table of annotations:
 
 %% -              ZK  HB  HD PU  Total
-%% Owning         34  12  43 0 83
-%% NotOwning      8   5   17 0 30  = 113
+%% Owning         34  11  29 0   74
+%% NotOwning      8   5   11 0   24  = 98
 %% ----
-%% EnsuresCM      25  4   18 0 43  = 43
+%% EnsuresCM      25  11  18 0   54  = 54
 %% ---
-%% MustCall       13  7   11 0 31
-%% InheritableMC  5   2   7  0 9   = 41
+%% MustCall       13  7   17 0   37
+%% InheritableMC  5   4   7  0   16  = 53
 %% ---
-%% MustCallAlias  4   0   28 2 34
-%% PolyMustCall   4   0   0  0 4   = 36
+%% MustCallAlias  4   2   28 2   36
+%% PolyMustCall   4   0   0  0   4   = 40
 %% ---
-%% CO             29  5   5  0 29  = 29
+%% CO             29  5   6  0   40  = 40
 
 
 \begin{table}
@@ -96,11 +96,11 @@ cannot become out-of-date if the checker is passing.
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Annotation                           &      Count     \\
     \hline
-    \<@Owning> and \<@NotOwning>            &      \todo{113}   \\
-    \<@EnsuresCalledMethods>                &      \todo{43}       \\
-    \<@MustCall>                            &      \todo{41}       \\
-    \<@MustCallAlias>                       &      \todo{36}       \\
-    \CreatesObligation                       &      \todo{29}      \\
+    \<@Owning> and \<@NotOwning>            &      98   \\
+    \<@EnsuresCalledMethods>                &      54       \\
+    \<@MustCall>                            &      53       \\
+    \<@MustCallAlias>                       &      40       \\
+    \CreatesObligation                       &     40      \\
   \end{tabularx}
 \end{table}
 
@@ -177,7 +177,7 @@ conditions, and handling such reasoning is future work.\looseness=-1
 % Because most relevant \MustCall and \<@CalledMethods> annotations
 % are inferred intra-procedurally, most annotations that we had to write in
 % the case studies pertained to ownership or the side-effects of procedures.
-We wrote less than one annotation per \todo{2,000} lines of code (\cref{tab:annos}).
+We wrote about one annotation per 1,500 lines of code (\cref{tab:annos}).
 
 We also
 made 38 small, semantics-preserving changes to the programs to reduce
