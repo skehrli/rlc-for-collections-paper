@@ -155,7 +155,7 @@ by \<null>,
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
 
-Another common false positive pattern (with \todo{?} instances)
+Another common false positive pattern (with 24 instances)
 was caused by the Checker Framework’s overly-conservative
 type inference algorithm for Java generics~\cite{issue979}.
 
@@ -180,7 +180,7 @@ conditions, and handling such reasoning is future work.\looseness=-1
 We wrote about one annotation per 1,500 lines of code (\cref{tab:annos}).
 
 We also
-made 38 small, semantics-preserving changes to the programs to reduce
+made 42 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
 %
 In 19 places in plume-util, we added an explict \<extends> bound to a generic type.
@@ -190,7 +190,7 @@ an error on uses of implicit bounds.
 %
 In 8 places, we added \<final> to a field; this allows our checker to verify it without using
 the rules for non-final owning fields given in \cref{sec:reset-must-call}, which are stricter.
-In 3 of those, we also removed assignments to the field after it was closed whose right-hand
+In 9 of those, we also removed assignments to the field after it was closed whose right-hand
 side was \<null>; in 1 other we added an \<else> clause in the constructor that assigned the field
 a \<null> value.
 %
