@@ -73,18 +73,18 @@ cannot become out-of-date if the checker is passing.
 %% Here's the full table of annotations:
 
 %% -              ZK  HB  HD PU  Total
-%% Owning         34  12  43 0 83
-%% NotOwning      8   5   17 0 30  = 113
+%% Owning         34  11  29 0   74
+%% NotOwning      8   5   11 0   24  = 98
 %% ----
-%% EnsuresCM      25  4   18 0 43  = 43
+%% EnsuresCM      25  11  18 0   54  = 54
 %% ---
-%% MustCall       13  7   11 0 31
-%% InheritableMC  5   2   7  0 9   = 41
+%% MustCall       13  7   17 0   37
+%% InheritableMC  5   4   7  0   16  = 53
 %% ---
-%% MustCallAlias  4   0   28 2 34
-%% PolyMustCall   4   0   0  0 4   = 36
+%% MustCallAlias  4   2   28 2   36
+%% PolyMustCall   4   0   0  0   4   = 40
 %% ---
-%% CO             29  5   5  0 29  = 29
+%% CO             29  5   6  0   40  = 40
 
 
 \begin{table}
@@ -96,11 +96,11 @@ cannot become out-of-date if the checker is passing.
   \begin{tabularx}{\columnwidth}{@{}Xr@{}}
     Annotation                           &      Count     \\
     \hline
-    \<@Owning> and \<@NotOwning>            &      \todo{113}   \\
-    \<@EnsuresCalledMethods>                &      \todo{43}       \\
-    \<@MustCall>                            &      \todo{41}       \\
-    \<@MustCallAlias>                       &      \todo{36}       \\
-    \CreatesObligation                       &      \todo{29}      \\
+    \<@Owning> and \<@NotOwning>            &      98   \\
+    \<@EnsuresCalledMethods>                &      54       \\
+    \<@MustCall>                            &      53       \\
+    \<@MustCallAlias>                       &      40       \\
+    \CreatesObligation                       &     40      \\
   \end{tabularx}
 \end{table}
 
@@ -177,7 +177,7 @@ conditions, and handling such reasoning is future work.\looseness=-1
 % Because most relevant \MustCall and \<@CalledMethods> annotations
 % are inferred intra-procedurally, most annotations that we had to write in
 % the case studies pertained to ownership or the side-effects of procedures.
-We wrote less than one annotation per \todo{2,000} lines of code (\cref{tab:annos}).
+We wrote about one annotation per 1,500 lines of code (\cref{tab:annos}).
 
 We also
 made 42 small, semantics-preserving changes to the programs to reduce
@@ -249,11 +249,11 @@ annotations is fast (even when real bugs are discovered and must be fixed).
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
     Project                              &      without LO & without RA & without CO     \\
     \hline
-    \abltablerow{apache/zookeeper}              {66}            {97}             {10}                               \\
+    \abltablerow{apache/zookeeper}              {69}            {110}             {6}                               \\
     \abltablerow{apache/hadoop}                   {48}            {135}             {3}                               \\
     \abltablerow{apache/hbase}                  {60}            {71}             {4}                               \\
     \hline
-    \abltablerow{\textbf{Total}}                {174}            {303}             {17}                               \\
+    \abltablerow{\textbf{Total}}                {177}            {316}             {13}                               \\
   \end{tabularx}
 \end{table}
 
@@ -326,13 +326,13 @@ has loaded the project.\looseness=-1
 
 In ``high-confidence'' mode on the three projects, Eclipse reports 9
 warnings related to classes defined in the JDK:
-2 true positives (thus, it misses 43 real resource leaks) and 7
+2 true positives (thus, it misses 46 real resource leaks) and 7
 false positives.
 In ``potential'' leak mode, the analysis reports many more warnings.
 Thus, we triaged only the 180
 warnings about JDK classes from the ZooKeeper benchmark.
-Among these were 3 true positives (it misses 9 real resource leaks) and 177 false
-positives .
+Among these were 3 true positives (it misses 10 real resource leaks) and 177 false
+positives.
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
 at method invocations:
@@ -340,11 +340,11 @@ the potential leak mode warned at each call that returns a resource-alias, such 
 \<Socket\#getInputStream>.
 
 These results show that the Eclipse bug-finder is unsound in both
-modes: it misses 9 real warnings on ZooKeeper even in potential leak mode.
+modes: it misses 10 real warnings on ZooKeeper even in potential leak mode.
 The analysis is imprecise, too: in potential leak mode,
 the vast majority of warnings are false positives, and even in high-confidence
 mode its ratio of true to total warnings is higher than \tool's: (2/9 = 22\%
-vs. 45/156 = 29\%).
+vs. 48/166 = 29\%).
 %% MK: I think this sentence is redundant
 %% However, this sort
 %% of bug-finding tool does have two advantages: it is fast, and it is easily
