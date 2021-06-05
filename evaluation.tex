@@ -188,7 +188,7 @@ The Checker Framework uses different defaulting rules for implicit and explicit
 upper bounds, and a common pattern in this benchmark caused our checker to issue
 an error on uses of implicit bounds.
 %
-In 8 places, we added \<final> to a field; this allows our checker to verify it without using
+In 18 places, we added \<final> to a field; this allows our checker to verify it without using
 the rules for non-final owning fields given in \cref{sec:reset-must-call}, which are stricter.
 In 9 of those, we also removed assignments to the field after it was closed whose right-hand
 side was \<null>; in 1 other we added an \<else> clause in the constructor that assigned the field
