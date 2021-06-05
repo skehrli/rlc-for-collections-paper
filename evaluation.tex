@@ -143,7 +143,11 @@ is non-trivial.  dunno if we have space, but if we do, we may want to include}
 \end{figure}
 
 The most common false
-positive pattern (with \todo{15} instances) was caused by
+positive pattern (with 24 instances) was caused by
+by the Checker Framework’s overly-conservative
+type inference algorithm for Java generics~\cite{issue979}.
+Another common false positive pattern (with 15 instances)
+was caused by
 a generic container object like \<java.util.Optional> taking ownership of a resource, such
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
@@ -154,10 +158,6 @@ by \<null>,
 % as some advocate~\cite{ErnstNothingIsBetterThanOptional},
 \Tool could verify this code. We leave expanding the lightweight ownership system to
 support Java generics as future work.
-
-Another common false positive pattern (with 24 instances)
-was caused by the Checker Framework’s overly-conservative
-type inference algorithm for Java generics~\cite{issue979}.
 
 Most false positives involve unique coding patterns.
 One example is a series of catch
