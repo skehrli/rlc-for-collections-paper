@@ -53,7 +53,7 @@ annotations (see \cref{sec:annos}).
 We measured the run time
 as the median of 5 trials on
 % This is Mike's home machine.  Are there any other relevant parameters?
-a machine with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
+a machine running Ubuntu 20.04 with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
 Our analysis is embarassingly parallel, but our implementation is
 single-threaded because javac is single-threaded.
 (4) We manually categorized each warning as revealing a
@@ -130,9 +130,13 @@ One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
 but we pointed out that
 the file needs to remain open if no error occurs so that it can be
-returned.  \manu{this example is also interesting in that verifying the caller
-is non-trivial.  dunno if we have space, but if we do, we may want to include}
-\todo{say something like we are in the process of submitting more bug reports and fixes?}  
+returned. At the time of writing, this bug is one of 16 of the true
+positives we discovered using \tool which we have fixed by submitting
+a patch to the case study program that has been validated and accepted
+by the case study program developers. No patches we have submitted this way
+have been rejected.\todo{Should we also include the links to the patches here?
+  I'm not sure how to do that in a way that's not overly intrusive...I guess we
+  could add a citation for each one?}
 
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
@@ -239,15 +243,15 @@ annotations is fast (even when real bugs are discovered and must be fixed).
 
 \begin{table}
   \caption{The contribution of the lightweight
-    ownership, resource aliasing,
-    and obligation creation features
-    in reducing false positives. Each entry is the number of extra
-    false positive warnings reported by the variant with the given feature disabled on the given project.}
+    ownership (``LO''), resource aliasing (``RA''),
+    and obligation creation (``CO'') features
+    in reducing false positives. Each entry is the number of
+    false positive warnings prevented by that feature.}
   \label{tab:ablation}
   \posttablecaption
   
   \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
-    Project                              &      without LO & without RA & without CO     \\
+    Project                              &      LO & RA & CO     \\
     \hline
     \abltablerow{apache/zookeeper}              {69}            {110}             {6}                               \\
     \abltablerow{apache/hadoop}                   {48}            {135}             {3}                               \\
@@ -400,15 +404,26 @@ Grapple contains four checkers, of which two are useful for detecting
 resource leaks.  Unlike \tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
 of loops to make path sensitivity tractable.
 
+\todo{Manu should update this paragraph with a response from the Grapple authors.}
+\todo{This paragraph feels too harsh to me.}
 The Grapple authors have already evaluated their tool on earlier
-versions\todo{Why don't we repeat our experiments on those earlier versions?
-This should be easy to do since it's only a few hours of work and we are now
-familiar with the programs.} of the case study programs in
+versions
+% MK: we decided not to do this
+% \todo{Why don't we repeat our experiments on those earlier versions?
+% This should be easy to do since it's only a few hours of work and we are now
+% familiar with the programs.}
+of the case study programs in
 \cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
 results from their paper.  Based on these numbers, Grapple reports fewer false
 positives than \tool.  Unfortunately, we could not run
-Grapple's leak detection on our versions of the benchmarks, due to various
-hardcoded paths in its source code and limited documentation. Also, full details
+Grapple's leak detection on our versions of the benchmarks,
+due to various hardcoded paths in its source code and limited documentation.
+According to the Grapple authors, the primary student author has graduated and
+is unable or unwilling to assist.  The other authors are only able to point us
+to the relevant source code.
+Hence, at this point the Grapple results cannot be reproduced nor can Grapple be
+applied to new programs---either by us or by the Grapple authors.
+Also, full details
 on Grapple's true and false-positive warnings are currently unavailable (we have
 requested them from the authors), so we cannot study the precision differences
 further.  The run times in \Cref{tab:grapple} show a stark difference with our

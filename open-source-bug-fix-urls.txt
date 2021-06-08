@@ -15,4 +15,4 @@ Zookeeper
 
 plume-util
 ----------
-6 resource leaks fixed in https://github.com/plume-lib/plume-util/pull/114
+8 resource leaks fixed in https://github.com/plume-lib/plume-util/pull/114
