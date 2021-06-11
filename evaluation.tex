@@ -371,24 +371,25 @@ and less precise.\looseness=-1
 % a line in tab:grapple
 % these numbers come from tables 2 and 3 in the grapple paper from EuroSys '19.
 % for TPs and FPs, I added together the IO and Socket columns of table 2.
-\newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
+%\newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
+\newcommand{\grappletableproject}[1]{\textbf{\smaller{#1}}}
 
-\begin{table}
+\begin{table*}
   \caption{The Grapple tool's performance; reproduced from~\cite{zuo2019grapple}.
   \todo{Clarify relationship of ``HDFS'' in this table to our corresponding benchmark.}}
   \label{tab:grapple}
   \posttablecaption
   
-  \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
-    Project                              &  TPs    &    FPs         & Run time      \\
+  \begin{tabularx}{\linewidth}{@{}X||rrrrrr||rrrrrr@{}}
+    Project                              &  TPs   & Present & Found & Not Found  &  FPs  &     Run time    &  TPs  & Present & Found & Not Found  &    FPs  & Run time  \\
     \hline
-    \grappletablerow{ZooKeeper}             {6}         {0}           {01h 07m 02s}     \\
-    \grappletablerow{HDFS}                  {5}         {2}           {01h 54m 52s}    \\
-    \grappletablerow{HBase}                 {15}        {2}           {33h 51m 59s}     \\
-    \hline
-    \grappletablerow{\textbf{Total}}        {26}        {4}           {-}          \\
+    \grappletableproject{ZooKeeper}      & 4 (6)  &   1     &   1   &    0       &   0   &    01h 07m 02s  &  13   &    6    &  1    &     5      &     48  &  1m 24s  \\
+    \grappletableproject{HDFS}           &   5    &   2     &   0   &    2       &   2   &    01h 54m 52s  &  22   &    7    &  0    &     7      &     48  &  16m 21s \\
+    \grappletableproject{HBase}          & 6 (15) &   2     &   0   &    2       &   2   &    33h 51m 59s  &   5   &    2    &  0    &     2      &     20  &  7m 45s  \\
+    % \hline
+    % \grappletablerow{\textbf{Total}}        {26}        {4}           {-}          \\
   \end{tabularx}
-\end{table}
+\end{table*}
 
 % \todo{Be very sure that Grapple is unsound - read their paper again, and
 %    point out why in this paragraph.}
