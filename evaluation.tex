@@ -381,7 +381,8 @@ and less precise.\looseness=-1
   \posttablecaption
   
   \begin{tabularx}{\linewidth}{@{}X||rrrrrr||rrrrrr@{}}
-    Project                              &  TPs   & Present & Found & Not Found  &  FPs  &     Run time    &  TPs  & Present & Found & Not Found  &    FPs  & Run time  \\
+    \multirow{2}{*}{Project}             & \multicolumn{6}{c}{\textbf{Grapple}} & \multicolumn{6}{c}{\textbf{Resource Leak Checker}} \\
+                                         &  TPs   & Present & Found & Not Found  &  FPs  &     Run time    &  TPs  & Present & Found & Not Found  &    FPs  & Run time  \\
     \hline
     \grappletableproject{ZooKeeper}      & 4 (6)  &   1     &   1   &    0       &   0   &    01h 07m 02s  &  13   &    6    &  1    &     5      &     48  &  1m 24s  \\
     \grappletableproject{HDFS}           &   5    &   2     &   0   &    2       &   2   &    01h 54m 52s  &  22   &    7    &  0    &     7      &     48  &  16m 21s \\
