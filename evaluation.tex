@@ -380,9 +380,10 @@ and less precise.\looseness=-1
   \label{tab:grapple}
   \posttablecaption
   
-  \begin{tabularx}{\linewidth}{@{}X||rrrrrr||rrrrrr@{}}
-    \multirow{2}{*}{Project}             & \multicolumn{6}{c}{\textbf{Grapple}} & \multicolumn{6}{c}{\textbf{Resource Leak Checker}} \\
-                                         &  TPs   & Present & Found & Not Found  &  FPs  &     Run time    &  TPs  & Present & Found & Not Found  &    FPs  & Run time  \\
+  \begin{tabularx}{\linewidth}{@{}X||rcccrr||rcccrr@{}}
+    \multirow{3}{*}{Project}             & \multicolumn{6}{c}{\textbf{Grapple}} & \multicolumn{6}{c}{\textbf{Resource Leak Checker}} \\
+                                         &  \multirow{2}{*}{TPs}   & In Other & Found & Not Found  &  \multirow{2}{*}{FPs}  &     \multirow{2}{*}{Run time}    &  \multirow{2}{*}{TPs}  & In Other & Found & Not Found  &    \multirow{2}{*}{FPs}  & \multirow{2}{*}{Run time}  \\
+                                         &                         & Version  & By Other & By Other &      &                 &          & Version  & By Other & By Other &      &                 \\
     \hline
     \grappletableproject{ZooKeeper}      & 4 (6)  &   1     &   1   &    0       &   0   &    01h 07m 02s  &  13   &    6    &  1    &     5      &     48  &  1m 24s  \\
     \grappletableproject{HDFS}           &   5    &   0     &   0   &    0       &   2   &    01h 54m 52s  &  22   &    7    &  0    &     7      &     48  &  16m 21s \\
@@ -406,38 +407,37 @@ Grapple contains four checkers, of which two are useful for detecting
 resource leaks.  Unlike \tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
 of loops to make path sensitivity tractable.
 
-\todo{Manu should update this paragraph with a response from the Grapple authors.}
-\todo{This paragraph feels too harsh to me.}
-The Grapple authors have already evaluated their tool on earlier
-versions
-% MK: we decided not to do this
-% \todo{Why don't we repeat our experiments on those earlier versions?
-% This should be easy to do since it's only a few hours of work and we are now
-% familiar with the programs.}
-of the case study programs in
-\cref{sec:case-studies}~\cite{zuo2019grapple}; \Cref{tab:grapple} reproduces
-results from their paper.  Based on these numbers, Grapple reports fewer false
-positives than \tool.  Unfortunately, we could not run
-Grapple's leak detection on our versions of the benchmarks,
-due to various hardcoded paths in its source code and limited documentation.
-According to the Grapple authors, the primary student author has graduated and
-is unable or unwilling to assist.  The other authors are only able to point us
-to the relevant source code.
-Hence, at this point the Grapple results cannot be reproduced nor can Grapple be
-applied to new programs---either by us or by the Grapple authors.
-Also, full details
-on Grapple's true and false-positive warnings are currently unavailable (we have
-requested them from the authors), so we cannot study the precision differences
-further.  The run times in \Cref{tab:grapple} show a stark difference with our
+% \todo{Manu should update this paragraph with a response from the Grapple authors.}
+% \todo{This paragraph feels too harsh to me.}
+The Grapple authors evaluated their tool on earlier versions of the first three
+case study programs in \cref{sec:case-studies}~\cite{zuo2019grapple}.
+Unfortunately, Grapple's leak detector currently cannot be run due to
+incompatibilities and bitrot in the implementation, so we could not test it on
+newer program versions.  We communicated with the Grapple authors and they
+shared detailed descriptions of all issues discovered by their tool in the
+versions of the benchmarks they analyzed.  Based on these descriptions and the
+errors produced by our checker, we constructed \cref{tab:grapple} to compare the
+two approaches.  For each tool and benchmark, we list how many true positives
+were found by the tool, how many of those are present in the version analyzed by
+the \emph{other} tool, and whether the other tool did or did not find the
+overlapping true positives.  We ignored some of Grapple's issues categorized as
+true positives since the type involved had no underlying resource (e.g.,
+\<java.io.StringWriter>); the original number of true positives is given in
+parentheses.  We also give the number of false positives reported by each tool and the run
+time.
+
+From \cref{tab:grapple}, we see that \tool can find many true positive errors
+not found by Grapple.  Grapple may have missed these issues due to gaps in API
+modeling, or analysis unsoundness.  The two HBase errors discovered by Grapple
+and missed by \tool were in test code; we did not run our checker on test code
+in our experiment.  On the flip side, \tool has more false positives
+than Grapple, and it requires programmer effort to annotate the source code.  
+
+The run times in \Cref{tab:grapple} show a stark difference with our
 work; \tool runs in minutes, whereas Grapple can take many hours. Further, to
 our best knowledge, Grapple is not modular, so any code modification will
 necessitate a full re-analysis. \Tool only needs to re-analyze modified code and
 possibly its dependents after a change, not unmodified dependencies.\looseness=-1
-
-% We requested the analysis and Grapple's output, but as of this writing
-% (months later) the Grapple authors have not yet provided them.
-% \manu{I think this is strictly-speaking true but a bit harsh.  We
-% may want to tone it down a bit.}
 
 \todo{Still keep this?} Note that the TP and FP numbers are not perfectly comparable between a modular
 and a whole-program analysis.
