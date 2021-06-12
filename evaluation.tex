@@ -360,10 +360,11 @@ These results show that the Eclipse bug-finder is unsound in both
 modes: it misses 10 real warnings on ZooKeeper even in potential leak mode.
 The analysis is imprecise, too: in potential leak mode,
 the vast majority of warnings are false positives, and even in high-confidence
-mode its ratio of true to total warnings
+mode its ratio of true to total warnings\todo{We should call this
+  ``precision'' or at least add that word to the text.}
 %2/9
 (22\%)
-is slightly higher than \tool's
+is slightly higher\todo{I think this should be ``lower''.} than \tool's
 % 48/166
 (29\%).
 %% MK: I think this sentence is redundant
