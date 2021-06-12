@@ -58,7 +58,7 @@ We measured the run time
 as the median of 5 trials on
 % This is Mike's home machine.  Are there any other relevant parameters?
 a machine running Ubuntu 20.04 with an Intel Core i7-10700 CPU running at 2.90GHz and 64GiB of RAM\@.
-Our analysis is embarassingly parallel, but our implementation is
+Our analysis is embarrassingly parallel, but our implementation is
 single-threaded because javac is single-threaded.
 (4) We manually categorized each warning as revealing a
 real resource leak (a true positive or TP) or as correct code that our
@@ -151,7 +151,8 @@ was a generic container object like \<java.util.Optional> taking ownership of a 
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
 so \tool issues an error when \<Optional.of> is returned. In this case, the use
-of the \<Optional> class is unnecessary and complicates the code~\cite{ErnstNothingIsBetterThanOptional}; if \<Optional> was replaced
+of the \<Optional> class is unnecessary and complicates the
+code~\cite{ErnstNothingIsBetterThanOptional}.  If \<Optional> was replaced
 by a nullable Java reference,
 \tool could verify this code. Future work should expand the lightweight ownership system to
 support Java generics.
@@ -181,7 +182,7 @@ We also
 made 42 small, semantics-preserving changes to the programs to reduce
 false positives from our analysis.
 %
-In 19 places in plume-util, we added an explict \<extends> bound to a generic type.
+In 19 places in plume-util, we added an explicit \<extends> bound to a generic type.
 The Checker Framework uses different defaulting rules for implicit and explicit
 upper bounds, and a common pattern in this benchmark caused our checker to issue
 an error on uses of implicit bounds.
@@ -201,7 +202,7 @@ infeasible control-flow-graph edge.
 % not, leading to an infeasible control-flow graph edge.
 %
 In 2 places, we extracted an expression into a local variable, permitting
-flow-sensitive reasoning or targetting by a \CreatesMustCallFor annotation.
+flow-sensitive reasoning or targeting by a \CreatesMustCallFor annotation.
 % multiple calls to a method
 % into a single call that is assigned to a local variable; this allows
 % flow-sensitive reasoning about the local
@@ -422,7 +423,7 @@ Grapple's leak detector currently cannot be run
 % is essential information.
 (by us or by the Grapple authors)
 due to
-\todo{clarify:  ``library incompatibilites'' or ``changed libraries'' or
+\todo{clarify:  ``library incompatibilities'' or ``changed libraries'' or
   some other more descriptive phrase}incompatibilities and bitrot in the implementation.
 The Grapple authors provided us
 detailed descriptions of all issues discovered by their tool in the
@@ -501,4 +502,6 @@ re-run from scratch.  After a code edit,
 \tool only needs to re-analyze modified code (and
 possibly its dependents if the modified code's interface changed).
 
-% LocalWords:  LoC SHAs leakable
+% LocalWords:  LoC SHAs leakable Closeable i7 GiB hadoop FileInputStream
+% LocalWords:  getOffset ZooKeeper util apache hbase ecj getInputStream
+% LocalWords:  codebases'' Graspan HBase HDFS

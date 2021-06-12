@@ -123,7 +123,7 @@ never assumes that passing an object to an unannotated library will satisfy its 
   which cannot be overwritten after initialization of the enclosing
   object.  Here, our checking enforces the ``resource acquisition is
   initialization (RAII)'' programming idiom~\cite{raii}; a distinguished
-  ``destructor''-like method \<d()> must ensure the field's \MustCall obligation is
+  destructor-like method \<d()> must ensure the field's \MustCall obligation is
   satisfied, and the enclosing class must have a \MustCall\<("d")> obligation to
   ensure the destructor is called.
 
@@ -137,7 +137,7 @@ never assumes that passing an object to an unannotated library will satisfy its 
     \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \MustCall obligation.
   \end{enumerate}
-  In this manner, \tool modularly verifies the \MustCall obligaation of $f$.  Condition 2 is
+  In this manner, \tool modularly verifies the \MustCall obligation of $f$.  Condition 2 is
   checked by requiring an appropriate \EnsuresCalledMethods
   postcondition annotation on
   \<C.d()>, which is then enforced by the Called Methods
@@ -151,5 +151,6 @@ never assumes that passing an object to an unannotated library will satisfy its 
   \Cref{sec:non-final-owning} describes our novel handling of non-final fields.
 
 
-% LocalWords:  MustCall belowskip myHost myPort closeSocket NotOwning
+% LocalWords:  MustCall belowskip myHost myPort closeSocket NotOwning RAII
 % LocalWords:  MCSatisfied MCBefore CMBefore MCReturn EnsuresCalledMethods
+% LocalWords:  lvalue MCSatisfiedAfter HasObligation destructor
