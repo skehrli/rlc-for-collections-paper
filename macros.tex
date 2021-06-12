@@ -11,7 +11,8 @@
 \fi
 
 \newif\ifanonymous
-\anonymoustrue
+% \anonymoustrue
+\anonymousfalse
 
 \newcommand{\anonurl}[1]{\ifanonymous URL removed for anonymity.\else\url{#1}\fi}
 \newcommand{\footnoteanonurl}[1]{\footnote{\anonurl{#1}}}
@@ -39,9 +40,9 @@
 \newcommand{\MustCall}{\codeid{@Must\-Call}\xspace}
 \newcommand{\MustCallAlias}{\codeid{@Must\-Call\-Alias}\xspace}
 \newcommand{\MustCallUnknown}{\codeid{@Must\-Call\-Unknown}\xspace}
-\newcommand{\CreatesObligation}{\<@Creates\-Ob\-li\-ga\-tion>\xspace}
+\newcommand{\CreatesMustCallFor}{\<@Creates\-Must\-Call\-For>\xspace}
 % Deprecated
-\newcommand{\ResetMustCall}{\CreatesObligation}
+\newcommand{\ResetMustCall}{\CreatesMustCallFor}
 
 % "trule" stands for ``type rule''
 \newcommand{\trule}[2]{\[\frac{#1}{#2}\]}
@@ -69,3 +70,5 @@
 \addtolength{\dbltextfloatsep}{-.25\dbltextfloatsep}
 \addtolength{\floatsep}{-.25\floatsep}
 \addtolength{\dblfloatsep}{-.25\dblfloatsep}
+
+\newcommand{\zph}{\phantom{0}}

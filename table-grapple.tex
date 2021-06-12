@@ -1,0 +1,33 @@
+% a line in tab:grapple
+% these numbers come from tables 2 and 3 in the grapple paper from EuroSys '19.
+% for TPs and FPs, I added together the IO and Socket columns of table 2.
+%\newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
+\newcommand{\grappletableproject}[1]{\textbf{\smaller{#1}}}
+
+\begin{table*}
+  \caption{Comparison of Grapple and \tool.
+    \todo{Explain parentheses.}
+  \todo{Clarify relationship of ``HDFS'' in this table to our corresponding
+    benchmark.}
+  \todo{I find the superwide table distracting and hard to read.  What is the point of
+    making the table maxmally wide?  I would let \LaTeX\ choose the table
+    width, depending on the column widths, throughout the paper.}
+  \todo{This table needs to be changed based on the proposed new
+    methodology for comparing Grapple with \tool.}
+  }
+  \label{tab:grapple}
+  \posttablecaption
+  
+  \begin{tabularx}{\linewidth}{@{}X||rcccr||rcccr@{}}
+    \multirow{3}{*}{Project}             & \multicolumn{5}{c}{\textbf{Grapple}} & \multicolumn{5}{c}{\textbf{Resource Leak Checker}} \\
+                                         &  \multirow{2}{*}{TPs}   & In Other & Found & Not Found  &  \multirow{2}{*}{FPs}  &    \multirow{2}{*}{TPs}  & In Other & Found & Not Found  &    \multirow{2}{*}{FPs}  \\
+                                         &                         & Version  & By Other & By Other &      &                & Version  & By Other & By Other &                  \\
+    \hline
+    \grappletableproject{ZooKeeper}      & 4 (6)  &   1     &   1   &    0       &   0   &  13   &    6    &  1    &     5      &     48 \\
+    \grappletableproject{HDFS}           &   5    &   0     &   0   &    0       &   2   &  22   &    7    &  0    &     7      &     48 \\
+    \grappletableproject{HBase}          & 6 (15) &   2     &   0   &    2       &   2   &   5   &    2    &  0    &     2      &     20 \\
+    % \hline
+    % \grappletablerow{\textbf{Total}}        {26}        {4}           {-}          \\
+  \end{tabularx}
+\end{table*}
+

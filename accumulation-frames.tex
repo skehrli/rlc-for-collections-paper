@@ -1,80 +1,33 @@
 \section{Creating new obligations}
 \label{sec:reset-must-call}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This table is here instead of the evaluation section
-%% so that it is placed on the appropriate page.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% a line in tab:case-studies
-% arguments: project name, original LoC, # of resources (-AcountMustCall), diff size, # of annotations, TPs, Confirmed TPs, FPs, run time in seconds
-\newcommand{\osstablerow}[8]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5 & #6 & #7 & #8}
-
-\begin{table*}
-  \caption{
-    \todo{Recompute all numbers in the docker image, except wall-clock time.}
-    Verifying the absence of resource leaks in case studies.
-    % LoC is computed using scc. Be careful when computing LoC to run scc from relevant top-level
-    % directory that only contains source code (not test code!) to make sure that the count is accurate.
-    % for Zookeeper, this directory is zookeeper/zookeeper-server/src/main/java
-    Throughout, ``LoC'' is lines of non-comment, non-blank Java code.
-    ``Resources'' is the number of resources created by the program.
-    % to compute the diff size, do something like the following (this is what I did for Zookeeper) from the with-annotations branch:
-    % > git diff origin/with-checker -- '*.java'
-    % then count the number of individual changesets and report that
-    ``Annos.'' is number of manually-written annotations to specify
-    existing methods.
-    ``Code changes'' is the number of distinct changes to program text we made,
-    not including changes that will be erased at compile time
-    (such as annotations or warning suppressions).
-    ``TPs'' is true positives.
-    ``FPs'' is false positives, where the our analysis could not
-  guarantee that the call was safe, but manual analysis revealed that no
-  run-time failure was possible.
-  % ``RT(s)'' is the wall-clock run time of our analysis.
-  }
-  \label{tab:case-studies}
-  \posttablecaption
-
-  \begin{tabular}{@{}lrr|rr|rr|r@{}}
-    Project:module                                               &      LoC      & Resources   &  Annos.  &  Code changes   & TPs      & FPs & Wall-clock time      \\
-    \hline
-    \osstablerow{apache/zookeeper:zookeeper-server}                   {45,248}        {171}       {122}          {5}          {13}       {48}   {1m 24s}        \\
-    \osstablerow{apache/hadoop:hadoop-hdfs-project/hadoop-hdfs}       {151,595}        {365}       {117}          {13}        {22}        {48}   {16m 21s}        \\
-    \osstablerow{apache/hbase:hbase-server, hbase-client}             {220,828}        {55}          {45}          {5}        {5}        {20}   {7m 45s}        \\
-    \osstablerow{plume-lib/plume-util}                                {10,187}        {109}          {2}          {19}        {8}        {2}   {0m 15s}        \\
-    \hline
-    \osstablerow{\textbf{Total}}                                      {427,858}        {700}         {286}          {42}        {48}       {118}   {-}        \\
-  \end{tabular}
-\end{table*}
-
 Every constructor of a class that has must-call obligations
 implicitly creates obligations for the newly-created object.
 However, non-constructor methods may also create obligations
 when re-assigning non-final, owning fields or allocating
 new system-level resources.
 A post-condition annotation,
-\CreatesObligation,
+\CreatesMustCallFor,
 indicates for which expression an obligation is created.
 
-At each call to a method annotated as \CreatesObligation\<(>\|expr|\<)>, \tool removes any
+At each call to a method annotated as \CreatesMustCallFor\<(>\|expr|\<)>, \tool removes any
 inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
 % methods that are not in its the current must-call type, they are added.
-Since a \CreatesObligation annotation can only increase its target's obligations,
+Since a \CreatesMustCallFor annotation can only increase its target's obligations,
 no verification for them is needed: placing them anywhere in the program is sound
 (but may reduce precision).
 
 When checking a call to a method annotated as
-\CreatesObligation\<(>\|expr|\<)>, the Must Call Consistency Checker
+\CreatesMustCallFor\<(>\|expr|\<)>, the Must Call Consistency Checker
 (1) treats the \MustCall
 obligation of \|expr| as \emph{satisfied},
 and (2) creates a fresh obligation to check.
 %
 In terms of our \cref{sec:must-call-invoked} pseudocode,
 we can update the \textsc{FactsFromCall} and \textsc{MCSatisfiedAfter} procedures of
-\cref{alg:helpers} to handle \CreatesObligation as follows ($[\ldots]$ stands for the cases shown previously,
+\cref{alg:helpers} to handle \CreatesMustCallFor as follows ($[\ldots]$ stands for the cases shown previously,
 including those in \cref{sec:ownership-transfer}):
 %\todo{I suggest putting the base code first and the addition with COTargets second.}
 \begin{algorithmic}
@@ -87,23 +40,23 @@ including those in \cref{sec:ownership-transfer}):
   \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{COTargets}(s)$
   \EndProcedure
   \Procedure{COTargets}{$c$}
-  \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreatesObligation target for $c$'s callee \}
+  \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreatesMustCallFor target for $c$'s callee \}
   \EndProcedure
 \end{algorithmic}
 \noindent
 This change is sound: the checker creates a new obligation for calls to
-\CreatesObligation methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
+\CreatesMustCallFor methods, and the must-call obligation checker (\cref{sec:must-call}) ensures the
 \MustCall type for the target will have a \emph{superset} of any methods present
 before the call.
-There is an exception to this check: if an \CreatesObligation
-method is invoked within a method that has an \CreatesObligation annotation
+There is an exception to this check: if an \CreatesMustCallFor
+method is invoked within a method that has an \CreatesMustCallFor annotation
 with the same target---imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.\looseness=-1
 
 \subsection{Non-final, owning fields}
 \label{sec:non-final-owning}
 
-\CreatesObligation allows \tool to verify uses of non-final fields
+\CreatesMustCallFor allows \tool to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -113,7 +66,7 @@ the following example:
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
     void close() { sock.close() };
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void reconnect() {
       if (!sock.isClosed()) {
         sock.close();
@@ -132,7 +85,7 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with an \CreatesObligation annotation
+  must be annotated with an \CreatesMustCallFor annotation
   that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   its inferred \MustCall obligation must be contained in its \<@CalledMethods>
@@ -142,13 +95,13 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because calling
-an \CreatesObligation method like \<reconnect()> resets called-methods
+an \CreatesMustCallFor method like \<reconnect()> resets called-methods
 inference, calls to \<close> before the last call to \<reconnect()>
 are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
-\CreatesObligation can also handle cases where object creation
+\CreatesMustCallFor can also handle cases where object creation
 does not allocate a resource, but the object will allocate a resource
 later in its lifecycle. Consider the no-argument constructor
 to \<java.net.Socket>. This constructor does not allocate an
@@ -174,10 +127,10 @@ in code such as the below, which operates on an unconnected socket
 
 \noindent
 The call to \<setSoTimeout> can throw a \<SocketException> if the
-socket is actually connected when it is called. Using \CreatesObligation,
+socket is actually connected when it is called. Using \CreatesMustCallFor,
 however, \tool can soundly show that this socket is not connected:
 the type of the result of the no-argument constructor can be
-treated as \<@MustCall(\{\})>, and \CreatesObligation annotations
+treated as \<@MustCall(\{\})>, and \CreatesMustCallFor annotations
 on the methods that actually allocate the socket---\<connect()> or
 \<bind()>---enforce that as soon as the socket is actually open,
 it is treated as \<@MustCall("close")>.
