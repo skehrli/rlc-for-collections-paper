@@ -9,7 +9,7 @@
 Our evaluation has three parts:
 \begin{itemize}
 \item case studies on open-source projects, which show that our approach
-  is scalable and finds real bugs (\cref{sec:case-studies}).
+  is scalable and finds real resource leaks (\cref{sec:case-studies}).
 \item an evaluation of the importance of
   lightweight ownership, % (\cref{sec:lightweight-ownership}),
   resource aliasing, % (\cref{sec:must-call-choice}), and
@@ -65,7 +65,7 @@ real resource leak (a true positive or TP) or as correct code that our
 system is unable to prove correct (a false positive or FP\@).
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
-serious resource leak bugs in every program. \Tool issues
+serious resource leaks in every program. \Tool issues
 more false positives than true positives in each program\todo{Rather than
   the preceding sentence, just report overall precision as a concrete number.}, but
 the number is small enough to be examined by a single developer in a
@@ -112,7 +112,7 @@ in the first line of the method and the \<return> statement
 at the end---for example, if \<channel.position(section.getOffset())>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
-assigned this bug a priority of ``Major'' and accepted our
+assigned this issue a priority of ``Major'' and accepted our
 patch.\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}
 One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
@@ -451,8 +451,8 @@ Grapple's false positives are reports about types like
 \<java.io.StringWriter> that have no underlying resource that needs to be closed.
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling.\todo{Ask the Grapple authors if there are other reasons for
-  false negatives.}\todo{Is another reason that a routine is buggy but the
-  bug is not reachable from \<main()>, which is how Grapple works?}
+  false negatives.}\todo{Is another reason that a routine is defective but the
+  defective code is not reachable from \<main()>, which is how Grapple works?}
 On the flip side, \tool has more false positives
 than Grapple, and it requires programmer effort to annotate the source code.  
 

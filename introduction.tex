@@ -8,12 +8,12 @@ A resource leak occurs when some finite resource managed by the
 programmer is not explicitly disposed of. In an unmanaged language
 like C, that explicit resource might be memory; in a managed language
 like Java, it might be a file descriptor, a socket, or a database
-connection.  Resource leaks continue to cause severe bugs, even in
+connection.  Resource leaks continue to cause severe failures, even in
 modern, heavily-used Java applications~\cite{ghanavati2020memory}.
 This state-of-the-practice does not differ much from two decades
 ago~\cite{WeimerN04}. \todo{If we know of any more studies that show resource
   leaks are a big problem, we should add citations to them here, too.}
-Microsoft engineers consider resource leak bugs to be one of the most
+Microsoft engineers consider resource leak defects to be one of the most
 significant development challenges~\cite{LoNZ2015}.  That
 resource leaks remain such a serious problem despite decades of
 research and improvements in languages and tooling shows that
@@ -53,7 +53,7 @@ code---but they are unsound and can be highly imprecise
 Inter-procedural typestate or dataflow analyses~\cite{TorlakC10,zuo2019grapple}
 achieve more precise
 results---and
-can find more complex bugs than bug-finders, though they usually remain
+can find more complex defects than bug-finders, though they usually remain
 unsound---but
 they can require hours to analyze a large-scale modern Java program, due
 to the costliness of precise whole-program analysis.

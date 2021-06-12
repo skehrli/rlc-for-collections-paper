@@ -230,7 +230,7 @@
   took hours to analyze).
   We implemented our techniques for Java in an open-source tool
   called \tool.
-  \Tool revealed 48 real bugs in widely-deployed software.
+  \Tool revealed 48 real resource leaks in widely-deployed software.
   It scales well, has a manageable false positive rate
   (lower than the high-confidence
   resource leak analysis built into the Eclipse IDE), and
@@ -324,7 +324,7 @@ resource leaks in large-scale Java programs.  \Tool is based on a sound core of
 an accumulation analysis augmented by three new features to handle aliasing
 patterns: lightweight ownership transfer, resource aliasing, and obligation
 creation by non-constructor methods.  Our evaluation showed that \Tool is
-effective: it discovered 48 bugs in heavily-used, heavily-tested Java code that
+effective: it discovered 48 resource leaks in heavily-used, heavily-tested Java code that
 makes extensive use of resources, with analysis speed orders of magnitude faster
 than whole-program analysis, a false positive rate similar to a
 state-of-the-practice heuristic bug-finder, and a manageable annotation burden

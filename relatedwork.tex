@@ -62,13 +62,13 @@ repeatedly running neutral---i.e. eventually returning to the same
 state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
 Other techniques focus on taking advantage of common misuse of
 the Android activity lifecycle~\cite{amalfitano2020memories}.
-Testing can only show the presence of bugs, not their absence;
+Testing can only show the presence of failures, not the absence of defects;
 \tool verifies that no resource leaks are present.
 
 \paragraph{Data sets and surveys}
 The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
-leak bugs. Unfortunately, it includes only the compiled apps. \Tool runs on
+leaks. Unfortunately, it includes only the compiled apps. \Tool runs on
 source code, so we were unable to run \tool on DroidLeaks. Ghanavati et
 al.~\cite{ghanavati2020memory} performed a detailed recent study of resource
 leaks and their repairs in Java projects, showing the pressing need for better
@@ -90,8 +90,8 @@ used to manage both memory and other resources.  Every value associated with a
 resource must have a \emph{unique} owning pointer, and when an owning pointer's
 lifetime ends, the value is ``dropped,'' ensuring all resources are freed.
 Rust's ownership type system statically prevents
-not only resource leaks, but also other important issues like ``double-free'' bugs
-(releasing a resource more than once) and ``use-after-free'' bugs (using a
+not only resource leaks, but also other important issues like ``double-free'' defects
+(releasing a resource more than once) and ``use-after-free'' defects (using a
 resource after it has been released). But, this power comes with a cost; to
 enforce uniqueness, non-owning pointers must be invalidated after an ownership transfer,
 and can no longer be used.  Maintaining multiple
@@ -99,7 +99,7 @@ usable pointers to a value requires use of language features like references and
 borrowing, and even then, borrowed pointers have restricted privileges.
 
 \Tool has less power than Rust's ownership types; it cannot prevent double-free
-or use-after-free bugs.  But,
+or use-after-free defects.  But,
 \tool's lightweight ownership annotations impose \emph{no} restrictions on
 aliasing; they simply aid the tool in identifying how a resource will
 be closed.  Lightweight ownership is better suited to preventing
