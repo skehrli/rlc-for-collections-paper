@@ -144,7 +144,9 @@ programmer-written type qualifier.\footnote{For unannotated local variable types
 Our implementation
 provides JDK annotations which require that every 
 \<Closeable> object must have the \<close()> method called before
-it is deallocated.
+it is deallocated.  \todo{Should we add one sentence saying this can be
+overridden in a subclass like \<ByteArrayOutputStream>?  It's a nice aspect of
+our approach.}
 
 % also provides an ``inheritable'' version of the \MustCall annotation,
 % which allows us to annotate a class (or interface) and all of its subtypes.
