@@ -405,8 +405,6 @@ Grapple contains four checkers, of which two are useful for detecting
 resource leaks.  Unlike \tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
 of loops to make path sensitivity tractable.\todo{Ask the Grapple authors if there are other reasons for
   unsoundness.}
-\todo{Mention that it checks for resource leaks related to all classes, not
-  just those defined in the JDK.}
 \Tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
 can ensure that a library is correct for all possible clients.  By
@@ -444,9 +442,14 @@ real resource leak) or a false positive (correct code, but the tool cannot
 determine that fact).  \Cref{tab:tool-comparison} reports the precision
 and recall of Eclipse, Grapple, and \tool.  Some of
 Grapple's false positives are reports about types like
-\<java.io.StringWriter> that have no underlying resource that needs to be closed.
+\<java.io.StringWriter> that have no underlying resource that needs to be
+closed.
+(This is a reason that the numbers in \cref{tab:tool-comparison} differ
+from those reported in~\cite{zuo2019grapple}:  the Grapple authors had
+mis-classified these warnings as true positives.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
-modeling.\todo{Ask the Grapple authors if there are other reasons for
+modeling.\todo{Manu, give a concrete example: Grapple contains no FSM for
+  OutputStream or some related class.}\todo{Ask the Grapple authors if there are other reasons for
   false negatives.}\todo{Is another reason that a routine is defective but the
   defective code is not reachable from \<main()>, which is how Grapple works?}
 On the flip side, \tool has lower precision (more false positives)
