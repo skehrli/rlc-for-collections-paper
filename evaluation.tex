@@ -442,9 +442,7 @@ about resource leaks in identical code that both tools ought to report.
 For each remaining warning, we manually identified it as a true positive (a
 real resource leak) or a false positive (correct code, but the tool cannot
 determine that fact).  \Cref{tab:tool-comparison} reports the precision
-and recall of Eclipse, Grapple, and \tool.\todo{The table literally only needs three
-  columns: tool name, precision, recall.}\todo{The text or the table should
-  define ``precision'' and ``recall''.}  Some of 
+and recall of Eclipse, Grapple, and \tool.  Some of
 Grapple's false positives are reports about types like
 \<java.io.StringWriter> that have no underlying resource that needs to be closed.
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
