@@ -460,18 +460,21 @@ than Grapple, and it requires programmer effort to annotate the source code.
 \todo{There needs to be an explicit discussion of whether Grapple
   permits/requires user-written specifications.}
 
-Grapple runs can take many hours (run times are from~\cite{zuo2019grapple}), whereas
-\tool runs in minutes:
 
-  \begin{tabular}{l|cc}
-    Project             & Grapple & Resource Leak Checker \\
+\begin{table}
+  \caption{Run times of resource leak checking tools.}
+  \label{tab:run-times}
+  \begin{tabular}{l|ccc}
+    Project        & Eclipse & Grapple & Resource Leak Checker \\
     \hline
-    ZooKeeper      & \zph 1h 07m 02s  & \zph 1m 24s  \\
-    HDFS           & \zph 1h 54m 52s  &  16m 21s \\
-    HBase          &     33h 51m 59s  & \zph 7m 45s  \\
+    ZooKeeper      & <5s & \zph 1h 07m 02s  & \zph 1m 24s  \\
+    HDFS           & <5s & \zph 1h 54m 52s  &  16m 21s \\
+    HBase          & <5s &     33h 51m 59s  & \zph 7m 45s  \\
   \end{tabular}
+\end{table}
 
-\noindent
+Grapple runs can take many hours (run times are from~\cite{zuo2019grapple}), whereas
+\tool runs in minutes (\cref{tab:run-times}).
 Further, to
 our best knowledge\todo{Ask the authors explicitly, then remove ``to our
   best knowledge'' and add a citation to ``personal communication''.},
