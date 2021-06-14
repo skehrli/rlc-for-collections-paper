@@ -426,11 +426,10 @@ Grapple's leak detector currently cannot be run
 due to
 \todo{clarify:  ``library incompatibilities'' or ``changed libraries'' or
   some other more descriptive phrase}incompatibilities and bitrot in the implementation.
-The Grapple authors provided us
-detailed descriptions of all issues discovered by their tool in the
+The Grapple authors provided with
+all warnings issued by Grapple in the
 versions of the benchmarks they analyzed.
 
-\todo{Proposed change in methodology:}
 We used the following methodology to permit a head-to-head comparison.
 We started with all the warning issues by either tool.
 We disregarded any warning about code that is not present identically in the other
@@ -438,10 +437,7 @@ version of the target program.  (Code might not be present identically because o
 added code, bug fixes, etc.)  We also disregarded warnings about code that
 is not checked by one of the tools.  For example, Grapple analyzed test
 code, but our experiments did not write annotations in test code nor
-type-check it.  Another example is that Grapple
-analyzes all \<Closeable> interfaces; \tool can do so too, but in our
-experiments we considered only
-\<Closeable> interfaces defined in the JDK\@.  The remaining warnings are
+type-check it.  The remaining warnings are
 about resource leaks in identical code that both tools ought to report.
 For each remaining warning, we manually identified it as a true positive (a
 real resource leak) or a false positive (correct code, but the tool cannot
@@ -455,30 +451,8 @@ Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling.\todo{Ask the Grapple authors if there are other reasons for
   false negatives.}\todo{Is another reason that a routine is defective but the
   defective code is not reachable from \<main()>, which is how Grapple works?}
-On the flip side, \tool has more false positives
+On the flip side, \tool has lower precision (more false positives)
 than Grapple, and it requires programmer effort to annotate the source code.  
-
-\todo{Old text, which Mike proposes to delete:}
-Based on these descriptions and the
-errors produced by our checker, we constructed \cref{tab:tool-comparison} to compare the
-two approaches.  For each tool and benchmark, we list how many true positives
-were found by the tool, how many of those are present in the version analyzed by
-the \emph{other} tool, and whether the other tool did or did not find the
-overlapping true positives.  We ignored\todo{What does this mean?  It
-  sounds scary.} some of Grapple's issues categorized as
-true positives since the type involved had no underlying resource (e.g.,
-\<java.io.StringWriter>); the original number of true positives is given in
-parentheses.  We also give the number of false positives reported by each tool and the run
-time.
-
-From \cref{tab:tool-comparison}, we see that \tool can find many true positive errors
-not found by Grapple.  Grapple may have missed these issues due to gaps in API
-modeling, or analysis unsoundness.\todo{Ask the Grapple authors if there are other reasons for
-  false negatives.}  The two HBase errors discovered by Grapple
-and missed by \tool were in test code; we did not run our checker on test code
-in our experiment.  On the flip side, \tool has more false positives
-than Grapple, and it requires programmer effort to annotate the source code.  
-\todo{End of old text (which Mike proposes to delete).}
 
 \todo{There needs to be an explicit discussion of whether Grapple
   permits/requires user-written specifications.}

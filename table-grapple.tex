@@ -3,30 +3,33 @@
 % for TPs and FPs, I added together the IO and Socket columns of table 2.
 %\newcommand{\grappletablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
 \newcommand{\grappletableproject}[1]{\textbf{\smaller{#1}}}
+% "ac" = "acronym character"
+\newcommand{\ac}[1]{\textbf{\underline{#1}}}
 
-\begin{table*}
-  \caption{Comparison of resource leak checking tools.
+\begin{table}
+  \caption{Comparison of resource leak checking tools:  \ac{Ecl}ipse,
+    \ac{Gr}apple, and the \ac{R}esource \ac{L}eak \ac{C}hecker.
+    Different tools were run on different versions of the case study
+    programs.
+    The number of leaks and the
+    recall are computed over the code that is common to all versions of the
+    programs, so recall is directly comparable between rows.
+    Precision is computed over one version of the program.  It may not be
+    directly comparable; for example, different versions of ZooKeeper might
+    contain different mixes of code patterns that lead to false positive warnings.}
   \todo{Clarify relationship of ``HDFS'' in this table to our corresponding
     benchmark.}
-  \todo{I find the superwide table distracting and hard to read.  What is the point of
-    making the table maximally wide?  I would let \LaTeX\ choose the table
-    width, depending on the column widths, throughout the paper.}
-  }
   \label{tab:tool-comparison}
   \posttablecaption
-  
-  \begin{tabularx}{\linewidth}{@{}X||rcccr||rcccr@{}}
-    \multirow{3}{*}{Project}             & \multicolumn{5}{c}{\textbf{Grapple}} & \multicolumn{5}{c}{\textbf{Resource Leak Checker}} \\
-                                         &  \multirow{2}{*}{TPs}   & In Other & Found & Not Found  &  \multirow{2}{*}{FPs}  &    \multirow{2}{*}{TPs}  & In Other & Found & Not Found  &    \multirow{2}{*}{FPs}  \\
-                                         &                         & Version  & By Other & By Other &      &                & Version  & By Other & By Other &                  \\
+  \begin{tabular}{l|rccc|ccc}
+                 &  & \multicolumn{3}{c|}{\textbf{Recall}} & \multicolumn{3}{c}{\textbf{Precision}} \\
+    Project & leaks & Ecl & Gr & RLC  & Ecl & Gr & RLC \\
     \hline
-    \grappletableproject{ZooKeeper}      & 4 (6)  &   1     &   1   &    0       &   0   &  13   &    6    &  1    &     5      &     48 \\
-    \grappletableproject{HDFS}           &   5    &   0     &   0   &    0       &   2   &  22   &    7    &  0    &     7      &     48 \\
-    \grappletableproject{HBase}          & 6 (15) &   2     &   0   &    2       &   2   &   5   &    2    &  0    &     2      &     20 \\
-    % \hline
-    % \grappletablerow{\textbf{Total}}        {26}        {4}           {-}          \\
-  \end{tabularx}
-\end{table*}
+    \grappletableproject{ZooKeeper}      & 6  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
+    \grappletableproject{HDFS}           & 5  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
+    \grappletableproject{HBase}          & 7  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
+  \end{tabular}
+\end{table}
 
 
 % LocalWords:  HDFS rcccr TPs FPs ZooKeeper HBase
