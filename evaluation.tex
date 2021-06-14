@@ -230,33 +230,28 @@ This example is suggestive that the user effort to use our tool is reasonable.
 \label{sec:ablation}
 
 % a line in tab:ablation
-% note that the FULL column is always zero, so it's not included here
-% arguments: project name, no-LO, no-RA, no-AF
-\newcommand{\abltablerow}[4]{\textbf{\smaller{#1}} & #2 & #3 & #4}
+% arguments: project name, no-LO + total, no-RA + total, no-AF + total, and total FP count
+\newcommand{\abltablerow}[5]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5}
 
 \begin{table}
-  \caption{The contribution of the lightweight
-    ownership (``LO''), resource aliasing (``RA''),
-    and obligation creation (``CO'') features
-    in reducing false positives. Each entry is the number of
-    false positive warnings prevented by that feature.}
-  \todo{Absolute numbers are hard to interpret and compare, especially
-    since this table lacks a column for the full analysis and one for the
-    baseline analysis.  Rather than adding those columns, I suggest that
-    all the numbers in this table be converted to percentages, which can be
-    better understood and directly compared across rows.  Then, the last
-    row should become ``Average'' rather than ``Total''.}
+  \caption{The number of false positives in our case studies when each
+    of the lightweight
+    ownership (``w/o LO''), resource aliasing (``w/o RA''),
+    and obligation creation (``w/o OC'') features
+    are disabled. For comparison, the ``RLC'' column lists the number of false
+    positives with all features enabled.}
   \label{tab:ablation}
   \posttablecaption
   
-  \begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
-    Project                              &      LO & RA & CO     \\
+  \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
+    Project                              &    w/o LO & w/o RA & w/o OC & RLC     \\
     \hline
-    \abltablerow{apache/zookeeper}              {69}            {110}             {6}                               \\
-    \abltablerow{apache/hadoop}                   {48}            {135}             {3}                               \\
-    \abltablerow{apache/hbase}                  {60}            {71}             {4}                               \\
+    \abltablerow{apache/zookeeper}              {117}            {158}             {54}      {48}                         \\
+    \abltablerow{apache/hadoop}                   {96}            {183}             {51}    {48}                           \\
+    \abltablerow{apache/hbase}                  {80}            {91}             {24}       {20}                        \\
+    \abltablerow{plume-lib/plume-util}          {?}                {?}             {?}         {2}                    \\
     \hline
-    \abltablerow{\textbf{Total}}                {177}            {316}             {13}                               \\
+    \abltablerow{\textbf{Total}}                {?}            {?}             {?}    {118}                           \\
   \end{tabularx}
 \end{table}
 
@@ -265,14 +260,7 @@ resource aliasing (\cref{sec:must-call-choice}), and
 obligation creation (\cref{sec:reset-must-call})
 reduce false positive warnings and improve \tool's precision.
 To evaluate the contribution of each enhancement, we individually disabled each
-feature and re-ran the experiments of \cref{sec:case-studies}
-(except the plume-util case study, which is small and
-barely uses these features, so the results would not be
-meaningful\todo{This ``would not be meaningful'' is weak and unjustified.
-  I suggest doing the case study, which will make the paper more uniform.}).
-Since all variants are sound (no false
-negatives), any difference in warnings is a false positive that is prevented
-by the feature.
+feature and re-ran the experiments of \cref{sec:case-studies}.
 
 \Cref{tab:ablation} shows that each of lightweight
 ownership and resource aliases prevents more false positive errors than the total number
