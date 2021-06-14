@@ -29,6 +29,13 @@ of a user-written warning suppression, \tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
+\todo{Someone please take a look a this para before we submit} The soundness of
+\tool is with respect to specifications of which types of objects have a
+\<@MustCall> obligation that must be satisfied.  We wrote such specifications
+for the Java standard library, focusing on IO-related code in the \<java.io> and
+\<java.nio> packages.  Any missing specifications of \<@MustCall> obligations
+could lead \tool to unsoundly miss resource leaks.
+
 The results of our experiments may not generalize, compromising the
 external validity of the experimental results.
 % In particular, our subject programs are
