@@ -445,8 +445,8 @@ experiments we considered only
 about resource leaks in identical code that both tools ought to report.
 For each remaining warning, we manually identified it as a true positive (a
 real resource leak) or a false positive (correct code, but the tool cannot
-determine that fact).  \Cref{tab:grapple} reports the precision
-and recall of the two tools.\todo{The table literally only needs three
+determine that fact).  \Cref{tab:tool-comparison} reports the precision
+and recall of Eclipse, Grapple, and \tool.\todo{The table literally only needs three
   columns: tool name, precision, recall.}\todo{The text or the table should
   define ``precision'' and ``recall''.}  Some of 
 Grapple's false positives are reports about types like
@@ -460,7 +460,7 @@ than Grapple, and it requires programmer effort to annotate the source code.
 
 \todo{Old text, which Mike proposes to delete:}
 Based on these descriptions and the
-errors produced by our checker, we constructed \cref{tab:grapple} to compare the
+errors produced by our checker, we constructed \cref{tab:tool-comparison} to compare the
 two approaches.  For each tool and benchmark, we list how many true positives
 were found by the tool, how many of those are present in the version analyzed by
 the \emph{other} tool, and whether the other tool did or did not find the
@@ -471,7 +471,7 @@ true positives since the type involved had no underlying resource (e.g.,
 parentheses.  We also give the number of false positives reported by each tool and the run
 time.
 
-From \cref{tab:grapple}, we see that \tool can find many true positive errors
+From \cref{tab:tool-comparison}, we see that \tool can find many true positive errors
 not found by Grapple.  Grapple may have missed these issues due to gaps in API
 modeling, or analysis unsoundness.\todo{Ask the Grapple authors if there are other reasons for
   false negatives.}  The two HBase errors discovered by Grapple
