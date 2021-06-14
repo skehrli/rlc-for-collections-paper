@@ -1,14 +1,26 @@
+%% Here's the full table of annotations:
+
+%% -              ZK  HB  HD PU  Total
+%% Owning         34  11  29 0   74
+%% NotOwning      8   5   11 0   24  = 98
+%% ----
+%% EnsuresCM      25  11  18 0   54  = 54
+%% ---
+%% MustCall       13  7   17 0   37
+%% InheritableMC  5   4   7  0   16  = 53
+%% ---
+%% MustCallAlias  4   2   29 2   37
+%% PolyMustCall   4   0   0  0   4   = 41
+%% ---
+%% CO             29  5   6  0   40  = 40
+
 \begin{table}
   \caption{The total number of annotations that we wrote.}
-\todo{I find the extreme width of this table and
-  \cref{tab:ablation} hard to read.  What is the reason for it?
-  I suggest letting \LaTeX\ make the
-  tables as narrow as possible, as we do for other tables.}
   \label{tab:annos}
   \posttablecaption
   % counts @InheritableMustCall as @MustCall, for simplicity of presentation
   % counts @polymustcall with MCC, for the same reason
-  \begin{tabularx}{\columnwidth}{@{}Xr@{}}
+  \begin{tabularx}{5cm}{@{}Xr@{}}
     Annotation                              &   Count   \\
     \hline
     \<@Owning> and \<@NotOwning>            &      98   \\
