@@ -15,8 +15,8 @@ Our evaluation has three parts:
   resource aliasing, % (\cref{sec:must-call-choice}), and
   and obligation creation % (\cref{sec:reset-must-call})
   (\cref{sec:ablation}).
-\item a comparison to previous leak detectors:  both heuristic bug-finding
-  and heavy-weight whole-program
+\item a comparison to previous leak detectors:  both a heuristic bug finder
+  and a whole-program
   % typestate
   analysis (\cref{sec:compare}).
 \end{itemize}
@@ -44,10 +44,10 @@ code under analysis (see \cref{sec:plume-util}).
 For each case study, our methodology was as follows.
 (1)
 We modified the
-build system to run \tool on the module, analyzing uses of resource
+build system to run \tool on the module(s), analyzing uses of resource
 classes that are defined in the JDK\@.
 It also reports the maximum possible number of resources (references to JDK-defined
-classes that implement \<Closeable>) that could be
+classes with a non-empty \<@MustCall> obligation) that could be
 leaked:  each obligation at a formal parameter or method call.
 (2) We manually
 annotated each program with must-call, called-methods, and ownership
@@ -61,19 +61,32 @@ a machine running Ubuntu 20.04 with an Intel Core i7-10700 CPU running at 2.90GH
 Our analysis is embarrassingly parallel, but our implementation is
 single-threaded because javac is single-threaded.
 (4) We manually categorized each warning as revealing a
-real resource leak (a true positive or TP) or as correct code that our
-system is unable to prove correct (a false positive or FP\@).
+real resource leak (a true positive) or as a
+false positive that our system is unable to prove correct.
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
 serious resource leaks in every program. \Tool issues
 more false positives than true positives in each program\todo{Rather than
-  the preceding sentence, just report overall precision as a concrete number.}, but
+the preceding sentence, just report overall precision as a concrete number.}
+\todo{update sentence to account for plume-util?  take average across all benchmarks?}, but
 the number is small enough to be examined by a single developer in a
 few hours.  This is a small price to pay for knowing that the program is
-free of resource leaks.  The annotations in the program are
+free of resource leaks.  \todo{technically we don't know that since we only
+investigated warnings from JDK types; delete previous sentence?} The annotations in the program are
 also a benefit: they
 express the programmer's intent and, as machine-checked documentation,
 they cannot become out-of-date.
+
+\todo{does this para need to be updated for plume-util?}
+At the time of writing, this bug is one of 16 of the true
+positives we discovered using \tool which we have fixed by submitting
+a patch to the case study program that has been validated and accepted
+by the case study program developers. No patches we have submitted this way
+have been rejected.\todo{Should we also include the links to the patches here?
+  I'm not sure how to do that in a way that's not overly intrusive...I guess we
+  could add a citation for each one?}\todo{Mike suggests that we put that
+  information in the supplemental material/artifact.  The text here could
+  say they are there.}
 
 \subsubsection{True and false positive examples}
 \label{sec:examples}
@@ -102,17 +115,6 @@ of our patch (which catches the exception and closes the stream),
 but we pointed out that
 the file needs to remain open if no error occurs so that it can be
 returned.
-\todo{The following information does not fit in this paragraph.  I suggest moving
-  it to a paragraph of its own just before \cref{sec:examples}.}
- At the time of writing, this bug is one of 16 of the true
-positives we discovered using \tool which we have fixed by submitting
-a patch to the case study program that has been validated and accepted
-by the case study program developers. No patches we have submitted this way
-have been rejected.\todo{Should we also include the links to the patches here?
-  I'm not sure how to do that in a way that's not overly intrusive...I guess we
-  could add a citation for each one?}\todo{Mike suggests that we put that
-  information in the supplemental material/artifact.  The text here could
-  say they are there.}
 
 \begin{figure}
   \lstinputlisting{zookeeper-optional.txt}
