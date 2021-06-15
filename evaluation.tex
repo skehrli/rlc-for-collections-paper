@@ -65,28 +65,25 @@ real resource leak (a true positive) or as a
 false positive that our system is unable to prove correct.
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
-serious resource leaks in every program. \Tool issues
-more false positives than true positives in each program\todo{Rather than
-the preceding sentence, just report overall precision as a concrete number.}
-\todo{update sentence to account for plume-util?  take average across all benchmarks?}, but
+serious resource leaks in every program. \Tool's overall precision on
+these case studies is 30\% (49/166). Though there are more false positives
+than true positives,
 the number is small enough to be examined by a single developer in a
-few hours.  This is a small price to pay for knowing that the program is
-free of resource leaks.  \todo{technically we don't know that since we only
-investigated warnings from JDK types; delete previous sentence?} The annotations in the program are
+few hours.
+The annotations in the program are
 also a benefit: they
 express the programmer's intent and, as machine-checked documentation,
 they cannot become out-of-date.
 
-\todo{does this para need to be updated for plume-util?}
-At the time of writing, we have submitted patches for 16 resource leaks
-discovered by our tool, all of which have been validated and accepted by the
-case study program developers.  \todo{do we need the next sentence?} No patches
-we have submitted this way have been rejected.  We also fixed all the reported
-resource leaks in plume-util.  \todo{Should we also include the links to the patches here?
-I'm not sure how to do that in a way that's not overly intrusive...I guess we
-could add a citation for each one?}\todo{Mike suggests that we put that
-information in the supplemental material/artifact.  The text here could
-say they are there.}
+% \todo{does this para need to be updated for plume-util?} MK: No - I have already done so and the plume-lib fixes are included in the 16 number.
+%
+% It is important that the developers be the actors in the following sentence, because we have other patches under review but not yet accepted.
+At the time of writing,
+the developers of the case study programs have validated and accepted
+patches for 16 resource leaks discovered by our tool, including at least one for each.
+% \todo{do we need the next sentence?} MK: IMO we do, because otherwise an uncharitable reader might say that our precision is actually 16/166 instead
+% of 49/166, because only 16 of the 49 were validated (because they assumed that the rest were rejected).
+No patches we have submitted this way have been rejected.
 
 \subsubsection{True and false positive examples}
 \label{sec:examples}
