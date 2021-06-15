@@ -277,8 +277,9 @@ included). Grapple is more precise (50\% precision in our study), but orders of
 magnitude slower than \tool.  \tool had 100\% recall in our comparison and 26\%
 precision.  Users can select whichever tool matches their priorities.
 
-Our comparison uses only the 3 case study programs that Grapple was run on
-in the past; see \cref{sec:grapple} for details.
+\Cref{tab:tool-comparison,tab:run-times} give a quantitative comparison of the
+different tools.  Our comparison uses only the 3 case study programs that Grapple was
+run on in the past; see \cref{sec:grapple} for details.
 
 % Gets the (two-column) Grapple table on the same page as the reference to it.
 \input{table-grapple.tex}
@@ -292,18 +293,19 @@ augmented with heuristics. Since it is tightly integrated with
 the compiler, it scales well and runs quickly. It has
 heuristics for ownership, resource wrappers, and resource-free
 closeables, among others; these are all hard-coded into the analysis and cannot
-be adjusted by the user. It does not support annotations to express
+be adjusted by the user \todo{add citation?}. It does not support annotations to express
 specifications that differ from its defaults.
 It supports two levels of analysis: detecting high-confidence resource
 leaks and detecting ``potential'' resource
 leaks (a superset of high-confidence resource leaks).\looseness=-1
 
-We ran Eclipse's analysis on the same versions of our case study programs
-that we ran \tool on in \cref{sec:case-studies}, and examined
-the same modules. It is easy to apply
-to legacy code and it is fast---nearly instantaneous once Eclipse
-has loaded the project.\looseness=-1
-
+We ran Eclipse's analysis on the versions of our case study programs
+that we ran \tool on for \cref{sec:case-studies}, and examined
+the same modules.
+% we already said this --Manu
+% It is easy to apply
+% to legacy code and it is fast---nearly instantaneous once Eclipse
+% has loaded the project.\looseness=-1
 In ``high-confidence'' mode on the three projects, Eclipse reports 9
 warnings related to classes defined in the JDK:
 2 true positives (thus, it misses 46 real resource leaks) and 7
@@ -311,36 +313,23 @@ false positives.
 In ``potential'' leak mode, the analysis reports many more warnings.
 Thus, we triaged only the 180
 warnings about JDK classes from the ZooKeeper benchmark.
-Among these were 3 true positives (it misses 10 real resource leaks) and 177 false
+Among these were 3 true positives (it missed 10 real resource leaks) and 177 false
 positives.
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
-at method invocations:
-the potential leak mode warned at each call that returns a resource-alias, such as
+at method returns, leading to a warning at each call that returns a resource-alias, such as
 \<Socket\#getInputStream>.
 
 These results show that the Eclipse bug-finder is unsound in both
 modes: it misses 10 real warnings on ZooKeeper even in potential leak mode.
 The analysis is imprecise, too: in potential leak mode,
 the vast majority of warnings are false positives, and even in high-confidence
-mode its ratio of true to total warnings\todo{We should call this
-  ``precision'' or at least add that word to the text.}
-%2/9
-(22\%)
-is slightly higher\todo{I think this should be ``lower''.} than \tool's
-% 48/166
-(29\%).
+mode its precision is 25\%, roughly the same as \tool.
 %% MK: I think this sentence is redundant
 %% However, this sort
 %% of bug-finding tool does have two advantages: it is fast, and it is easily
 %% applicable to legacy code.
-\todo{Cut or move the remainder of this section; it is about qualitative
-  differences.  Qualitative differences should appear earlier (or at least elsewhere), not in
-  this paragraph about quantitative accuracy.}
-Compared to our tool, the Eclipse analysis
-is much faster and easier to apply to legacy code
-(no annotations are required), but both unsound
-and less precise.\looseness=-1
+
 
 %% Chandra rightly pointed out that this para make us look lazy. Let's just
 %% say what we did, not why we did it.
@@ -365,14 +354,14 @@ Graspan~\cite{wang2017graspan} to achieve both context- and path-sensitivity.
 % Grapple, like all previous
 % typestate-based analyses, requires a whole-program alias analysis.
 Grapple contains four checkers, of which two are useful for detecting
-resource leaks.  Unlike \tool, Grapple is unsound; e.g., it performs a fixed bounded unrolling
-of loops to make path sensitivity tractable.\todo{Ask the Grapple authors if there are other reasons for
-  unsoundness.}
+resource leaks.  Unlike \tool, Grapple is unsound, as it performs a fixed bounded unrolling
+of loops to make path sensitivity tractable.
 \Tool reports violations of a user-supplied specification
 (which takes effort to write but provides documentation benefits), so it
 can ensure that a library is correct for all possible clients.  By
-contrast, Grapple checks a library in the context of one specific client,
-which might be the library's tests.
+contrast, Grapple checks a library in the context of one specific client; it
+only reports issues in methods reachable from entrypoints (like a \<main()>
+method) in a whole-program call graph.
 
 % \todo{Manu should update this paragraph with a response from the Grapple authors.}
 % \todo{This paragraph feels too harsh to me.}
@@ -383,23 +372,20 @@ Grapple's leak detector currently cannot be run
 % Mike feels this parenthesis is essential.  Otherwise, there is no support
 % for the claim "cannot be run".  The fact that the Grapple authors cannot run it
 % is essential information.
-(by us or by the Grapple authors)
-due to
-\todo{clarify:  ``library incompatibilities'' or ``changed libraries'' or
-  some other more descriptive phrase}incompatibilities and bitrot in the implementation.
-The Grapple authors provided with
-all warnings issued by Grapple in the
-versions of the benchmarks they analyzed.
+(by us or by the Grapple authors) due to library incompatibilities and bitrot in
+the implementation. The Grapple authors provided us with the finite-state
+machine (FSM) specifications used in Grapple to detect resource leaks, and also
+details of all warnings issued by Grapple in the versions of the benchmarks they
+analyzed.
 
 We used the following methodology to permit a head-to-head comparison.
-We started with all the warning issues by either tool.
+We started with all the warnings issued by either tool.
 We disregarded any warning about code that is not present identically in the other
-version of the target program.  (Code might not be present identically because of refactoring,
-added code, bug fixes, etc.)  We also disregarded warnings about code that
+version of the target program (due to refactoring,
+added code, bug fixes, etc.).  We also disregarded warnings about code that
 is not checked by one of the tools.  For example, Grapple analyzed test
 code, but our experiments did not write annotations in test code nor
-type-check it.  The remaining warnings are
-about resource leaks in identical code that both tools ought to report.
+type-check it.  The remaining warnings pertain to resource leaks in identical code that both tools ought to report.
 For each remaining warning, we manually identified it as a true positive (a
 real resource leak) or a false positive (correct code, but the tool cannot
 determine that fact).  \Cref{tab:tool-comparison} reports the precision
@@ -407,19 +393,16 @@ and recall of Eclipse, Grapple, and \tool.  Some of
 Grapple's false positives are reports about types like
 \<java.io.StringWriter> that have no underlying resource that needs to be
 closed.
-(This is a reason that the numbers in \cref{tab:tool-comparison} differ
-from those reported in~\cite{zuo2019grapple}:  the Grapple authors had
-mis-classified these warnings as true positives.)
+(These reports were mis-classified as true positives in~\cite{zuo2019grapple},
+and hence the numbers there differe from \cref{tab:tool-comparison}.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
-modeling.\todo{Manu, give a concrete example: Grapple contains no FSM for
-  OutputStream or some related class.}\todo{Ask the Grapple authors if there are other reasons for
-  false negatives.}\todo{Is another reason that a routine is defective but the
-  defective code is not reachable from \<main()>, which is how Grapple works?}
+modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
+classes).  \todo{check if the missed leaks are all due to missing specs?}
 On the flip side, \tool has lower precision (more false positives)
 than Grapple, and it requires programmer effort to annotate the source code.  
 
-\todo{There needs to be an explicit discussion of whether Grapple
-  permits/requires user-written specifications.}
+% \todo{There needs to be an explicit discussion of whether Grapple
+%   permits/requires user-written specifications.}
 
 
 \begin{table}
@@ -436,10 +419,7 @@ than Grapple, and it requires programmer effort to annotate the source code.
 
 Grapple runs can take many hours (run times are from~\cite{zuo2019grapple}), whereas
 \tool runs in minutes (\cref{tab:run-times}).
-Further, to
-our best knowledge\todo{Ask the authors explicitly, then remove ``to our
-  best knowledge'' and add a citation to ``personal communication''.},
-Grapple is not modular, so if the user edits their program, Grapple must be
+Further, Grapple is not modular, so if the user edits their program, Grapple must be
 re-run from scratch.  After a code edit,
 \tool only needs to re-analyze modified code (and
 possibly its dependents if the modified code's interface changed).
