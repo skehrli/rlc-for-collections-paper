@@ -17,11 +17,13 @@
     The number of leaks and the
     recall are computed over the code that is common to all versions of the
     programs, so recall is directly comparable within rows.
-    Precision is computed over one version of the program.  It may not be
-    directly comparable within rows; for example, different versions of ZooKeeper might
-    contain different mixes of code patterns that lead to false positive warnings.
-    Eclipse does not report any high-confidence warnings on JDK types in HBase, leading
-    to the - in the precision column.}
+    Precision is computed over the code version analyzed by each tool, so it may
+    not be directly comparable within rows.
+    % for example, different versions of ZooKeeper might
+    % contain different mixes of code patterns that lead to false positive warnings.
+    Eclipse does not report any high-confidence warnings for JDK types in HBase, leading
+    to the - in the precision column.  The ``Total'' row was
+    computed by summing true and false positive counts across benchmarks.}
   \label{tab:tool-comparison}
   \posttablecaption
   \begin{tabular}{l|rccc|ccc}

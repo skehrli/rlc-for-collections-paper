@@ -265,28 +265,17 @@ This section compares our approach with two other modern tools that detect resou
 \item The analysis built into the Eclipse Compiler for Java (ecj), which is the default approach
   for detecting resource leaks in the Eclipse IDE~\cite{ecj-resource-leak}.
   We used version 4.18.0.
-\item Grapple~\cite{zuo2019grapple} represents a significant, recent
-  improvement in the scalability of typestate-based tools that require a whole-program alias analysis.
+\item Grapple~\cite{zuo2019grapple}, a state-of-the-art typestate checker that
+leverages whole-program alias analysis.
 \end{itemize}
-In brief, both tools are unsound.
-Both tools are applicable to legacy code. % , without the need to write annotations.
-Eclipse is very fast (nearly instantaneous) and suffers 67--98\% false
-positives. % while missing 70-90\% of resource leaks.
-Grapple is precise (13\% false positive rate
-according to its authors; \todo{XX}\% false positive rate according to our
-analysis of its output) but orders
-of magnitude slower than \tool.
-Different users can select whichever tool matches
-their priorities.
-\todo{Mike suggests mentioning our false positive rate for direct
-  comparison in this section, and also including false negative rates
-  directly.  We want to enable readers to make comparisons, not force them
-  to hunt around the paper for information.}
-
-\todo{This section should mention that both tools (I think?) neither
-  require nor permit user-written specifications.  This is a plus in terms
-  of ease of use, and a minus in terms of documentation, flexibility, and
-  tool accuracy.}
+In brief, both of the above tools are unsound and missed many real leaks in our
+comparison.  Both tools neither require nor permit user-written specifications,
+a plus in terms of ease of use but a minus in terms of documentation and
+flexibility. Eclipse is very fast (nearly instantaneous) but has low precision
+(25\% for high-confidence warnings, \emph{much} lower if all warnings are
+included). Grapple is more precise (50\% precision in our study), but orders of
+magnitude slower than \tool.  \tool had 100\% recall in our comparison and 26\%
+precision.  Users can select whichever tool matches their priorities.
 
 Our comparison uses only the 3 case study programs that Grapple was run on
 in the past; see \cref{sec:grapple} for details.
