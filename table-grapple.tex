@@ -19,18 +19,22 @@
     programs, so recall is directly comparable within rows.
     Precision is computed over one version of the program.  It may not be
     directly comparable within rows; for example, different versions of ZooKeeper might
-    contain different mixes of code patterns that lead to false positive warnings.}
+    contain different mixes of code patterns that lead to false positive warnings.
+    Eclipse does not report any high-confidence warnings on JDK types in HBase, leading
+    to the \- in the precision column.}
   \todo{Clarify relationship of ``HDFS'' in this table to our corresponding
     benchmark.}
   \label{tab:tool-comparison}
   \posttablecaption
   \begin{tabular}{l|rccc|ccc}
                  &  & \multicolumn{3}{c|}{\textbf{Recall}} & \multicolumn{3}{c}{\textbf{Precision}*} \\
-    Project & leaks & Ecl & Gr & RLC  & Ecl & Gr & RLC \\
+                         Project &      leaks & Ecl  & Gr  & RLC  &   Ecl   & Gr   & RLC \\
     \hline
-    \grappletableproject{ZooKeeper}      & 6  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
-    \grappletableproject{HDFS}           & 5  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
-    \grappletableproject{HBase}          & 7  & XX\% & XX\% & XX\% & XX\% & XX\% & XX\% \\
+    \grappletableproject{ZooKeeper}      & 6  & 17\% & 17\% & 100\% & 33\% & 67\% & 21\% \\
+    \grappletableproject{HDFS}           & 7  & 17\% & 0\%  & 100\% & 20\% & 71\% & 33\% \\
+    \grappletableproject{HBase}          & 2  & 0\%  & 0\%  & 100\% &  \-  & 35\% & 25\% \\
+    \hline
+    \grappletableproject{\textbf{Total}} & 15 & 13\% & 7\%  & 100\% & 25\% & 50\% & 26\% \\
   \end{tabular}
 \end{table}
 
