@@ -78,15 +78,15 @@ express the programmer's intent and, as machine-checked documentation,
 they cannot become out-of-date.
 
 \todo{does this para need to be updated for plume-util?}
-At the time of writing, this bug is one of 16 of the true
-positives we discovered using \tool which we have fixed by submitting
-a patch to the case study program that has been validated and accepted
-by the case study program developers. No patches we have submitted this way
-have been rejected.\todo{Should we also include the links to the patches here?
-  I'm not sure how to do that in a way that's not overly intrusive...I guess we
-  could add a citation for each one?}\todo{Mike suggests that we put that
-  information in the supplemental material/artifact.  The text here could
-  say they are there.}
+At the time of writing, we have submitted patches for 16 resource leaks
+discovered by our tool, all of which have been validated and accepted by the
+case study program developers.  \todo{do we need the next sentence?} No patches
+we have submitted this way have been rejected.  We also fixed all the reported
+resource leaks in plume-util.  \todo{Should we also include the links to the patches here?
+I'm not sure how to do that in a way that's not overly intrusive...I guess we
+could add a citation for each one?}\todo{Mike suggests that we put that
+information in the supplemental material/artifact.  The text here could
+say they are there.}
 
 \subsubsection{True and false positive examples}
 \label{sec:examples}
@@ -172,10 +172,9 @@ The Checker Framework uses different defaulting rules for implicit and explicit
 upper bounds, and a common pattern in this benchmark caused our checker to issue
 an error on uses of implicit bounds.
 %
-In 18 places, we added \<final> to a field; this allows our checker to verify it without using
-the rules for non-final owning fields given in \cref{sec:reset-must-call}, which are stricter.
-In 9 of those, we also removed assignments to the field after it was closed whose right-hand
-side was \<null>; in 1 other we added an \<else> clause in the constructor that assigned the field
+In 18 places, we made a field \<final>; this allows our checker to verify usage
+of the field without using the stricter rules for non-final owning fields given in \cref{sec:reset-must-call}.
+In 9 of those cases, we also removed assignments of \<null> to the field after it was closed; in 1 other we added an \<else> clause in the constructor that assigned the field
 a \<null> value.
 %
 In 3 places, we re-ordered two statements to remove an
