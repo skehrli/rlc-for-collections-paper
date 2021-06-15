@@ -248,7 +248,7 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
   \State $D \gets \{ s \mapsto \emptyset\ |\ s \in \mathit{CFG.statements} \}$\label{li:start-init}
   \For{$p \in \mathit{CFG.formals}$, $t \in \mathit{CFG.succ}(\mathit{CFG.entry})$}\label{li:init-formals}
     \If{$\textsc{HasObligation}(p)$}
-      \State $D(t) \gets D(t) \cup \langle \{p\}, p \rangle$
+      \State $D(t) \gets D(t) \cup \lbrace \langle \{p\}, p \rangle \rbrace$
     \EndIf
   \EndFor \label{li:end-init-formals}
   \For{$s \in \mathit{CFG.statements}$ of the form \lstinline{p = m(p1, p2, ...)}} \label{li:init-calls}
