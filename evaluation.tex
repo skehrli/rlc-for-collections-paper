@@ -305,7 +305,7 @@ the same modules.
 % has loaded the project.\looseness=-1
 In ``high-confidence'' mode on the three projects, Eclipse reports 9
 warnings related to classes defined in the JDK:
-2 true positives (thus, it misses 46 real resource leaks) and 7
+2 true positives (thus, it misses 47 real resource leaks) and 6
 false positives.
 In ``potential'' leak mode, the analysis reports many more warnings.
 Thus, we triaged only the 180
@@ -391,7 +391,7 @@ Grapple's false positives are reports about types like
 \<java.io.StringWriter> that have no underlying resource that needs to be
 closed.
 (These reports were mis-classified as true positives in~\cite{zuo2019grapple},
-and hence the numbers there differe from \cref{tab:tool-comparison}.)
+and hence the numbers there differ from \cref{tab:tool-comparison}.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
 classes).  On the flip side, \tool has lower precision (more false positives)
