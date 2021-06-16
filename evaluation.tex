@@ -362,7 +362,7 @@ of loops to make path sensitivity tractable.
 can ensure that a library is correct for all possible clients.  By
 contrast, Grapple checks a library in the context of one specific client; it
 only reports issues in methods reachable from entrypoints (like a \<main()>
-method) in a whole-program call graph\todo{cite personal communications}.
+method) in a whole-program call graph~\cite{grapplepersonal}.
 
 % \todo{Manu should update this paragraph with a response from the Grapple authors.}
 % \todo{This paragraph feels too harsh to me.}
@@ -420,7 +420,7 @@ than Grapple, and it requires programmer effort to annotate the source code.
 Grapple runs can take many hours (run times are from~\cite{zuo2019grapple}), whereas
 \tool runs in minutes (\cref{tab:run-times}).
 Further, Grapple is not modular, so if the user edits their program, Grapple must be
-re-run from scratch.  After a code edit,
+re-run from scratch~\cite{grapplepersonal}.  After a code edit,
 \tool only needs to re-analyze modified code (and
 possibly its dependents if the modified code's interface changed).
 
