@@ -1,0 +1,37 @@
+\begin{algorithm}[h]
+  \caption{Helper functions for \cref{alg:consistency-checker}.  Except for
+  \textsc{MCAfter} and \textsc{CMAfter}, all functions will be replaced with
+  more sophisticated versions in
+  \cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}.
+  \todo{Ensure the two algorithms appear on the same page.}
+}
+  \label{alg:helpers}
+  \begin{algorithmic}[1]
+  \State // \textit{Does e introduce a must-call obligation to check?}
+  \Procedure{HasObligation}{$e$}
+  \State \Return $e$ has a declared \MustCall type
+  \EndProcedure
+  \State // \textit{s must be a call statement p = m(p1, p2, ...)}
+  \Procedure{FactsFromCall}{$s$}
+  \State $p \gets s.LHS, c \gets s.RHS$
+  \State \Return $\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c
+  \rangle \}$ : $\emptyset$
+  \EndProcedure
+  \State // \textit{Is the must-call obligation for P satisfied after
+    s?}
+  \Procedure{MCSatisfiedAfter}{$P,s$}
+  \State \Return $\exists p \in P .\ \textsc{MCAfter}(p,s) \subseteq \textsc{CMAfter}(p,s)$
+  \EndProcedure
+  \State // \textit{Does s introduce a must alias for a var in P?}
+  \Procedure{CreatesAlias}{$P,s$}
+    \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}
+  \EndProcedure
+  \Procedure{MCAfter}{$p,s$}
+  \State \Return methods in \MustCall type of $p$ after $s$
+  \EndProcedure
+  \Procedure{CMAfter}{$p,s$}
+  \State \Return methods in \<@CalledMethods> type of $p$ after $s$
+  \EndProcedure
+  \end{algorithmic}
+
+\end{algorithm}
