@@ -141,18 +141,19 @@ is closed only if it is non-null, but our checker expects the resource to be
 closed on every path. Future work could incorporate nullness reasoning~\cite{PapiACPE2008} to
 allow resources not to be closed on definitely-null paths.
 
-Most of the remaining false positives involve unique coding patterns.
-One example\todo{It's weird to give a random reason.  Replace this by the
-  third most common pattern, and state its prevalence as a percentage.
-  Readers will see the percentages and know
-  that all the other reasons are in the noise.} \todo{MK: I like this example for explanatory
-  purposes, so I added the third most common reason but left this in. If you really don't like it,
-  Mike, (or we badly need space) I don't object to removing it and the accompanying figure.}
- is a series of catch
-statements that each sets an \<error> boolean to \<true>, and
-a \<finally> statement that closes the relevant socket if \<error>
-was true.  \Tool reports an error because it does not reason about path
-conditions.
+% Most of the remaining false positives involve unique coding patterns.
+% One example\todo{It's weird to give a random reason.  Replace this by the
+%   third most common pattern, and state its prevalence as a percentage.
+%   Readers will see the percentages and know
+%   that all the other reasons are in the noise.} \todo{MK: I like this example for explanatory
+%   purposes, so I added the third most common reason but left this in. If you really don't like it,
+%   Mike, (or we badly need space) I don't object to removing it and the accompanying figure.}
+%  is a series of catch
+% statements that each sets an \<error> boolean to \<true>, and
+% a \<finally> statement that closes the relevant socket if \<error>
+% was true.  \Tool reports an error because it does not reason about path
+% conditions.
+
 
 \subsubsection{Annotations and code changes}\label{sec:annotations-and-code-changes}
 \label{sec:annos}
