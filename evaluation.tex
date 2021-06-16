@@ -73,7 +73,7 @@ few hours.
 The annotations in the program are
 also a benefit: they
 express the programmer's intent and, as machine-checked documentation,
-they cannot become out-of-date.
+they cannot become out-of-date.\looseness=-1
 
 % \todo{does this para need to be updated for plume-util?} MK: No - I have already done so and the plume-lib fixes are included in the 16 number.
 %
@@ -123,7 +123,7 @@ returned.
 
 The most common reason for false
 positives (which caused 22\% of the false positives in our case studies) was
-a known bug in the Checker Framework’s
+a known bug in the Checker Framework's
 type inference algorithm for Java generics, which the Checker Framework
 developers are working to fix~\cite{issue979}.
 The second most common reason (causing 15\%)
@@ -294,7 +294,7 @@ augmented with heuristics. Since it is tightly integrated with
 the compiler, it scales well and runs quickly. It has
 heuristics for ownership, resource wrappers, and resource-free
 closeables, among others; these are all hard-coded into the analysis and cannot
-be adjusted by the user\todo{add citation?}. It does not support annotations to express
+be adjusted by the user. It does not support annotations to express
 specifications that differ from its defaults.
 It supports two levels of analysis: detecting high-confidence resource
 leaks and detecting ``potential'' resource

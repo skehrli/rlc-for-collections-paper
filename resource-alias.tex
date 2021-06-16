@@ -5,7 +5,7 @@ This section introduces a sound, lightweight, specialized must-alias analysis
 that tracks \emph{resource alias} sets---sets of pointers that
 definitely correspond to the same underlying system resource.  Closing
 one alias also closes the others.  Thus,
-\Tool can avoid issuing false positive warnings about resources
+\tool can avoid issuing false positive warnings about resources
 that have already been closed through a resource alias.  Prior
 work on accumulation analyses showed that limited, specialized forms
 of alias analysis can provide precision to an accumulation analysis
@@ -123,7 +123,7 @@ technique can verify code like the below (adapted from Apache Hadoop~\cite{hadoo
 Because the must-call obligation checker (\cref{sec:must-call})
 treats \MustCallAlias annotations
 polymorphically, regardless of the associated base type,
-\Tool can verify that the same resource is held by
+\tool can verify that the same resource is held by
 the \<Random\-Access\-File> and the \<File\-Input\-Stream>, even though it
 is passed via a class without a \<close()> method.
 This capability enabled
