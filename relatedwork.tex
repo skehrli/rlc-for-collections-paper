@@ -69,9 +69,12 @@ The DroidLeaks
 benchmark~\cite{liu2019droidleaks} is a set of Android apps with known resource
 leaks. Unfortunately, it includes only the compiled apps. \Tool runs on
 source code, so we were unable to run \tool on DroidLeaks. Ghanavati et
-al.~\cite{ghanavati2020memory} performed a detailed recent study of resource
+al.~\cite{ghanavati2020memory} performed a detailed study of resource
 leaks and their repairs in Java projects, showing the pressing need for better
-tooling for resource leak prevention\todo{Manu to add more substantive discussion}.
+tooling for resource leak prevention.  In particular, their study showed that
+developers consider resource leaks to be an important problem, and that previous
+static analysis tools are insufficient for preventing resource leaks.  We plan
+to apply \tool to more of the programs from their study in the future.
 
 \subsection{Language-based approaches}\label{sec:rw-language}
 
