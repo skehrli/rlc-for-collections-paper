@@ -122,13 +122,10 @@ returned.
 \end{figure}
 
 The most common reason for false
-positives (with 24 instances\todo{Readers don't care about the
-  number of instances, only the frequency.  Replace this absolute number by
-  a percentage.}) was
+positives (which caused 15\% of the false positives in our case studies) was
 a known bug in the Checker Framework’s
 type inference algorithm for Java generics~\cite{issue979}.
-The second most common reason (with 15 instances\todo{Replace this
-  absolute number by a percentage.})
+The second most common reason (causing 10\%)
 was a generic container object like \<java.util.Optional> taking ownership of a resource, such
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
@@ -138,12 +135,18 @@ code~\cite{ErnstNothingIsBetterThanOptional}.  If \<Optional> was replaced
 by a nullable Java reference,
 \tool could verify this code. Future work should expand the lightweight ownership system to
 support Java generics.
+The third most common reason (causing 5\%) is nullness reasoning: some resource
+is closed only if it is non-null, but our checker expects the resource to be
+closed on every path. Future work could incorporate nullness reasoning to
+allow resources not to be closed on definitely-null paths.
 
-Most false positives involve unique coding patterns.
+Most of the remaining false positives involve unique coding patterns.
 One example\todo{It's weird to give a random reason.  Replace this by the
   third most common pattern, and state its prevalence as a percentage.
   Readers will see the percentages and know
-  that all the other reasons are in the noise.}
+  that all the other reasons are in the noise.} \todo{MK: I like this example for explanatory
+  purposes, so I added the third most common reason but left this in. If you really don't like it,
+  Mike, (or we badly need space) I don't object to removing it and the accompanying figure.}
  is a series of catch
 statements that each sets an \<error> boolean to \<true>, and
 a \<finally> statement that closes the relevant socket if \<error>
