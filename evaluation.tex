@@ -122,10 +122,11 @@ returned.
 \end{figure}
 
 The most common reason for false
-positives (which caused 15\% of the false positives in our case studies) was
+positives (which caused 22\% of the false positives in our case studies) was
 a known bug in the Checker Framework’s
-type inference algorithm for Java generics~\cite{issue979}.
-The second most common reason (causing 10\%)
+type inference algorithm for Java generics, which the Checker Framework
+developers are working to fix~\cite{issue979}.
+The second most common reason (causing 15\%)
 was a generic container object like \<java.util.Optional> taking ownership of a resource, such
 as the example in \cref{fig:zookeeper-optional}. Our lightweight ownership
 system does not support transferring ownership to generic parameters,
@@ -135,9 +136,9 @@ code~\cite{ErnstNothingIsBetterThanOptional}.  If \<Optional> was replaced
 by a nullable Java reference,
 \tool could verify this code. Future work should expand the lightweight ownership system to
 support Java generics.
-The third most common reason (causing 5\%) is nullness reasoning: some resource
+The third most common reason (causing 8\%) is nullness reasoning: some resource
 is closed only if it is non-null, but our checker expects the resource to be
-closed on every path. Future work could incorporate nullness reasoning to
+closed on every path. Future work could incorporate nullness reasoning~\cite{PapiACPE2008} to
 allow resources not to be closed on definitely-null paths.
 
 Most of the remaining false positives involve unique coding patterns.
