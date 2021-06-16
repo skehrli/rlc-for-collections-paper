@@ -72,3 +72,17 @@
 \addtolength{\dblfloatsep}{-.25\dblfloatsep}
 
 \newcommand{\zph}{\phantom{0}}
+
+% Make acknowledgments smaller
+\specialcomment{acks}{%
+  \noindent
+  \begingroup
+  \begin{minipage}{\columnwidth}
+  \smaller
+  \bigskip
+  \noindent\textbf{Acknowledgments}
+  \phantomsection\addcontentsline{toc}{section}{Acknowledgments}
+}{%
+  \end{minipage}
+  \endgroup
+}
