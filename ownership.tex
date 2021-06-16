@@ -13,8 +13,8 @@
 
 \Cref{sec:base-type-systems} describes a sound accumulation-based
 checker for resource leaks. However, that checker often encounters false
-positives in cases where an \MustCall obligation is satisfied
-in another procedure, via parameter passing, return values, or object fields.
+positives in cases where a \MustCall obligation is satisfied
+in another procedure via parameter passing, return values, or object fields.
 Consider the following code that safely closes a \<Socket>:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
@@ -31,7 +31,7 @@ The \<closeSocket()> routine takes ownership of the socket---that is,
 it takes responsibility for closing it. The checker described by
 \cref{sec:base-type-systems} would issue a false positive on this
 code, because it would warn when \<s>
-goes out of scope in \<example()>.
+goes out of scope at the end of \<example()>.
 % With the \<@Owning> annotation on the parameter to \<closeSocket>,
 % however, the checker can determine that \<closeSocket> is the correct
 % place to check.
@@ -91,8 +91,8 @@ and for unannotated parameters and fields is \<@NotOwning>.  These assumptions
 coincide well with coding patterns we observed in practice, reducing the
 annotation burden for programmers.  Further, this treatment of parameter and
 return types ensures sound handling of unannotated third-party libraries: any
-object returned from such a library will be tracked by default, and the checker
-never assumes that passing an object to an unannotated library will satisfy its obligations.
+object returned from such a library is tracked by default, and the checker
+never assumes that passing an object to an unannotated library satisfies its obligations.
 
 %% This paragraph doesn't seem to add much -- the first part is redundant and
 %% the second part is vacuous (or at least better situated in a future work section).
@@ -113,23 +113,29 @@ never assumes that passing an object to an unannotated library will satisfy its 
 
   Additional class-level checking is required for \<@Owning>
   fields, as the code
-  satisfying their \MustCall obligations nearly always spans multiple
-  procedures.  We first discuss the case of final fields,\footnote{\Tool
+  satisfying their \MustCall obligations usually spans multiple
+  procedures.  This section handles final fields,\footnote{\Tool
     treats all static fields as non-owning, meaning that no assignment to one
     can satisfy a must-call obligation. In our case studies, we did
     not observe any assignments of expressions with non-empty must-call obligations
     to static fields. We leave handling owning static fields to future work.
   }
   which cannot be overwritten after initialization of the enclosing
-  object.  Here, our checking enforces the ``resource acquisition is
-  initialization (RAII)'' programming idiom~\cite{raii}; a distinguished
+  object.  When checking
+  non-final fields, the checker must ensure
+  that overwriting the field is safe
+  %does not lead to an unsatisfied \MustCall obligation.
+  (see \Cref{sec:non-final-owning}).
+
+  For final fields, our checking enforces the ``resource acquisition is
+  initialization (RAII)'' programming idiom~\cite{raii}.  Some
   destructor-like method \<d()> must ensure the field's \MustCall obligation is
   satisfied, and the enclosing class must have a \MustCall\<("d")> obligation to
   ensure the destructor is called.
 
   More formally, consider a final \<@Owning> field $f$ declared in class $C$,
   where
-  $f$ has type \MustCall\<("m")>.  To
+  $f$ has type \MustCall\<("m")>.  To modularly
   verify that $f$'s \MustCall obligation is satisfied, \tool checks the following
   conditions:
   \begin{enumerate}
@@ -137,18 +143,14 @@ never assumes that passing an object to an unannotated library will satisfy its 
     \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \MustCall obligation.
   \end{enumerate}
-  In this manner, \tool modularly verifies the \MustCall obligation of $f$.  Condition 2 is
+  \todo{Nothing is said about how condition 1 is checked.  I would say that
+    it is via checking all constructors or the class annotation.}%
+  Condition 2 is
   checked by requiring an appropriate \EnsuresCalledMethods
   postcondition annotation on
   \<C.d()>, which is then enforced by the Called Methods
   Checker~\cite{KelloggRSSE2020}.
 
-  While this scheme suffices for verifying final fields, we observed cases
-  in our benchmarks of non-final fields with \MustCall obligations.  Checking
-  non-final fields requires additional techniques, as the checker must ensure
-  that overwriting the field is safe.
-  %does not lead to an unsatisfied \MustCall obligation.
-  \Cref{sec:non-final-owning} describes our novel handling of non-final fields.
 
 
 % LocalWords:  MustCall belowskip myHost myPort closeSocket NotOwning RAII

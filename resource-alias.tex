@@ -1,28 +1,32 @@
 \section{Resource aliasing}
 \label{sec:must-call-choice}
 
+\todo{I would say that the aliases might have different Java types.  That
+  becomes obvious in \cref{sec:wrapper-types}, so maybe it is not necessary.}
+
 This section introduces a sound, lightweight, specialized must-alias analysis
 that tracks \emph{resource alias} sets---sets of pointers that
 definitely correspond to the same underlying system resource.  Closing
 one alias also closes the others.  Thus,
 \tool can avoid issuing false positive warnings about resources
 that have already been closed through a resource alias.  Prior
-work on accumulation analyses showed that limited, specialized forms
-of alias analysis can provide precision to an accumulation analysis
-where needed, without incurring the cost of a whole-program
+work on accumulation analysis showed that limited, specialized forms
+of alias analysis can improve precision
+without incurring the cost of a whole-program
 analysis~\cite{KelloggRSSE2020}; our resource alias analysis is an
-example.
+example.\looseness=-1
 
 \subsection{Wrapper types}
+\label{sec:wrapper-types}
 
 Java programs extensively use \emph{wrapper types}.  For example, the Java
-\<BufferedOutputStream> wrapper adds buffering to some other delegate \<OutputStream>, which
+\<BufferedOutputStream> wrapper adds buffering to some delegate \<OutputStream>, which
 may or may not represent a resource that needs closing.  The wrapper's 
 \<close()> method invokes \<close()> on the delegate.
 Wrapper types
 introduce two additional complexities for \MustCall checking:
 \begin{enumerate}
-  \item If a wrapped object has no \MustCall obligation, the corresponding
+  \item If a delegate has no \MustCall obligation, the corresponding
   wrapper object should also have no obligation.
   \item Satisfying the obligation of \emph{either} the wrapped object or the
   wrapper object is sufficient.
@@ -47,9 +51,9 @@ wrappers~\cite{TorlakC10}.
 
 Our technique handles wrapper types more generally by tracking \emph{resource
 aliases}.  Two references $r_1$ and $r_2$ are resource aliases
-if $r_1$ and $r_2$ are must-aliased pointers or if
+if $r_1$ and $r_2$ are must-aliased pointers, or if
 satisfying $r_1$'s \MustCall obligation also satisfies $r_2$'s
-  obligation, and vice-versa.
+  obligation and vice-versa.
 
 \paragraph{Introducing resource aliases}
 To indicate where an API method creates a resource-alias
@@ -62,13 +66,13 @@ For example, one constructor of \<BufferedOutputStream> is:
 \end{lstlisting}
 \noindent
 \MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
-At call sites to \MustCallAlias methods, there are two effects.
+At a call site to a \MustCallAlias method, there are two effects.
 
 First, the must-call type of the method call's return value
 is the same as that of the \MustCallAlias
 argument.  If the type of the argument has no must-call obligations (like a
-\<ByteArrayOutputStream>), the returned wrapper will not have must-call
-obligations, either.
+\<ByteArrayOutputStream>), the returned wrapper has no must-call
+obligations.
 
 Second,
 the Must Call Consistency Checker
@@ -126,12 +130,16 @@ polymorphically, regardless of the associated base type,
 \tool can verify that the same resource is held by
 the \<Random\-Access\-File> and the \<File\-Input\-Stream>, even though it
 is passed via a class without a \<close()> method.
-This capability enabled
-verifying multiple code patterns in our case studies.
+% This capability enabled
+% verifying multiple code patterns in our case studies.
 
 \subsection{Verification of \MustCallAlias}\label{sec:MustCallAlias-verification}
 
-A pair of \MustCallAlias annotations on a method or constructor \<m>'s return type
+A pair of \MustCallAlias annotations on
+%% The fact that m might be a method or constructon becomes clear
+%% immediately after this sentence, and this edit saves a line.
+% a method or constructor
+\<m>'s return type
 and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor in a
@@ -147,11 +155,9 @@ field verification is described in \cref{sec:owning-fields,sec:non-final-owning}
 %   must-call obligations of \<p>'s static type.
 \end{enumerate}
 These verification procedures permit a programmer to soundly specify a resource-aliasing
-relationship in their own code, a capability that was not present in prior work
-that relied on a hard-coded list of wrapper types; we used this
+relationship in their own code, unlike prior work
+that relied on a hard-coded list of wrapper types.
 % \todo{3 in Zookeeper + however many in the rest}
-multiple times
-in our case studies.
 
 % The
 % must-call obligation for an arbitrary \<BufferedOutputStream> is

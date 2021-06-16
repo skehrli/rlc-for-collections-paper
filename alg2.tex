@@ -22,7 +22,7 @@
   \Procedure{MCSatisfiedAfter}{$P,s$}
   \State \Return $\exists p \in P .\ \textsc{MCAfter}(p,s) \subseteq \textsc{CMAfter}(p,s)$
   \EndProcedure
-  \State // \textit{Does s introduce a must alias for a var in P?}
+  \State // \textit{Does s introduce a must-alias for a var in P?}
   \Procedure{CreatesAlias}{$P,s$}
     \State \Return $\exists \mathtt{q} \in P\ .\ s$ is of the form \texttt{p = q}
   \EndProcedure

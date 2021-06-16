@@ -11,7 +11,7 @@ type is a type from the host language. Our implementation is for Java
 (see \cref{sec:implementation}), so we use the Java syntax for type
 qualifiers: ``\<@>'' before a type indicates that it is a type
 qualifier, and a type without ``\<@>'' is a base type.
-This paper sometimes omits the basetype when it is obvious from context.
+This paper sometimes omits the basetype when it is obvious from context.\looseness=-1
 
 A type system checks programmer-written types.  Our system requires the
 programmer to write types on method signatures, but within method bodies it
@@ -29,9 +29,11 @@ lines of the program.
 This section presents a sound, modular, accumulation-based
 resource leak checker (``\tool'').
 \Cref{sec:lightweight-ownership,sec:reset-must-call,sec:must-call-choice}
-enhance its precision.
+soundly enhance its precision.
 
 \Tool is composed of three cooperating analyses:
+\todo{This is where the structure finally becomes clear, but this was too
+  late for some of the referees.} foll
 \begin{enumerate}
 \item a taint tracking type system (\cref{sec:must-call}) computes a conservative
   \emph{overapproximation} of the set of methods that might need to be called
@@ -39,10 +41,10 @@ enhance its precision.
 \item an accumulation type system (\cref{sec:called-methods}) computes
   a conservative \emph{underapproximation} of the set of methods that are
   actually called on each expression in the program.
-\item a dataflow analysis (\cref{sec:must-call-invoked}) determines whether the
-  methods that might need to be called on each expression are always invoked before the
-  expression goes out of scope, by checking consistency of the results of the two
-  above-mentioned type systems; it issues errors when this condition does not hold.
+\item a dataflow analysis (\cref{sec:must-call-invoked}) checks consistency of the results of the two
+  above-mentioned type systems.  It issues an error if some
+  method that might need to be called on an expression is not always invoked before the
+  expression goes out of scope.
 \end{enumerate}
 
 \begin{figure}
@@ -52,11 +54,12 @@ enhance its precision.
   \label{fig:example}
 \end{figure}
 
-\noindent
-This section uses \cref{fig:example} as a motivating example.
-It shows
-a safe use of a \<Socket>---a resource that must be closed before
-it is deallocated.
+% \noindent
+% This section uses \cref{fig:example} as a motivating example.
+% It shows
+% a safe use of a \<Socket>---a resource that must be closed before
+% it is deallocated.
+
 
 \subsection{A type system for must-call obligations}
 \label{sec:must-call}
@@ -98,16 +101,22 @@ it is deallocated.
 \label{fig:must-call-hierarchy}
 \end{figure}
 
+\todo{Mike added ``---and our entire analysis---'' to the below paragraph.}
+
 The Must Call type system tracks which methods might need to be called
-on a given object before the object is deallocated.  This type system
-is general---it is not specific to resource leaks. Another such
+on a given object before the object is deallocated.  This type system---and
+our entire analysis---is not specific to resource leaks. Another such
   property is that the
   \<build()> method of a builder~\cite{designpatterns} should always
-  be called, to avoid unnecessary computation.
+  be called.
 
 The Must Call type system supports two qualifiers: \MustCall and
 \MustCallUnknown. The \MustCall qualifier's arguments are the
-methods that the annotated type must call. The declaration
+methods that
+% "the annotated value" is inaccurate (it is accurate to say "the value of the
+% expression with that annotated type"), but is probably clear enough.
+the annotated value
+must call. The declaration
 \MustCall\<(\{"a"\}) Object obj> means that before \<obj> is
 deallocated, \<obj.a()> might need to be called.
 \Tool conservatively requires all these methods to be called,
@@ -214,13 +223,17 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}
 
+\input{alg1}
+
+\input{alg2}
+
 Given \MustCall and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that the \MustCall methods for each object
 are always invoked before it becomes unreachable,
 via an intra-procedural dataflow analysis.  Here, we present
 a simple, sound version of the analysis, with limited reasoning about aliasing.
 \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
-describe enhancements to this basic approach.
+describe sound enhancements to this basic approach.
 
 \paragraph{Language} For simplicity, we present the analysis over a simple
 assignment language in three-address form.  An expression $e$ in the language is
@@ -229,7 +242,7 @@ calls are treated as method calls).  A statement $s$ takes one of three forms:
 \<p = e>, where $e$ is an expression; \<p.f = p'>, for a field write; or
 \<return p>.  Methods are represented by a control-flow graph (CFG) where nodes
 are statements and edges indicate possible control flow.  We elide control-flow
-predicates as the consistency checker is path-insensitive.
+predicates because the consistency checker is path-insensitive.
 
 % \manu{Martin, is the
 % must-call checker path-sensitive?  As in, does it interpret null checks?}
@@ -258,14 +271,10 @@ Computing a set of must aliases is useful since any must alias may be used to
 satisfy the must-call obligation of $e$.  Using $D$, the analysis finds any $e$
 that does not have its \MustCall obligation fulfilled, and reports an error.
 
-\input{alg1}
-
-\input{alg2}
-
 \Cref{alg:consistency-checker} proceeds as follows.  \Cref{li:call-initial-obs}
 invokes \textsc{InitialObligations} to initialize $D$.  Only formal parameters
-or method calls can introduce obligations to be checked (not reads of local
-variables or fields).
+or method calls can introduce obligations to be checked (reads of local
+variables or fields cannot).
 % \textsc{InitialObligations}
 % (lines~\ref{li:start-init}--\ref{li:end-init}) scans for such expressions and
 % adds initial facts as appropriate, using helper functions \textsc{HasObligation}
@@ -321,8 +330,14 @@ if (...) {
   \includegraphics[width=\linewidth,keepaspectratio]{cfg-example.pdf}
   \end{minipage}
   \prefigcaption
+  \vspace{-5pt}
   \caption{Example code and CFG for illustrating \cref{alg:consistency-checker}.
-    ``\<e>'' is ``\<new Socket(...)>''.  Shaded facts are propagated after initialization.
+    ``\<e>'' is ``\<new Socket(...)>''.
+    Non-shaded facts are created by
+    %% Commented out to save a line
+    % procedure
+    \textsc{InitialObligations}, and
+    shaded facts are propagated by the fixed-point loop.
 } \label{fig:cfg-example}
 \end{figure}
 
@@ -338,11 +353,11 @@ $s$, causing $\langle \{ s, t \}, e \rangle$ to be added to $D(4)$.  For
 statement 4, $\textsc{MCSatisfiedAfter}(\{s,t\},\mathtt{close(t)})$ holds, so no
 facts are propagated from 4 to $\mathit{exit}$.
 
-At this point, we have described a sound checker for \MustCall obligations.
-% But for real code, this checker emits too many false positives.  In particular,
-% the dataflow analysis is purely intra-procedural, and it will report errors in
-% cases where obligations are satisfied via parameter passing, returns, or fields.
-Subsequent sections make the checker more precise.
+% At this point, we have described a sound checker for \MustCall obligations.
+% % But for real code, this checker emits too many false positives.  In particular,
+% % the dataflow analysis is purely intra-procedural, and it will report errors in
+% % cases where obligations are satisfied via parameter passing, returns, or fields.
+% Subsequent sections make the checker more precise.
 
 % The Ownership Checker is a simple worklist algorithm that operates over the CFG.
 % It maintains a set of owning pointers to objects, using a set of simple

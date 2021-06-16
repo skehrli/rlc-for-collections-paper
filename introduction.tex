@@ -12,8 +12,8 @@ connection.  Resource leaks continue to cause severe failures, even in
 modern, heavily-used Java applications~\cite{ghanavati2020memory}.
 This state-of-the-practice does not differ much from two decades
 ago~\cite{WeimerN04}.
-Microsoft engineers consider resource leak defects to be one of the most
-significant development challenges~\cite{LoNZ2015}.  That
+Microsoft engineers consider resource leaks to be one of the most
+significant development challenges~\cite{LoNZ2015}.  The fact that
 resource leaks remain such a serious problem despite decades of
 research and improvements in languages and tooling shows that
 preventing them remains an urgent, difficult, open problem.
@@ -21,6 +21,7 @@ preventing them remains an urgent, difficult, open problem.
 %% An ideal tool for preventing resource leaks would be fast, sound, and precise.
 
 Ideally, a tool for preventing resource leaks would be:
+\vspace{-5pt}
 \begin{itemize}
 \item \emph{applicable} to
   % leakable resources in
@@ -32,6 +33,7 @@ Ideally, a tool for preventing resource leaks would be:
 \item \emph{fast}, so that it scales to real-world programs and
   developers can use it regularly.
 \end{itemize}
+\vspace{-5pt}
 
 %% Extant approaches fail at least one of these: bug finders like the analysis
 %% in ecj are unsound; complex analyses based on typestate are either too slow
@@ -47,15 +49,15 @@ Heuristic bug-finding tools for leaks, built into Java IDEs including
 Eclipse~\cite{ecj-resource-leak} and IntelliJ
 IDEA~\cite{idea-resource-leak}, 
 are fast and applicable to legacy
-code---but they are unsound and can be highly imprecise
-(\cref{sec:compare}).
+code, but they are unsound.
+%% They are equally as imprecise as our tool, so don't bad-mouth them.
+% and can be highly imprecise (\cref{sec:compare}).
 Inter-procedural typestate or dataflow analyses~\cite{TorlakC10,zuo2019grapple}
 achieve more precise
-results---and
-can find more complex defects than bug-finders, though they usually remain
-unsound---but
-they can require hours to analyze a large-scale modern Java program, due
-to the costliness of precise whole-program analysis.
+%% In our experiments, they found fewer defects, and we didn't compare complexity.
+% results---and can find more complex defects than bug-finders,
+results---though they usually remain unsound---but
+their whole-program analysis can require hours to analyze a large-scale modern Java program.
 Finally, ownership type
 systems~\cite{clarke2013ownership} as employed in languages like
 Rust~\cite{klabnik2018rust} can prevent nearly all resource leaks (see
@@ -67,8 +69,16 @@ a legacy codebase, a substantial task which is often infeasible.
 
 The essence of finding resource leaks in a Java-like language is
 checking that a particular method (typically \<close()>) is called on
-every object of a relevant class during its lifetime (i.e., before it
-becomes unreachable).  We deem this a \emph{must-call} property.  Our
+every object of a relevant class during its lifetime, before it
+becomes unreachable.  We deem this a \emph{must-call} property.
+\todo{I find the following to be misleading.  It's not just an accumulation
+  problem.  It is a simple type problem, plus an accumulation problem, plus
+  a dataflow analysis.  Because the introduction focuses on just one part
+  of our approach, it is surprising to readers when the paper later
+  explains all three parts.  The introduction should mention all three
+  parts, even if we want to say that the accumulation part is most novel or
+  interesting.}
+Our
 key insight is that checking must-call properties is an
 accumulation problem.
 Our contribution is an \emph{accumulation analysis} for the resource leak
@@ -84,47 +94,60 @@ etc.---is performed.
 In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
 permitted, and executing more operations cannot add additional
-restrictions.  If it is applicable, accumulation analysis provides a major
-benefit over general typestate analysis: it does not
+restrictions.
+Unlike general typestate analysis, accumulation analysis does not
 require a whole-program alias analysis for soundness.
 Hence, we can build a sound, modular must-call
-checker without doing \emph{any} whole-program alias analysis.
+checker\todo{Do we want to use the
+  term ``must-call checker'' or ``resource leak checker here?}
+without doing \emph{any} whole-program alias analysis.
 Accumulation also enables a clean design, as we
-can conceptually factor our checker into a sound core, and
+can conceptually factor our checker into a simple core, and
 then enhance it with
-targeted alias reasoning to reduce false positives.
+targeted sound alias reasoning to reduce false positives.
 
 Unlike recent work on accumulation~\cite{KelloggRSSE2020}, we found
 that checking resource leaks precisely requires significantly more
 reasoning about aliasing patterns.  We found several key patterns to
 handle:
+\todo{I propose combining the first two bullet points into one.  The reason
+  is to make this list contain the same number of items as the next list,
+  making it obvious which techniques address which problems.  It's a bit
+  weird to combine the first two bullet points because it does put two
+  unlike things together in the new first bullet point, but the benefit of
+  making the paper organization clear to readers is more important, in my opinion.}
 \begin{itemize}
 \item passing of resources via parameters or returns;
-\item storing of resources in final fields, in a standard RAII
-manner~\cite{raii};
+\item storing of resources in final fields---the RAII
+pattern~\cite{raii};
 \item wrapper types, which share their must-call obligations with one of their fields; and,
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
 \end{itemize}
-We devised three key techniques to handle these patterns modularly
+We devised three sound techniques to handle these patterns modularly
 and achieve precision in practice:
 \begin{itemize}
 \item a lightweight, heuristic ownership transfer system. This system
   indicates which reference is responsible for resolving a must-call
   obligation. Unlike typical ownership type systems, our approach does
   not impact the privileges of non-owning references.
-\item resource aliasing, for cases in which a resource's must-call obligations
-  can be resolved by closing one of two or more references.
+\item resource aliasing, for cases
+  %% "in which" is better English, but "when" saves a line.
+  % in which
+  when
+  a resource's must-call obligations
+  can be resolved by closing one of multiple references.
 \item a system for creating new obligations at locations other than the
-  constructor, which allows our system to handle lazy or multiple initialization.
+  constructor, which allows our system to handle lazy or multiple
+  initialization\todo{What is ``multiple initialization''?  Should this be ``re-initialization''?}.
 \end{itemize}
-Variants of (some of) these ideas exist in previous work.  We bring
+Variants of some of these ideas exist in previous work.  We bring
 them together in a general, modular manner, with full verification and
 the ability for programmers to easily extend checking to their own
 types and must-call properties.
 %
 Our approach occupies a novel point in the design space for a leak detector:
-unlike most prior work, it is sound; it is at least one order of magnitude faster than
+unlike most prior work, it is sound; it is an order of magnitude faster than
 state-of-the-art whole-program analyses; it has a false positive rate similar
 to a state-of-the-practice heuristic bug-finder; and, though it does require manual
 annotations from the programmer, its annotation burden is reasonable: about
@@ -136,18 +159,22 @@ Our contributions are:
   problem, and
   % a novel set of
   type systems designed to take advantage
-  of this fact (\cref{sec:base-type-systems}).
+  of this fact (\cref{sec:base-type-systems}).\todo{Here is another place
+    that the introduction is misleading.  Our approach consists of 2 type
+    systems (only one of which is an accumulation analysis) plus a dataflow
+    analysis, and I think the introduction should make that architecture
+    more clear.}
 \item three
   % novel
-  innovations that improve the precision of our type
-  systems: a lightweight ownership transfer system
+  innovations that improve the precision of our analysis:
+  a lightweight ownership transfer system
   (\cref{sec:lightweight-ownership}), a lightweight resource-alias
   tracking analysis (\cref{sec:must-call-choice}), and a system for
   handling lazy or multiple initialization (\cref{sec:reset-must-call}).
 \item an open-source implementation for Java,
   called \tool (\cref{sec:implementation}).
 \item an extensive empirical evaluation: case studies on heavily-used
-  Java programs that handle many resources (\cref{sec:case-studies}),
+  Java programs (\cref{sec:case-studies}),
   an ablation study that shows the contributions of each innovation to
   \tool's precision (\cref{sec:ablation}), and a comparison to
   other state-of-the-art approaches that demonstrates the unique strengths

@@ -182,7 +182,9 @@
 \begin{abstract}
   A resource leak occurs when a program allocates a resource, such as a
   socket or file handle, but fails to deallocate
-  it.  Resource leaks are an important, common problem that cause resource
+  it.  Resource leaks
+  % are an important, common problem that
+  cause resource
   starvation, slowdowns, and crashes.  Previous techniques
   to prevent resource leaks are unsound,
   imprecise, inapplicable to existing code, slow, or a combination
@@ -191,7 +193,7 @@
   We observe that detecting a resource leak for a variable involves three
   parts: 1) tracking its \emph{must-call obligations},
   2) tracking which methods have been called on it, and 3) comparing
-  the results of these to check if its obligations have been fulfilled.
+  these to check if the obligations have been fulfilled.
   Our key insight is that these can be reduced to an
   accumulation problem, a class of typestate problems amenable
   to sound and modular checking without the need for a heavyweight,
@@ -201,8 +203,7 @@
   % , but found
   % that it suffered from an excess of false positives.
   The precision of an accumulation analysis can be improved by computing
-  targeted aliasing information, and we devised three novel techniques
-  that use this capability to achieve precision in practice:
+  targeted aliasing information, and we devised three such novel techniques:
   a lightweight ownership transfer system;
   a specialized resource alias analysis;
   and a system
@@ -222,11 +223,10 @@
   %% Accumulation frames extend the theory of accumulation analysis to permit
   %% certain kinds of cycles in the typestate automaton.
 
-  Our approach occupies a unique slice of the design space when compared
-  to prior approaches: it is sound
-  and runs quickly compared to heavier-weight
+  Our approach occupies a unique slice of the design space: it is sound
+  and runs relatively quickly
   %\todo{mention ``unsound''?}
-  approaches (running in minutes on programs that a
+  (running in minutes on programs that a
   state-of-the-art approach
   took hours to analyze).
   We implemented our techniques for Java in an open-source tool
