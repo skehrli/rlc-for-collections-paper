@@ -66,7 +66,7 @@ false positive warning about safe code that our tool is unable to prove correct.
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
 serious resource leaks in every program. \Tool's overall precision on
-these case studies is 30\% (49/166). Though there are more false positives
+these case studies is 29\% (49/171). Though there are more false positives
 than true positives,
 the number is small enough to be examined by a single developer in a
 few hours.
@@ -140,7 +140,8 @@ support Java generics.
 The third most common reason (causing 8\%) is nullness reasoning: some resource
 is closed only if it is non-null, but our checker expects the resource to be
 closed on every path. Future work could incorporate nullness reasoning~\cite{PapiACPE2008} to
-allow resources not to be closed on definitely-null paths.\looseness=-1
+allow resources not to be closed on definitely-null paths\todo{Wait, does this
+mean our checker cannot verify \cref{fig:example}?  That would be awkward.}.\looseness=-1
 
 % Most of the remaining false positives involve unique coding patterns.
 % One example\todo{It's weird to give a random reason.  Replace this by the
@@ -201,7 +202,7 @@ flow-sensitive reasoning or targeting by a \CreatesMustCallFor annotation.
 \subsubsection{Simulating the user experience}
 \label{sec:plume-util}
 
-To simulate the user experience of a typical user who understands
+To simulate the experience of a typical user who understands
 the codebase being analyzed,
 one author used \tool to analyze plume-util,
 a 10KLoC library he wrote 24 years ago.
