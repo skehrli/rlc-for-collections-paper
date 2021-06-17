@@ -22,8 +22,8 @@
 %% in the same archive or directory.)
 %%
 %% The first command in your LaTeX source must be the \documentclass command.
-\documentclass[sigconf,review]{acmart}
-\settopmatter{printfolios=true,printccs=false,printacmref=false,authorsperrow=4}
+\documentclass[sigconf]{acmart}
+\settopmatter{printfolios=false,printccs=false,printacmref=false,authorsperrow=4}
 
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -71,6 +71,9 @@
 
 
 % tables
+\usepackage[utf8]{inputenc} 
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{booktabs}
