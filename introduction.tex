@@ -92,12 +92,12 @@ analysis, improving scalability and usability.
 
 Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
 verifying that certain methods are invoked on each object reference (local
-variables, parameters, etc.) before another call of interest.  Conceptually, a
-resource leak verifier could be built by extending this technique with the
-ability to check that required methods are invoked before a reference goes out
+variables, parameters, etc.) before another call of interest.  Conceptually,
+we can build a resource leak verifier by extending this technique
+to check that required methods are invoked before a reference goes out
 of scope or is overwritten, either of which could cause an object to become unreachable.
 This reduction of possible object-unreachability points to operations like
-method calls shows that in fact, resource leak checking is also an accumulation
+method calls shows that resource leak checking is actually also an accumulation
 problem, and hence is amenable to sound, modular, and lightweight checking.
 
 There are two key problems with this simple leak-checking approach.  First,
@@ -153,7 +153,7 @@ Our contributions are:
   of this fact (\cref{sec:base-type-systems}).
 \item three
   % novel
-  innovations that improve the precision of our analysis:
+  innovations that improve the precision of our analysis via targeted reasoning about aliasing:
   a lightweight ownership transfer system
   (\cref{sec:lightweight-ownership}), a lightweight resource-alias
   tracking analysis (\cref{sec:must-call-choice}), and a system for
