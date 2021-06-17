@@ -139,9 +139,9 @@ by a nullable Java reference,
 support Java generics.
 The third most common reason (causing 8\%) is nullness reasoning: some resource
 is closed only if it is non-null, but our checker expects the resource to be
-closed on every path. Future work could incorporate nullness reasoning~\cite{PapiACPE2008} to
-allow resources not to be closed on definitely-null paths\todo{Wait, does this
-mean our checker cannot verify \cref{fig:example}?  That would be awkward.}.\looseness=-1
+closed on every path. Our checker handles simple comparisons with
+\<null> (as in \cref{fig:example}), but future work could
+incorporate more complex nullness reasoning~\cite{PapiACPE2008}.\looseness=-1
 
 % Most of the remaining false positives involve unique coding patterns.
 % One example\todo{It's weird to give a random reason.  Replace this by the
@@ -362,9 +362,6 @@ at method returns, leading to a warning at each call that returns a resource-ali
 \subsubsection{Grapple}
 \label{sec:grapple}
 
-% \todo{Be very sure that Grapple is unsound - read their paper again, and
-%    point out why in this paragraph.}
-%\todo{be sure to note that Grapple is not modular, unlike us}
 Grapple is a modern typestate-based resource leak analysis
 ``designed to conduct precise and scalable checking of finite-state properties for very
 large codebases''~\cite{zuo2019grapple}. Grapple models its alias and
@@ -383,8 +380,6 @@ contrast, Grapple checks a library in the context of one specific client; it
 only reports issues in methods reachable from entry points (like a \<main()>
 method) in a whole-program call graph~\cite{grapplepersonal}.
 
-% \todo{Manu should update this paragraph with a response from the Grapple authors.}
-% \todo{This paragraph feels too harsh to me.}
 The Grapple authors evaluated their tool on earlier versions of the first three
 case study programs in \cref{sec:case-studies}~\cite{zuo2019grapple}.
 Unfortunately, a direct comparison on our benchmark versions is not possible, because
@@ -419,10 +414,6 @@ Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
 classes).  On the flip side, \tool has lower precision (more false positives)
 than Grapple, and it requires effort to annotate the source code.  
-
-% \todo{There needs to be an explicit discussion of whether Grapple
-%   permits/requires user-written specifications.}
-
 
 \begin{table}
   \caption{Run times of resource leak checking tools.}
