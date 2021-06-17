@@ -32,8 +32,6 @@ resource leak checker (``\tool'').
 soundly enhance its precision.
 
 \Tool is composed of three cooperating analyses:
-\todo{This is where the structure finally becomes clear, but this was too
-  late for some of the referees.}
 \begin{enumerate}
 \item a taint tracking type system (\cref{sec:must-call}) computes a conservative
   \emph{overapproximation} of the set of methods that might need to be called
@@ -44,7 +42,7 @@ soundly enhance its precision.
 \item a dataflow analysis (\cref{sec:must-call-invoked}) checks consistency of the results of the two
   above-mentioned type systems.  It issues an error if some
   method that might need to be called on an expression is not always invoked before the
-  expression goes out of scope.
+  expression goes out of scope or is overwritten.
 \end{enumerate}
 
 \begin{figure}
@@ -104,7 +102,7 @@ soundly enhance its precision.
 \todo{Mike added ``---and our entire analysis---'' to the below paragraph.}
 
 The Must Call type system tracks which methods might need to be called
-on a given object before the object is deallocated.  This type system---and
+on a given expression.  This type system---and
 our entire analysis---is not specific to resource leaks. Another such
   property is that the
   \<build()> method of a builder~\cite{designpatterns} should always
@@ -152,10 +150,9 @@ programmer-written type qualifier.\footnote{For unannotated local variable types
 % user can specify a different default for raw types of that class.
 Our implementation
 provides JDK annotations which require that every 
-\<Closeable> object must have the \<close()> method called before
-it is deallocated.  \todo{Should we add one sentence saying this can be
-overridden in a subclass like \<ByteArrayOutputStream>?  It's a nice aspect of
-our approach.}
+object of \<Closeable> type must have the \<close()> method called before
+it is deallocated, with exceptions for types that do not have an underlying
+resource, e.g., \<ByteArrayOutputStream>.
 
 % also provides an ``inheritable'' version of the \MustCall annotation,
 % which allows us to annotate a class (or interface) and all of its subtypes.
