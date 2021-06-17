@@ -69,21 +69,20 @@ a legacy codebase, a substantial task which is often infeasible.
 
 The essence of finding resource leaks in a Java-like language is
 checking that a particular method (typically \<close()>) is called on
-every object of a relevant class during its lifetime, before it
+every object of a relevant class before it
 becomes unreachable.  We deem this a \emph{must-call} property.
-\todo{I find the following to be misleading.  It's not just an accumulation
-  problem.  It is a simple type problem, plus an accumulation problem, plus
-  a dataflow analysis.  Because the introduction focuses on just one part
-  of our approach, it is surprising to readers when the paper later
-  explains all three parts.  The introduction should mention all three
-  parts, even if we want to say that the accumulation part is most novel or
-  interesting.}
-Our
-key insight is that checking must-call properties is an
-accumulation problem.
-Our contribution is an \emph{accumulation analysis} for the resource leak
-problem, which satisfies all four requirements:  it is applicable,
-sound, precise, and fast.
+% \todo{I find the following to be misleading.  It's not just an accumulation
+%   problem.  It is a simple type problem, plus an accumulation problem, plus
+%   a dataflow analysis.  Because the introduction focuses on just one part
+%   of our approach, it is surprising to readers when the paper later
+%   explains all three parts.  The introduction should mention all three
+%   parts, even if we want to say that the accumulation part is most novel or
+%   interesting.}
+Our key insight is that checking must-call properties is an
+\emph{accumulation problem}.
+Our contribution is a three-phase approach to the resource leak problem that
+leverages \emph{accumulation analysis}, satisfying all four requirements:
+it is applicable, sound, precise, and fast.
 
 An accumulation analysis~\cite{KelloggRSSE2020}
 is a special-case of typestate analysis~\cite{StromY86}.
@@ -97,29 +96,20 @@ permitted, and executing more operations cannot add additional
 restrictions.
 Unlike general typestate analysis, accumulation analysis does not
 require a whole-program alias analysis for soundness.
-Hence, we can build a sound, modular must-call
-checker\todo{Do we want to use the
-  term ``must-call checker'' or ``resource leak checker here?}
+Hence, we can build a sound, modular resource leak checker
 without doing \emph{any} whole-program alias analysis.
 Accumulation also enables a clean design, as we
-can conceptually factor our checker into a simple core, and
-then enhance it with
-targeted sound alias reasoning to reduce false positives.
+can factor our checker into a simple core (consisting of a simple
+type checker, an accumulation analysis, and a final dataflow analysis), and
+then enhance it with targeted alias reasoning to reduce false positives.
 
 Unlike recent work on accumulation~\cite{KelloggRSSE2020}, we found
 that checking resource leaks precisely requires significantly more
-reasoning about aliasing patterns.  We found several key patterns to
+reasoning about aliasing.  We found several key patterns to
 handle:
-\todo{I propose combining the first two bullet points into one.  The reason
-  is to make this list contain the same number of items as the next list,
-  making it obvious which techniques address which problems.  It's a bit
-  weird to combine the first two bullet points because it does put two
-  unlike things together in the new first bullet point, but the benefit of
-  making the paper organization clear to readers is more important, in my opinion.}
 \begin{itemize}
-\item passing of resources via parameters or returns;
-\item storing of resources in final fields---the RAII
-pattern~\cite{raii};
+\item copying of resources via parameters and returns, or storing of resources in
+final fields (the RAII pattern~\cite{raii});
 \item wrapper types, which share their must-call obligations with one of their fields; and,
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
@@ -138,8 +128,7 @@ and achieve precision in practice:
   a resource's must-call obligations
   can be resolved by closing one of multiple references.
 \item a system for creating new obligations at locations other than the
-  constructor, which allows our system to handle lazy or multiple
-  initialization\todo{What is ``multiple initialization''?  Should this be ``re-initialization''?}.
+  constructor, which allows our system to handle lazy initialization or re-initialization.
 \end{itemize}
 Variants of some of these ideas exist in previous work.  We bring
 them together in a general, modular manner, with full verification and
@@ -158,12 +147,8 @@ Our contributions are:
 \item the insight that the resource leak problem is an accumulation
   problem, and
   % a novel set of
-  type systems designed to take advantage
-  of this fact (\cref{sec:base-type-systems}).\todo{Here is another place
-    that the introduction is misleading.  Our approach consists of 2 type
-    systems (only one of which is an accumulation analysis) plus a dataflow
-    analysis, and I think the introduction should make that architecture
-    more clear.}
+  a three-phased analysis approach designed to take advantage
+  of this fact (\cref{sec:base-type-systems}).
 \item three
   % novel
   innovations that improve the precision of our analysis:
