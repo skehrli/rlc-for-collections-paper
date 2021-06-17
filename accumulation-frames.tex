@@ -6,9 +6,9 @@ implicitly creates obligations for the newly-created object.
 However, non-constructor methods may also create obligations
 when re-assigning non-final owning fields or allocating
 new system-level resources.
-A method post-condition annotation,
+To handle such cases soundly, we introduce a method post-condition annotation,
 \CreatesMustCallFor,
-indicates for which expression an obligation is created.
+to indicate expressions for which an obligation is created at a call.
 
 At each call to a method annotated as \CreatesMustCallFor\<(>\|expr|\<)>, \tool removes any
 inferred Called Methods information about \|expr|, reverting to
@@ -17,7 +17,9 @@ the declared type of \|expr|.
 % methods that are not in its the current must-call type, they are added.
 \todo{The following feels like a non sequitur to me.  \emph{Nothing} that a
   user does can threaten soundness, because every annotation is checked
-  rather than trusted.  I suggest removing the following sentence.}
+  rather than trusted.  I suggest removing the following sentence.} \todo{Not
+  sure this paragraph has a purpose without the final sentence.  Leaving this
+  one for Martin --Manu}
 Since a \CreatesMustCallFor annotation can only increase its target's obligations,
 misplacing it may reduce precision but does not threaten soundness.
 
