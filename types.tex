@@ -99,8 +99,6 @@ soundly enhance its precision.
 \label{fig:must-call-hierarchy}
 \end{figure}
 
-\todo{Mike added ``---and our entire analysis---'' to the below paragraph.}
-
 The Must Call type system tracks which methods might need to be called
 on a given expression.  This type system---and
 our entire analysis---is not specific to resource leaks. Another such
@@ -177,7 +175,7 @@ resource, e.g., \<ByteArrayOutputStream>.
 %   written a type inference tool, when what we have really written is a
 %   type-checking tool (with local type inference).}
 
-The Called Methods type system tracks a conservative underapproximation of which methods have been called on an object.
+The Called Methods type system tracks a conservative underapproximation of which methods have been called on an expression.
 It is an extension of a similar system
 from prior work~\cite{KelloggRSSE2020}.  The primary difference in our
 version is that a method is considered called even if it throws an
@@ -227,10 +225,11 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 Given \MustCall and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that the \MustCall methods for each object
 are always invoked before it becomes unreachable,
-via an intra-procedural dataflow analysis.  Here, we present
-a simple, sound version of the analysis, with limited reasoning about aliasing.
+via an intra-procedural dataflow analysis.  We employ dataflow analysis to
+enable targeted reasoning about aliasing, crucial for precision.  Here, we present
+a simple, sound version of the analysis.
 \Cref{sec:lightweight-ownership,sec:must-call-choice,sec:reset-must-call}
-describe sound enhancements to this basic approach.
+describe sound enhancements to this approach.
 
 \paragraph{Language} For simplicity, we present the analysis over a simple
 assignment language in three-address form.  An expression $e$ in the language is
