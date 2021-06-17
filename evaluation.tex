@@ -259,13 +259,15 @@ ownership and resource aliases prevents more false positive errors than the tota
 of remaining false positives on each benchmark.
 The system for creating new obligations at points other than constructors reduces
 false positives by a smaller amount: non-final, owning field re-assignments
-are rare\todo{I suggest cutting the rest of this sentence.  It doesn't add
-  much and we don't give that information for any other features.  Most
-  importantly, mentioning this makes it sound like our set of features is
-  ad hoc and we chose them just to make our tool perform well on this
-  particular set of benchmarks.},
-and we encountered the unconnected socket pattern described in \cref{sec:unconnected-sockets}
-only in ZooKeeper.
+are rare.
+% \todo{I suggest cutting the rest of this sentence.  It doesn't add
+%   much and we don't give that information for any other features.  Most
+%   importantly, mentioning this makes it sound like our set of features is
+%   ad hoc and we chose them just to make our tool perform well on this
+%   particular set of benchmarks.},
+% and we encountered the unconnected socket pattern described in \cref{sec:unconnected-sockets}
+% only in ZooKeeper.
+
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
