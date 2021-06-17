@@ -38,9 +38,8 @@ goes out of scope at the end of \<example()>.
 
 This section describes a \emph{lightweight ownership transfer} technique for reducing
 false positives in such cases.
-Programmers write annotations such as \<@Owning> that transfer an
-obligation:  they take away an obligation
-in one place in the program and create an obligation somewhere else.
+Programmers write annotations like \<@Owning> that transfer an
+obligation from one expression to another.
 Programmer
 annotations \emph{cannot} introduce any checker unsoundness; at worst,
 incorrect \<@Owning> annotations will cause false positive warnings.
@@ -143,13 +142,10 @@ never assumes that passing an object to an unannotated library satisfies its obl
     \item \<C.d()> must always invoke \<this.f.m()>, thereby satisfying $f$'s
     \MustCall obligation.
   \end{enumerate}
-  \todo{Nothing is said about how condition 1 is checked.  I would say that
-    it is via checking all constructors or the class annotation.}%
-  Condition 2 is
-  checked by requiring an appropriate \EnsuresCalledMethods
-  postcondition annotation on
-  \<C.d()>, which is then enforced by the Called Methods
-  Checker~\cite{KelloggRSSE2020}.
+  Condition 1 is checked by inspecting the \<@MustCall> annotation on class $C$.
+  Condition 2 is checked by requiring an appropriate \EnsuresCalledMethods
+  postcondition annotation on \<C.d()>, which is then enforced by the Called
+  Methods Checker~\cite{KelloggRSSE2020}.
 
 
 
