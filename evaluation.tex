@@ -96,7 +96,7 @@ This section gives examples of warnings reported by \tool.
   \prefigcaption
   \caption{A resource leak that \tool found in Hadoop. Hadoop's developers
     accepted our pull request
-    to fix it\todo{add citation to the URL}.}
+    to fix it~\cite{hdfs-15791}.}
   \label{fig:hadoop-bug}
 \end{figure}
 
@@ -107,7 +107,7 @@ at the end---for example, if \<channel.position(section.getOffset())>
 throws an \<IOException>, as it is specified to do---then the
 only reference to the stream is lost. Hadoop's developers
 assigned this issue a priority of ``Major'' and accepted our
-patch.\footnoteanonurl{https://github.com/apache/hadoop/pull/2652}
+patch~\cite{hdfs-15791}.
 One developer suggested using a try-with-resources statement instead
 of our patch (which catches the exception and closes the stream),
 but we pointed out that
