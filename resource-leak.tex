@@ -328,18 +328,18 @@
 \section{Conclusion}
 
 We have developed a new, sound, modular approach for detecting and preventing
-resource leaks in large-scale Java programs.  \Tool is based on a simple core of
-an accumulation analysis\todo{Not just that: also another type system and a
-  dataflow analysis.  This relates to comments in the introduction.} augmented by three new features to handle aliasing
-patterns: lightweight ownership transfer, resource aliasing, and obligation
-creation by non-constructor methods.
+resource leaks in large-scale Java programs.  \Tool consists of sound core
+analyses, built on the insight that leak checking is an accumulation problem,
+augmented by three new features to handle common aliasing patterns: lightweight
+ownership transfer, resource aliasing, and obligation creation by
+non-constructor methods.
 
 \Tool
 discovered 49 resource leaks in heavily-used, heavily-tested Java code.
 Its analysis speed is an order of magnitude faster
 than whole-program analysis, and its false positive rate is similar to a
 state-of-the-practice heuristic bug-finder.
-It reads and verifies user-written specification; the annotation burden
+It reads and verifies user-written specifications; the annotation burden
 is about 1 annotation per 1,500 lines of code.
 
 In future work, we plan to develop
@@ -347,8 +347,8 @@ improved inference techniques for lightweight ownership annotations.  Since
 these annotations can be added anywhere without impacting soundness (they
 are verified, not trusted), genetic
 search
-and machine-learning techniques could be used to place
-ownership annotations, using the warnings emitted by \tool as the fitness function.
+and machine-learning techniques could be used to introduce them, using the
+warnings emitted by \tool as the fitness function.
 
 
 \begin{acks}
