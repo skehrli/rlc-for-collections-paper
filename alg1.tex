@@ -1,7 +1,6 @@
 \begin{algorithm}[t]
   \caption{Finding unfulfilled \MustCall obligations in a method.
     \Cref{alg:helpers} defines helper functions.
-    \todo{Manu, ``$\langle N, e \rangle$'' should be ``$\{ \langle N, e \rangle \}$''.}
   }
   \label{alg:consistency-checker}
   \begin{algorithmic}[1]
@@ -24,8 +23,8 @@
     % \EndIf
     \State $N \gets (P - kill) \cup gen$ \label{li:compute-new-mc-aliases}
  %   \State // \textit{we even propagate }$\emptyset$\textit{; error reported at exit}
-    \State $\forall t \in \mathit{CFG.succ}(s)\ .\ D(t) \leftarrow D(t) \cup \langle
-    N, e \rangle$ \label{li:prop-to-succs}
+    \State $\forall t \in \mathit{CFG.succ}(s)\ .\ D(t) \leftarrow D(t) \cup \lbrace \langle
+    N, e \rangle \rbrace$ \label{li:prop-to-succs}
     \EndIf
     \EndFor
   \EndWhile \label{li:alg-loop-end}
