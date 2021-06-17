@@ -11,16 +11,16 @@ them. Here we focus on the most relevant work from these categories.\looseness=-
 
 \paragraph{Static analysis}
 Tracker~\cite{TorlakC10} performs inter-procedural dataflow analysis to detect
-resource leaks, with various additional features to make their tool practical,
+resource leaks, with various additional features to make the tool practical,
 including issue prioritization and handling of wrapper types.  Tracker avoids
 whole-program alias analysis to improve scalability, instead using a local,
-access-path-based approach.  While Tracker scales well to large programs, it is
+access-path-based approach.  While Tracker scales to large programs, it is
 deliberately unsound, unlike \tool.
 
 The Eclipse Compiler for Java includes a dataflow-based
 bug-finder for resource leaks~\cite{ecj-resource-leak}. Its analysis
 uses a fixed set of ownership heuristics and a fixed list of wrapper
-classes; unlike \tool, it is unsound. It is fast.  Similar analyses---with similar trade-offs
+classes; unlike \tool, it is unsound. It is very fast.  Similar analyses---with similar trade-offs
 compared to \tool---exist in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
@@ -53,9 +53,9 @@ operates similarly to a garbage collector, tracking resources whose program
 elements have become unreachable. When a given resource (such as file
 descriptors) is close to exhaustion, the runtime runs Resco to clean up any
 resources of that type that are unreachable.  With a static approach such as
-ours, a tool like Resco becomes unnecessary---leaks become impossible.
+ours, leaks are impossible and a tool like Resco is unnecessary.
 
-Automated test generation can also be used to try to detect resource
+Automated test generation can also be used to detect resource
 leaks. For example, leaks in Android applications can be found by
 repeatedly running neutral---i.e. eventually returning to the same
 state---GUI actions~\cite{wu2018sentinel,zhang2016automated}.
@@ -81,8 +81,9 @@ to apply \tool to more of the programs from their study in the future.
 \paragraph{Ownership types and Rust} Ownership type
 systems~\cite{clarke2013ownership} impose control over aliasing, which
 in turn enables guaranteeing other high-level properties, like absence of
-resource leaks.  We do not discuss the vast literature on ownership type systems
-here (see Clarke et al.~\cite{clarke2013ownership} for a survey). Instead, we
+resource leaks.  We do not discuss the vast literature on ownership type
+systems~\cite{clarke2013ownership} here.
+Instead, we
 focus on ownership types in Rust~\cite{klabnik2018rust} as the most popular
 practical example of using ownership to prevent resource leaks.
 
@@ -95,7 +96,7 @@ Rust's ownership type system statically prevents
 not only resource leaks, but also other important issues like ``double-free'' defects
 (releasing a resource more than once) and ``use-after-free'' defects (using a
 resource after it has been released). But, this power comes with a cost; to
-enforce uniqueness, non-owning pointers must be invalidated after an ownership transfer,
+enforce uniqueness, non-owning pointers must be invalidated after an ownership transfer
 and can no longer be used.  Maintaining multiple
 usable pointers to a value requires use of language features like references and
 borrowing, and even then, borrowed pointers have restricted privileges.

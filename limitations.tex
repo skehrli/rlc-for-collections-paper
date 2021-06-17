@@ -18,8 +18,7 @@ the Checker Framework can handle
 reflection soundly~\cite{BarrosJMVDdAE2015}, by default (and in our case studies)
 \tool compromises this guarantee
 by assuming that objects returned by reflective invocations
-do not carry must-call obligations (but this behavior can
-be disabled).
+do not carry must-call obligations.  (Users can customize this behavior.)
 % Like any sound static analysis, \Tool does
 % issue some false positives; these must be suppressed by
 % the programmer and the correctness of the relevant code
@@ -29,7 +28,7 @@ of a user-written warning suppression, \tool assumes that 1)
 any errors issued can be ignored, and 2) all annotations
 written by the programmer are correct.
 
-\todo{Someone please take a look a this para before we submit} The soundness of
+The soundness of
 \tool is with respect to specifications of which types of objects have a
 \<@MustCall> obligation that must be satisfied.  We wrote such specifications
 for the Java standard library, focusing on IO-related code in the \<java.io> and
@@ -44,15 +43,17 @@ external validity of the experimental results.
 % \tool.  Nevertheless,
 \Tool may produce more false positives, require
 more annotations, or be more difficult to use if applied to other
-programs.  It would be both easier and more useful to use \tool from
-the inception of a project, rather than applying it after the code had
-already be written, as we did in our case studies: code could be
-annotated as it was written.  This would ensure that the annotations match
-the intent of the programmers and would guide the programmers to a better design.
-The need for annotations at all could be viewed as a limitation of our approach;
-however, the annotations serve as concise documentation of
-properties relevant to resource leaks (and unlike traditional, natural-language
-documentation, machine-checked annotations cannot become out-of-date).
+programs.
+Case studies on legacy code represents a worst case for a source code
+analysis tool.  Using \tool from
+the inception of a project would be easier, since programmers know their
+intent as they write code and annotations could be written along with the
+code.  It would also be more useful, since it would guide the programmers
+to a better design that requires fewer annotations and has no resource leaks.
+The need for annotations could be viewed as a limitation of our approach.
+However, the annotations serve as concise documentation of
+properties relevant to resource leaks---and unlike traditional, natural-language
+documentation, machine-checked annotations cannot become out-of-date.
 
 Like any practical system, it is possible that there might
 be defects in the implementation of \tool or in the design of

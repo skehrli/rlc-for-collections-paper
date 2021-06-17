@@ -320,21 +320,29 @@
 
 \section{Conclusion}
 
-We have developed \tool, a new, modular approach for detecting and preventing
-resource leaks in large-scale Java programs.  \Tool is based on a sound core of
-an accumulation analysis augmented by three new features to handle aliasing
+We have developed a new, sound, modular approach for detecting and preventing
+resource leaks in large-scale Java programs.  \Tool is based on a simple core of
+an accumulation analysis\todo{Not just that: also another type system and a
+  dataflow analysis.  This relates to comments in the introduction.} augmented by three new features to handle aliasing
 patterns: lightweight ownership transfer, resource aliasing, and obligation
-creation by non-constructor methods.  Our evaluation showed that \tool is
-effective: it discovered 49 resource leaks in heavily-used, heavily-tested Java code that
-makes extensive use of resources, with analysis speed orders of magnitude faster
-than whole-program analysis, a false positive rate similar to a
-state-of-the-practice heuristic bug-finder, and a manageable annotation burden
-of 1 annotation per 1,500 lines of code. In future work, we plan to develop
+creation by non-constructor methods.
+
+\Tool
+discovered 49 resource leaks in heavily-used, heavily-tested Java code.
+Its analysis speed is orders\todo{or ``an order''?} of magnitude faster
+than whole-program analysis, and its false positive rate is similar to a
+state-of-the-practice heuristic bug-finder.
+It reads and verifies user-written specification; the annotation burden
+is about 1 annotation per 1,500 lines of code.
+
+In future work, we plan to develop
 improved inference techniques for lightweight ownership annotations.  Since
-these annotations can be added anywhere without impacting soundness, genetic
-search (using the warnings emitted by \tool as the fitness function)
-and machine-learning techniques could be used to find an optimal placement
-of ownership annotations.
+these annotations can be added anywhere without impacting soundness (they
+are verified, not trusted), genetic
+search
+and machine-learning techniques could be used to place
+ownership annotations, using the warnings emitted by \tool as the fitness function.
+
 
 \begin{acks}
 Thanks to Rashmi Mudduluru, Ben Kushigian, Chandrakana Nandi, and the anonymous
