@@ -57,7 +57,7 @@ achieve more precise
 %% In our experiments, they found fewer defects, and we didn't compare complexity.
 % results---and can find more complex defects than bug-finders,
 results---though they usually remain unsound---but
-their whole-program analysis can require hours to analyze a large-scale modern Java program.
+their whole-program analysis can require hours to analyze a large-scale Java program.
 Finally, ownership type
 systems~\cite{clarke2013ownership} as employed in languages like
 Rust~\cite{klabnik2018rust} can prevent nearly all resource leaks (see
@@ -67,45 +67,46 @@ a legacy codebase, a substantial task which is often infeasible.
 % significantly rewriting the program, 
 % and prevents them from being applicable to legacy codebases and coding styles.
 
-The essence of finding resource leaks in a Java-like language is
-checking that a particular method (typically \<close()>) is called on
-every object of a relevant class before it
-becomes unreachable.  We deem this a \emph{must-call} property.
-% \todo{I find the following to be misleading.  It's not just an accumulation
-%   problem.  It is a simple type problem, plus an accumulation problem, plus
-%   a dataflow analysis.  Because the introduction focuses on just one part
-%   of our approach, it is surprising to readers when the paper later
-%   explains all three parts.  The introduction should mention all three
-%   parts, even if we want to say that the accumulation part is most novel or
-%   interesting.}
-Our key insight is that checking must-call properties is an
-\emph{accumulation problem}.
-Our contribution is a three-phase approach to the resource leak problem that
-leverages \emph{accumulation analysis}, satisfying all four requirements:
-it is applicable, sound, precise, and fast.
+The goal of a leak detector for a Java-like language is to ensure that required
+methods (typically \<close()>) are called on all relevant objects; we deem this
+a \emph{must-call} property.  Statically verifying a must-call property requires
+checking that required methods (or \emph{must-call obligations}) have been
+called at any point where an object may become unreachable, by computing an
+under-approximation of invoked methods.  Our key insight is that checking of
+must-call properties is an \emph{accumulation problem}, and hence does not
+require heavyweight whole-program analysis. Our contribution is a resource leak
+verifier that leverages this insight to satisfy all four requirements: it is
+applicable, sound, precise, and fast.
 
 An accumulation analysis~\cite{KelloggRSSE2020}
 is a special-case of typestate analysis~\cite{StromY86}.
 Typestate analysis attaches a finite-state machine (FSM)
 to each program element of a given type, and transitions the state of the
-FSM whenever a relevant operation---calling a method, going out of scope,
-etc.---is performed.
+FSM whenever a relevant operation is performed.
 In an accumulation analysis,
 the order of operations performed cannot change what is subsequently
 permitted, and executing more operations cannot add additional
-restrictions.
-Unlike general typestate analysis, accumulation analysis does not
-require a whole-program alias analysis for soundness.
-Hence, we can build a sound, modular resource leak checker
-without doing \emph{any} whole-program alias analysis.
-Accumulation also enables a clean design, as we
-can factor our checker into a simple core (consisting of a simple
-type checker, an accumulation analysis, and a final dataflow analysis), and
-then enhance it with targeted alias reasoning to reduce false positives.
+restrictions.  Unlike arbitrary typestate analyses, accumulation analyses can
+be build in a sound, modular fashion without \emph{any} whole-program alias
+analysis, improving scalability and usability.
 
-Unlike recent work on accumulation~\cite{KelloggRSSE2020}, we found
-that checking resource leaks precisely requires significantly more
-reasoning about aliasing.  We found several key patterns to
+Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
+verifying that certain methods are invoked on each object reference (local
+variables, parameters, etc.) before another call of interest.  Conceptually, a
+resource leak verifier could be built by extending this technique with the
+ability to check that required methods are invoked before a reference goes out
+of scope or is overwritten, either of which could cause an object to become unreachable.
+This reduction of possible object-unreachability points to operations like
+method calls shows that in fact, resource leak checking is also an accumulation
+problem, and hence is amenable to sound, modular, and lightweight checking.
+
+There are two key problems with this simple leak-checking approach.  First,
+due to subtyping, the declared type of a reference may not accurately represent
+its must-call obligations; we devised a simple type system to soundly capture
+these obligations.  Second, while sound, in practice
+such an approach would be highly imprecise without targeted reasoning about
+aliasing, more so than in
+previous work~\cite{KelloggRSSE2020}.  We found several key patterns to
 handle:
 \begin{itemize}
 \item copying of resources via parameters and returns, or storing of resources in
@@ -114,8 +115,9 @@ final fields (the RAII pattern~\cite{raii});
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
 \end{itemize}
-We devised three sound techniques to handle these patterns modularly
-and achieve precision in practice:
+To address this need, we introduced a
+data flow analysis to allow for alias tracking, and extended it with three sound
+techniques to achieve precision in practice:
 \begin{itemize}
 \item a lightweight, heuristic ownership transfer system. This system
   indicates which reference is responsible for resolving a must-call
@@ -147,7 +149,7 @@ Our contributions are:
 \item the insight that the resource leak problem is an accumulation
   problem, and
   % a novel set of
-  a three-phased analysis approach designed to take advantage
+  an analysis approach designed to take advantage
   of this fact (\cref{sec:base-type-systems}).
 \item three
   % novel
