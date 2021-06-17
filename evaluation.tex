@@ -37,7 +37,7 @@ For each, we selected and analyzed one or two modules
 with many uses of leakable resources. We used
 the latest version of the source code that was available
 when we began. We also analyzed a smaller open-source project
-maintained by one of the authors, to better simulate \tool's
+maintained by one of the authors, to simulate \tool's
 expected use case, where the user is already familiar with the
 code under analysis (see \cref{sec:plume-util}).
 
@@ -62,7 +62,7 @@ Our analysis is embarrassingly parallel, but our implementation is
 single-threaded because javac is single-threaded.
 (4) We manually categorized each warning as revealing a
 real resource leak (a true positive) or as a
-false positive that our system is unable to prove correct.
+false positive warning about safe code that our tool is unable to prove correct.
 
 \Cref{tab:case-studies} summarizes the results. \Tool found multiple
 serious resource leaks in every program. \Tool's overall precision on
@@ -80,7 +80,8 @@ they cannot become out-of-date.\looseness=-1
 % It is important that the developers be the actors in the following sentence, because we have other patches under review but not yet accepted.
 At the time of writing,
 the developers of the case study programs have validated and accepted
-patches for 16 resource leaks discovered by our tool, including at least one for each.
+patches for 16 resource leaks discovered by our tool, including at least
+one for each project.
 % \todo{do we need the next sentence?} MK: IMO we do, because otherwise an uncharitable reader might say that our precision is actually 16/166 instead
 % of 49/166, because only 16 of the 49 were validated (because they assumed that the rest were rejected).
 No patches we have submitted this way have been rejected.
@@ -88,14 +89,14 @@ No patches we have submitted this way have been rejected.
 \subsubsection{True and false positive examples}
 \label{sec:examples}
 
-This section describes some examples of warnings reported by \tool
-in our case studies.\looseness=-1
+This section gives examples of warnings reported by \tool.
 
 \begin{figure}
   \lstinputlisting{hadoop-bug.txt}
   \prefigcaption
-  \caption{A resource leak that \tool found in Hadoop. Our pull request
-    to fix this it was accepted by Hadoop's developers.}
+  \caption{A resource leak that \tool found in Hadoop. Hadoop's developers
+    accepted our pull request
+    to fix it\todo{add citation to the URL}.}
   \label{fig:hadoop-bug}
 \end{figure}
 
@@ -139,7 +140,7 @@ support Java generics.
 The third most common reason (causing 8\%) is nullness reasoning: some resource
 is closed only if it is non-null, but our checker expects the resource to be
 closed on every path. Future work could incorporate nullness reasoning~\cite{PapiACPE2008} to
-allow resources not to be closed on definitely-null paths.
+allow resources not to be closed on definitely-null paths.\looseness=-1
 
 % Most of the remaining false positives involve unique coding patterns.
 % One example\todo{It's weird to give a random reason.  Replace this by the
@@ -200,16 +201,16 @@ flow-sensitive reasoning or targeting by a \CreatesMustCallFor annotation.
 \subsubsection{Simulating the user experience}
 \label{sec:plume-util}
 
-To better simulate the user experience of a typical user who understands
+To simulate the user experience of a typical user who understands
 the codebase being analyzed,
 one author used \tool to analyze plume-util,
-a library he wrote 24 years ago.
-The process only took about two hours, including running the tool,
-writing annotations, and fixing the 8 resource leaks that were discovered by the tool.
+a 10KLoC library he wrote 24 years ago.
+The process took about two hours, including running the tool,
+writing annotations, and fixing the 8 resource leaks that the tool discovered.
 The annotations were valuable enough that they
 are now committed to that codebase, and \tool runs in CI
 to prevent the introduction of new resource leaks.
-This example is suggestive that the user effort to use our tool is reasonable.
+This example is suggestive that the programmer effort to use our tool is reasonable.
 
 
 \subsection{Evaluating our enhancements}
@@ -220,11 +221,17 @@ This example is suggestive that the user effort to use our tool is reasonable.
 \newcommand{\abltablerow}[5]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5}
 
 \begin{table}
-  \caption{The number of false positives in our case studies (``RLC'') and when each
-    of the lightweight
+  \caption{The number of false positives in our case studies (``RLC'') and
+    when disabling each
+    of
+    %% Cut for space.
+    % the
+    lightweight
     ownership (``w/o LO''), resource aliasing (``w/o RA''),
-    and obligation creation (``w/o OC'') features
-    are disabled.\looseness=-1}
+    and obligation creation (``w/o OC'').
+    %% Cut for space.
+    % features.
+  }
   \label{tab:ablation}
   \posttablecaption
   
@@ -251,10 +258,14 @@ feature and re-ran the experiments of \cref{sec:case-studies}.
 ownership and resource aliases prevents more false positive errors than the total number
 of remaining false positives on each benchmark.
 The system for creating new obligations at points other than constructors reduces
-false positives by a smaller amount: non-final, owning field re-assignments are rare,
+false positives by a smaller amount: non-final, owning field re-assignments
+are rare\todo{I suggest cutting the rest of this sentence.  It doesn't add
+  much and we don't give that information for any othre features.  Most
+  importantly, mentioning this makes it sound like our set of features is
+  ad hoc and we chose them just to make our tool perform well on this
+  particular set of benchmarks.},
 and we encountered the unconnected socket pattern described in \cref{sec:unconnected-sockets}
-only in ZooKeeper. Nevertheless, this feature allows our tool to handle an
-important, if less common, coding pattern.
+only in ZooKeeper.
 
 \subsection{Comparison to other tools}
 \label{sec:compare}
@@ -269,17 +280,19 @@ This section compares our approach with two other modern tools that detect resou
 \item Grapple~\cite{zuo2019grapple}, a state-of-the-art typestate checker that
 leverages whole-program alias analysis.
 \end{itemize}
-In brief, both of the above tools are unsound and missed many real leaks in our
-comparison.  Both tools neither require nor permit user-written specifications,
+In brief, both of the above tools are unsound and missed 87--93\% of leaks.
+Both tools neither require nor permit user-written specifications,
 a plus in terms of ease of use but a minus in terms of documentation and
 flexibility. Eclipse is very fast (nearly instantaneous) but has low precision
 (25\% for high-confidence warnings, \emph{much} lower if all warnings are
-included). Grapple is more precise (50\% precision in our study), but orders of
-magnitude slower than \tool.  \tool had 100\% recall in our comparison and 25\%
+included). Grapple is more precise (50\% precision), but
+orders\todo{Earlier, the paper claimed ``an order''.  I would be inclined
+  to err on the side of caution, sticking with ``an order''.} of
+magnitude slower than \tool.  \Tool had 100\% recall and 25\%
 precision.  Users can select whichever tool matches their priorities.
 
-\Cref{tab:tool-comparison,tab:run-times} give a quantitative comparison of the
-different tools.  Our comparison uses only the 3 case study programs that Grapple was
+\Cref{tab:tool-comparison,tab:run-times} quantitatively compare the
+tools.  Our comparison uses parts of the 3 case study programs that Grapple was
 run on in the past; see \cref{sec:grapple} for details.
 
 % Gets the (two-column) Grapple table on the same page as the reference to it.
@@ -294,15 +307,18 @@ augmented with heuristics. Since it is tightly integrated with
 the compiler, it scales well and runs quickly. It has
 heuristics for ownership, resource wrappers, and resource-free
 closeables, among others; these are all hard-coded into the analysis and cannot
-be adjusted by the user. It does not support annotations to express
-specifications that differ from its defaults.
+be adjusted by the user.
+%% Repetitive.
+% It does not support annotations to express
+% specifications that differ from its defaults.
 It supports two levels of analysis: detecting high-confidence resource
 leaks and detecting ``potential'' resource
 leaks (a superset of high-confidence resource leaks).\looseness=-1
 
-We ran Eclipse's analysis on the versions of our case study programs
-that we ran \tool on for \cref{sec:case-studies}, and examined
-the same modules.
+We ran Eclipse's analysis on the exact same code
+that we ran \tool on for \cref{sec:case-studies}.
+\Cref{tab:tool-comparison} reports results for a subset of the code; this
+paragraph reports results for the full code.
 % we already said this --Manu
 % It is easy to apply
 % to legacy code and it is fast---nearly instantaneous once Eclipse
@@ -321,11 +337,12 @@ positives was the unchangeable, default ownership transfer assumption
 at method returns, leading to a warning at each call that returns a resource-alias, such as
 \<Socket\#getInputStream>.
 
-These results show that the Eclipse bug-finder is unsound in both
-modes: it misses 10 real warnings on ZooKeeper even in potential leak mode.
-The analysis is imprecise, too: in potential leak mode,
-the vast majority of warnings are false positives, and even in high-confidence
-mode its precision is 25\%, roughly the same as \tool.
+%% This is redundant.
+% These results show that the Eclipse bug-finder is unsound in both
+% modes: it misses 10 real warnings on ZooKeeper even in potential leak mode.
+% The analysis is imprecise, too: in potential leak mode,
+% the vast majority of warnings are false positives, and even in high-confidence
+% mode its precision is 25\%, roughly the same as \tool.
 %% MK: I think this sentence is redundant
 %% However, this sort
 %% of bug-finding tool does have two advantages: it is fast, and it is easily
@@ -361,7 +378,7 @@ of loops to make path sensitivity tractable.
 (which takes effort to write but provides documentation benefits), so it
 can ensure that a library is correct for all possible clients.  By
 contrast, Grapple checks a library in the context of one specific client; it
-only reports issues in methods reachable from entrypoints (like a \<main()>
+only reports issues in methods reachable from entry points (like a \<main()>
 method) in a whole-program call graph~\cite{grapplepersonal}.
 
 % \todo{Manu should update this paragraph with a response from the Grapple authors.}
@@ -395,7 +412,7 @@ Grapple's false positives are reports about types like
 \<java.io.StringWriter> that have no underlying resource that needs to be
 closed.
 (These reports were mis-classified as true positives in~\cite{zuo2019grapple},
-and hence the numbers there differ from \cref{tab:tool-comparison}.)
+which is one reason the numbers there differ from \cref{tab:tool-comparison}.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
 classes).  On the flip side, \tool has lower precision (more false positives)

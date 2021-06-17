@@ -4,9 +4,9 @@
 Every constructor of a class that has must-call obligations
 implicitly creates obligations for the newly-created object.
 However, non-constructor methods may also create obligations
-when re-assigning non-final, owning fields or allocating
+when re-assigning non-final owning fields or allocating
 new system-level resources.
-A post-condition annotation,
+A method post-condition annotation,
 \CreatesMustCallFor,
 indicates for which expression an obligation is created.
 
@@ -15,9 +15,11 @@ inferred Called Methods information about \|expr|, reverting to
 the declared type of \|expr|.
 % if the target's default must-call type includes any
 % methods that are not in its the current must-call type, they are added.
+\todo{The following feels like a non sequitur to me.  \emph{Nothing} that a
+  user does can threaten soundness, because every annotation is checked
+  rather than trusted.  I suggest removing the following sentence.}
 Since a \CreatesMustCallFor annotation can only increase its target's obligations,
-no verification for them is needed: placing them anywhere in the program is sound
-(but may reduce precision).
+misplacing it may reduce precision but does not threaten soundness.
 
 When checking a call to a method annotated as
 \CreatesMustCallFor\<(>\|expr|\<)>, the Must Call Consistency Checker
@@ -25,21 +27,20 @@ When checking a call to a method annotated as
 obligation of \|expr| as \emph{satisfied},
 and (2) creates a fresh obligation to check.
 %
-In terms of our \cref{sec:must-call-invoked} pseudocode,
-we can update the \textsc{FactsFromCall} and \textsc{MCSatisfiedAfter} procedures of
-\cref{alg:helpers} to handle \CreatesMustCallFor as follows ($[\ldots]$ stands for the cases shown previously,
+We update the \textsc{FactsFromCall} and \textsc{MCSatisfiedAfter} procedures of
+\cref{alg:helpers} as follows ($[\ldots]$ stands for the cases shown previously,
 including those in \cref{sec:ownership-transfer}):
-%\todo{I suggest putting the base code first and the addition with COTargets second.}
+%\todo{I suggest putting the base code first and the addition with CMCFTargets second.}
 \begin{algorithmic}
   \Procedure{FactsFromCall}{$s$}
   \State $p \gets s.LHS, c \gets s.RHS$
-  \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{COTargets}(c) \}$ \newline
+  \State \Return $\{ \langle \{ p_i \}, c \rangle\ |\ p_i \in \textsc{CMCFTargets}(c) \}$ \newline
   \hspace*{5em} $\cup\ (\textsc{HasObligation}(c)$ ? $\{ \langle \{ p \}, c \rangle \}$ : $\emptyset)$
   \EndProcedure
   \Procedure{MCSatisfiedAfter}{$P,s$}
-  \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{COTargets}(s)$
+  \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{CMCFTargets}(s)$
   \EndProcedure
-  \Procedure{COTargets}{$c$}
+  \Procedure{CMCFTargets}{$c$}
   \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreatesMustCallFor target for $c$'s callee \}
   \EndProcedure
 \end{algorithmic}
@@ -61,7 +62,7 @@ that contain a resource, even if they are re-assigned. Consider
 the following example:
 
 \begin{lstlisting}[frame=tb,belowskip=3mm]
-  @MustCall("close") // default qualifier for uses of SocketContainer
+  @MustCall("close") // sets default qual. for uses of SocketContainer
   class SocketContainer {
     private @Owning Socket sock;
     public SocketContainer() { sock = ...; } 
@@ -129,14 +130,14 @@ in code such as the below, which operates on an unconnected socket
 The call to \<setSoTimeout> can throw a \<SocketException> if the
 socket is actually connected when it is called. Using \CreatesMustCallFor,
 however, \tool can soundly show that this socket is not connected:
-the type of the result of the no-argument constructor can be
-treated as \<@MustCall(\{\})>, and \CreatesMustCallFor annotations
+the type of the result of the no-argument constructor
+is \<@MustCall(\{\})>, and \CreatesMustCallFor annotations
 on the methods that actually allocate the socket---\<connect()> or
-\<bind()>---enforce that as soon as the socket is actually open,
+\<bind()>---enforce that as soon as the socket is open,
 it is treated as \<@MustCall("close")>.
 
 % LocalWords:  belowskip MustCall SocketContainer sc CreateObligation expr
-% LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied COTargets
+% LocalWords:  RMCTargets MCObligations HasMCReturn MCSatisfied CMCFTargets
 % LocalWords:  createSocket setSoTimeout SocketException FactsFromCall
 % LocalWords:  MCSatisfiedAfter CreateObligation isClosed CalledMethods
 % LocalWords:  CreatesMustCallFor
