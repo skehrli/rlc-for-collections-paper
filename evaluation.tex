@@ -387,7 +387,7 @@ method) in a whole-program call graph~\cite{grapplepersonal}.
 % \todo{This paragraph feels too harsh to me.}
 The Grapple authors evaluated their tool on earlier versions of the first three
 case study programs in \cref{sec:case-studies}~\cite{zuo2019grapple}.
-Unfortunately, a comparison on the same version is not possible, because
+Unfortunately, a direct comparison on our benchmark versions is not possible, because
 Grapple's leak detector currently cannot be run
 % Mike feels this parenthesis is essential.  Otherwise, there is no support
 % for the claim "cannot be run".  The fact that the Grapple authors cannot run it
@@ -418,7 +418,7 @@ which is one reason the numbers there differ from \cref{tab:tool-comparison}.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
 classes).  On the flip side, \tool has lower precision (more false positives)
-than Grapple, and it requires programmer effort to annotate the source code.  
+than Grapple, and it requires effort to annotate the source code.  
 
 % \todo{There needs to be an explicit discussion of whether Grapple
 %   permits/requires user-written specifications.}
