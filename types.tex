@@ -1,25 +1,3 @@
-\section{Background on pluggable types}
-\label{sec:background}
-
-\Cref{sec:must-call,sec:called-methods} describe
-\emph{pluggable type systems}~\cite{FosterFFA99}
-that are layered on top of the type system of the host
-language.  Types in a pluggable type system are composed of two parts:
-a \emph{type qualifier} and a base type. The type qualifier is the
-part of the type that is unique to the pluggable type system; the base
-type is a type from the host language. Our implementation is for Java
-(see \cref{sec:implementation}), so we use the Java syntax for type
-qualifiers: ``\<@>'' before a type indicates that it is a type
-qualifier, and a type without ``\<@>'' is a base type.
-This paper sometimes omits the basetype when it is obvious from context.\looseness=-1
-
-A type system checks programmer-written types.  Our system requires the
-programmer to write types on method signatures, but within method bodies it
-uses flow-sensitive type refinement, a dataflow analysis that performs type
-inference.  This permits an expression to have different types on different
-lines of the program.
-
-
 % the technical sections about the core accumulation systems: called methods,
 % must-call, and the must call invoked worklist algorithm.
 
@@ -45,19 +23,41 @@ soundly enhance its precision.
   expression goes out of scope or is overwritten.
 \end{enumerate}
 
-\begin{figure}
-  \lstinputlisting{simplesocket.txt}
-  \prefigcaption
-  \caption{A safe use of a \<Socket> resource.}
-  \label{fig:example}
-\end{figure}
-
 % \noindent
 % This section uses \cref{fig:example} as a motivating example.
 % It shows
 % a safe use of a \<Socket>---a resource that must be closed before
 % it is deallocated.
 
+
+\subsection{Background on pluggable types}
+\label{sec:background}
+
+\Cref{sec:must-call,sec:called-methods} describe
+\emph{pluggable type systems}~\cite{FosterFFA99}
+that are layered on top of the type system of the host
+language.  Types in a pluggable type system are composed of two parts:
+a \emph{type qualifier} and a base type. The type qualifier is the
+part of the type that is unique to the pluggable type system; the base
+type is a type from the host language. Our implementation is for Java
+(see \cref{sec:implementation}), so we use the Java syntax for type
+qualifiers: ``\<@>'' before a type indicates that it is a type
+qualifier, and a type without ``\<@>'' is a base type.
+This paper sometimes omits the basetype when it is obvious from context.\looseness=-1
+
+A type system checks programmer-written types.  Our system requires the
+programmer to write types on method signatures, but within method bodies it
+uses flow-sensitive type refinement, a dataflow analysis that performs type
+inference.  This permits an expression to have different types on different
+lines of the program.
+
+
+\begin{figure}
+  \lstinputlisting{simplesocket.txt}
+  \prefigcaption
+  \caption{A safe use of a \<Socket> resource.}
+  \label{fig:example}
+\end{figure}
 
 \subsection{A type system for must-call obligations}
 \label{sec:must-call}
