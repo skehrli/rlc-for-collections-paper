@@ -18,7 +18,7 @@ soundly enhance its precision.
   a conservative \emph{underapproximation} of the set of methods that are
   actually called on each expression in the program.
 \item a dataflow analysis (\cref{sec:must-call-invoked}) checks consistency of the results of the two
-  above-mentioned type systems.  It issues an error if some
+  above-mentioned type systems and provides a platform for targeted alias reasoning.  It issues an error if some
   method that might need to be called on an expression is not always invoked before the
   expression goes out of scope or is overwritten.
 \end{enumerate}
@@ -43,7 +43,7 @@ type is a type from the host language. Our implementation is for Java
 (see \cref{sec:implementation}), so we use the Java syntax for type
 qualifiers: ``\<@>'' before a type indicates that it is a type
 qualifier, and a type without ``\<@>'' is a base type.
-This paper sometimes omits the basetype when it is obvious from context.\looseness=-1
+This paper sometimes omits the base type when it is obvious from context.\looseness=-1
 
 A type system checks programmer-written types.  Our system requires the
 programmer to write types on method signatures, but within method bodies it
@@ -394,7 +394,7 @@ facts are propagated from 4 to $\mathit{exit}$.
 % LocalWords:  simplesocket MustCallUnknown MCAB MustCall MCA xshift MCB
 % LocalWords:  yshift Closeable CalledMethods CalledMethodsBottom IsExit
 % LocalWords:  FindMissedCalls MCSatisfied CreatesAlias MCObligations p'
-% LocalWords:  HasMCReturn EndOfScope CMBefore MCBefore basetype MCAfter
+% LocalWords:  HasMCReturn EndOfScope CMBefore MCBefore MCAfter
 % LocalWords:  CMAfter HasObligation FactsFromCall MCSatisfiedAfter intra
 % LocalWords:  InitialObligations worklist xleftmargin makeSocket addr
 % LocalWords:  ByteArrayOutputStream
