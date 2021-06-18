@@ -124,7 +124,7 @@
 \usepackage{setspace,caption}
 \captionsetup{labelfont={small,bf}, textfont={small,bf,stretch=0.8}, labelsep=colon, margin=0pt}
 
-\usepackage{flushend} % balanced columns on last page
+\usepackage{balance} % balanced columns on last page
 
 % cref command; best to load last
 \usepackage{cleveref}
@@ -365,6 +365,7 @@ Research Award.
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
+\balance
 \bibliography{temp,bib/bibstring-abbrev,bib/types,bib/dispatch,bib/ernst,bib/soft-eng,bib/invariants,bib/crossrefs}
 
 %%
