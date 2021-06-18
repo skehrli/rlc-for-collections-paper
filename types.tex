@@ -175,6 +175,10 @@ resource, e.g., \<ByteArrayOutputStream>.
 %   written a type inference tool, when what we have really written is a
 %   type-checking tool (with local type inference).}
 
+\input{alg1}
+
+\input{alg2}
+
 The Called Methods type system tracks a conservative underapproximation of which methods have been called on an expression.
 It is an extension of a similar system
 from prior work~\cite{KelloggRSSE2020}.  The primary difference in our
@@ -217,10 +221,6 @@ but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 \subsection{Consistency checking}
 \label{sec:must-call-invoked}
-
-\input{alg1}
-
-\input{alg2}
 
 Given \MustCall and \<@CalledMethods> types, the Must
 Call Consistency Checker ensures that the \MustCall methods for each object
