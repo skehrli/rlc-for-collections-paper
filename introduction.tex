@@ -93,14 +93,28 @@ be build in a sound, modular fashion without \emph{any} whole-program alias
 analysis, improving scalability and usability.
 
 Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
-verifying that certain methods are invoked on each object reference
-before a specific call (e.g., \<build()>).  Conceptually,
-we can build a resource leak verifier by extending this technique
-to check that required methods are invoked before a reference goes out
-of scope or is overwritten, either of which could cause an object to become unreachable.
-This reduction of possible object-unreachability points to
-method calls shows that resource leak checking is an accumulation
+verifying that certain methods are invoked on each object
+before a specific call (e.g., \<build()>).
+Resource leak checking is similar in that certain methods must be invoked
+on each object before it becomes unreachable.
+An object becomes unreachable when its references go out
+of scope or are overwritten.
+By analogizing object-unreachability points to
+method calls, we show that resource leak checking is an accumulation
 problem and hence is amenable to sound, modular, and lightweight analysis.
+
+%% Old version of the above paragraph.
+% Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
+% verifying that certain methods are invoked on each object reference
+% before a specific call (e.g., \<build()>).
+% Conceptually,
+% we can build a resource leak verifier by extending this technique
+% to check that required methods are invoked before a reference goes out
+% of scope or is overwritten, either of which could cause an object to become unreachable.
+% This reduction of possible object-unreachability points to
+% method calls shows
+% that resource leak checking is an accumulation
+% problem and hence is amenable to sound, modular, and lightweight analysis.
 
 There are two key challenges for this leak-checking approach.  First,
 due to subtyping, the declared type of a reference may not accurately represent
