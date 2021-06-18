@@ -252,7 +252,7 @@ To evaluate the contribution of each enhancement, we individually disabled each
 feature and re-ran the experiments of \cref{sec:case-studies}.
 
 \Cref{tab:ablation} shows that each of lightweight
-ownership and resource aliases prevents more false positive errors than the total number
+ownership and resource aliases prevents more false positive warnings than the total number
 of remaining false positives on each benchmark.
 The system for creating new obligations at points other than constructors reduces
 false positives by a smaller amount: non-final, owning field re-assignments
@@ -286,7 +286,7 @@ flexibility. Eclipse is very fast (nearly instantaneous) but has low precision
 (25\% for high-confidence warnings, \emph{much} lower if all warnings are
 included). Grapple is more precise (50\% precision), but
 an order of
-magnitude slower than \tool.  \Tool had 100\% recall and 25\%
+magnitude slower than \tool.  \Tool had 100\% recall and 26\%
 precision.  Users can select whichever tool matches their priorities.
 
 \Cref{tab:tool-comparison,tab:run-times} quantitatively compare the
@@ -314,22 +314,22 @@ leaks and detecting ``potential'' resource
 leaks (a superset of high-confidence resource leaks).\looseness=-1
 
 We ran Eclipse's analysis on the exact same code
-that we ran \tool on for \cref{sec:case-studies}.
+that we ran \tool on for \cref{sec:case-studies} (excluding the plume-util case study).
 \Cref{tab:tool-comparison} reports results for a subset of the code; this
 paragraph reports results for the full code.
 % we already said this --Manu
 % It is easy to apply
 % to legacy code and it is fast---nearly instantaneous once Eclipse
 % has loaded the project.\looseness=-1
-In ``high-confidence'' mode on the three projects, Eclipse reports 9
+In ``high-confidence'' mode on the three projects, Eclipse reports 8
 warnings related to classes defined in the JDK:
-2 true positives (thus, it misses 47 real resource leaks) and 6
+2 true positives (thus, it misses 39 real resource leaks) and 6
 false positives.
 In ``potential'' leak mode, the analysis reports many more warnings.
 Thus, we triaged only the 180
 warnings about JDK classes from the ZooKeeper benchmark.
 Among these were 3 true positives (it missed 10 real resource leaks) and 177 false
-positives.
+positives (2\% precision).
 The most common cause of false
 positives was the unchangeable, default ownership transfer assumption
 at method returns, leading to a warning at each call that returns a resource-alias, such as
