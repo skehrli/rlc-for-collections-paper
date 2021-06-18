@@ -9,12 +9,13 @@ that tracks \emph{resource alias} sets---sets of pointers that
 definitely correspond to the same underlying system resource.  Closing
 one alias also closes the others.  Thus,
 \tool can avoid issuing false positive warnings about resources
-that have already been closed through a resource alias.  Prior
-work on accumulation analysis showed that limited, specialized forms
-of alias analysis can improve precision
-without incurring the cost of a whole-program
-analysis~\cite{KelloggRSSE2020}; our resource alias analysis is an
-example.\looseness=-1
+that have already been closed through a resource alias.
+%% Prior
+%% work on accumulation analysis showed that limited, specialized forms
+%% of alias analysis can improve precision
+%% without incurring the cost of a whole-program
+%% analysis~\cite{KelloggRSSE2020}; our resource alias analysis is an
+%% example.\looseness=-1
 
 \subsection{Wrapper types}
 \label{sec:wrapper-types}
