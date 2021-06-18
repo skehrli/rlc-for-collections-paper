@@ -13,10 +13,11 @@ modern, heavily-used Java applications~\cite{ghanavati2020memory}.
 This state-of-the-practice does not differ much from two decades
 ago~\cite{WeimerN04}.
 Microsoft engineers consider resource leaks to be one of the most
-significant development challenges~\cite{LoNZ2015}.  The fact that
-resource leaks remain such a serious problem despite decades of
-research and improvements in languages and tooling shows that
-preventing them remains an urgent, difficult, open problem.
+significant development challenges~\cite{LoNZ2015}.
+% The fact that
+% resource leaks remain such a serious problem despite decades of
+% research and improvements in languages and tooling shows that
+Preventing resource leaks remains an urgent, difficult, open problem.
 
 %% An ideal tool for preventing resource leaks would be fast, sound, and precise.
 
@@ -68,10 +69,11 @@ a legacy codebase, a substantial task which is often infeasible.
 % and prevents them from being applicable to legacy codebases and coding styles.
 
 The goal of a leak detector for a Java-like language is to ensure that required
-methods (typically \<close()>) are called on all relevant objects; we deem this
-a \emph{must-call} property.  Statically verifying a must-call property requires
+methods (such as \<close()>) are called on all relevant objects; we deem this
+a \emph{must-call} property.  Verifying a must-call property requires
 checking that required methods (or \emph{must-call obligations}) have been
-called at any point where an object may become unreachable, by computing an
+called at any point where an object may become unreachable.  A static
+verifier does this by computing an
 under-approximation of invoked methods.  Our key insight is that checking of
 must-call properties is an \emph{accumulation problem}, and hence does not
 require heavyweight whole-program analysis. Our contribution is a resource leak
@@ -91,8 +93,8 @@ be build in a sound, modular fashion without \emph{any} whole-program alias
 analysis, improving scalability and usability.
 
 Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
-verifying that certain methods are invoked on each object reference (local
-variables, parameters, etc.) before another call of interest.  Conceptually,
+verifying that certain methods are invoked on each object reference
+before a specific call (e.g., \<build()>).  Conceptually,
 we can build a resource leak verifier by extending this technique
 to check that required methods are invoked before a reference goes out
 of scope or is overwritten, either of which could cause an object to become unreachable.
@@ -100,14 +102,13 @@ This reduction of possible object-unreachability points to operations like
 method calls shows that resource leak checking is actually also an accumulation
 problem, and hence is amenable to sound, modular, and lightweight checking.
 
-There are two key problems with this simple leak-checking approach.  First,
+There are two key challenges for this leak-checking approach.  First,
 due to subtyping, the declared type of a reference may not accurately represent
 its must-call obligations; we devised a simple type system to soundly capture
-these obligations.  Second, while sound, in practice
-such an approach would be highly imprecise without targeted reasoning about
-aliasing, more so than in
-previous work~\cite{KelloggRSSE2020}.  We found several key patterns to
-handle:
+these obligations.  Second, the approach is sound, but highly imprecise (more so than in
+previous work~\cite{KelloggRSSE2020}) without targeted reasoning about
+aliasing.  The most important patterns to
+handle are:
 \begin{itemize}
 \item copying of resources via parameters and returns, or storing of resources in
 final fields (the RAII pattern~\cite{raii});
@@ -115,11 +116,12 @@ final fields (the RAII pattern~\cite{raii});
 \item storing resources in non-final fields, which might be lazily initialized or
   written more than once.
 \end{itemize}
-To address this need, we introduced a
-dataflow analysis to allow for alias tracking, and extended it with three sound
-techniques to achieve precision in practice:
+To address this need,
+we introduced a
+dataflow analysis for alias tracking, and extended it with three sound
+techniques to improve precision:
 \begin{itemize}
-\item a lightweight, heuristic ownership transfer system. This system
+\item a lightweight ownership transfer system. This system
   indicates which reference is responsible for resolving a must-call
   obligation. Unlike typical ownership type systems, our approach does
   not impact the privileges of non-owning references.
@@ -149,8 +151,8 @@ Our contributions are:
 \item the insight that the resource leak problem is an accumulation
   problem, and
   % a novel set of
-  an analysis approach designed to take advantage
-  of this fact (\cref{sec:base-type-systems}).
+  an analysis approach based on
+  this fact (\cref{sec:base-type-systems}).
 \item three
   % novel
   innovations that improve the precision of our analysis via targeted reasoning about aliasing:
@@ -160,7 +162,7 @@ Our contributions are:
   handling lazy or multiple initialization (\cref{sec:reset-must-call}).
 \item an open-source implementation for Java,
   called \tool (\cref{sec:implementation}).
-\item an extensive empirical evaluation: case studies on heavily-used
+\item an empirical evaluation: case studies on heavily-used
   Java programs (\cref{sec:case-studies}),
   an ablation study that shows the contributions of each innovation to
   \tool's precision (\cref{sec:ablation}), and a comparison to
