@@ -96,9 +96,9 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because calling
-an \CreatesMustCallFor method like \<reconnect()> resets called-methods
-inference, calls to \<close> before the last call to \<reconnect()>
-are disregarded.
+an \CreatesMustCallFor method like \<reconnect()> resets
+local type inferece for called methods, calls to \<close>
+before the last call to \<reconnect()> are disregarded.
 
 \subsection{Unconnected sockets}
 \label{sec:unconnected-sockets}
