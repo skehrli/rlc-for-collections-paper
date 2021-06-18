@@ -99,8 +99,8 @@ we can build a resource leak verifier by extending this technique
 to check that required methods are invoked before a reference goes out
 of scope or is overwritten, either of which could cause an object to become unreachable.
 This reduction of possible object-unreachability points to operations like
-method calls shows that resource leak checking is actually also an accumulation
-problem, and hence is amenable to sound, modular, and lightweight checking.
+method calls shows that resource leak checking is an accumulation
+problem and hence is amenable to sound, modular, and lightweight analysis.
 
 There are two key challenges for this leak-checking approach.  First,
 due to subtyping, the declared type of a reference may not accurately represent
