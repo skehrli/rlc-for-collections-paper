@@ -67,7 +67,7 @@ For example, one constructor of \<BufferedOutputStream> is:
 \noindent
 \MustCallAlias annotations are verified, not trusted; see \cref{sec:MustCallAlias-verification}.
 
-At a call site to a \MustCallAlias method, there are two effects.
+At a call site to an \MustCallAlias method, there are two effects.
 First, the must-call type of the method call's return value
 is the same as that of the \MustCallAlias
 argument.  If the type of the argument has no must-call obligations (like a
@@ -85,7 +85,7 @@ version of \textsc{CreatesAlias} from \cref{alg:helpers} handles resource aliase
          \hspace*{8em} $\vee\ \textsc{IsMustCallAliasParam}(s,q)$ 
   \EndProcedure
   \Procedure{IsMustCallAliasParam}{$s,p$}
-    \State \Return $s$ passes $p$ to a \MustCallAlias parameter of its callee
+    \State \Return $s$ passes $p$ to an \MustCallAlias parameter of its callee
   \EndProcedure
 \end{algorithmic}
 
@@ -142,7 +142,7 @@ A pair of \MustCallAlias annotations on
 \<m>'s return type
 and its parameter \<p> can be verified if either of the following holds:
 \begin{enumerate}
-\item \<p> is passed to another method or constructor in a
+\item \<p> is passed to another method or constructor in an
   \MustCallAlias position, and \<m> returns that method's result,
   or the call is a \<super()> constructor call annotated
   with \MustCallAlias.\looseness=-1

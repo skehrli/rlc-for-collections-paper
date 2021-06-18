@@ -41,7 +41,7 @@ including those in \cref{sec:ownership-transfer}):
   \State \Return $\exists p \in P .\ [\ldots] \vee p \in \textsc{CMCFTargets}(s)$
   \EndProcedure
   \Procedure{CMCFTargets}{$c$}
-  \State \Return \{ $p_i$\ |\ $p_i$ passed to a \CreatesMustCallFor target for $c$'s callee \}
+  \State \Return \{ $p_i$\ |\ $p_i$ passed to an \CreatesMustCallFor target for $c$'s callee \}
   \EndProcedure
 \end{algorithmic}
 \noindent

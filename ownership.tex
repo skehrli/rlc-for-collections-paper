@@ -13,7 +13,7 @@
 
 \Cref{sec:base-type-systems} describes a sound accumulation-based
 checker for resource leaks. However, that checker often encounters false
-positives in cases where a \MustCall obligation is satisfied
+positives in cases where an \MustCall obligation is satisfied
 in another procedure via parameter passing, return values, or object fields.
 Consider the following code that safely closes a \<Socket>:
 
@@ -129,7 +129,7 @@ never assumes that passing an object to an unannotated library satisfies its obl
   For final fields, our checking enforces the ``resource acquisition is
   initialization (RAII)'' programming idiom~\cite{raii}.  Some
   destructor-like method \<d()> must ensure the field's \MustCall obligation is
-  satisfied, and the enclosing class must have a \MustCall\<("d")> obligation to
+  satisfied, and the enclosing class must have an \MustCall\<("d")> obligation to
   ensure the destructor is called.
 
   More formally, consider a final \<@Owning> field $f$ declared in class $C$,
