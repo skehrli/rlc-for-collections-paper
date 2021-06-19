@@ -17,7 +17,7 @@ To handle such cases soundly, we introduce a method post-condition annotation,
 \CreatesMustCallFor,
 to indicate expressions for which an obligation is created at a call.
 
-At each call to a method annotated as \CreatesMustCallFor\<(>\|expr|\<)>, \tool removes any
+At each call-site of a method annotated as \CreatesMustCallFor\<(>\|expr|\<)>, \tool removes any
 inferred Called Methods information about \|expr|, reverting to
 \CalledMethods\<(\{\})>.
 
