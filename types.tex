@@ -30,7 +30,7 @@ soundly enhance its precision.
 % it is deallocated.
 
 
-\subsection{Background on pluggable types}
+\subsection{Background on Pluggable Types}
 \label{sec:background}
 
 \Cref{sec:must-call,sec:called-methods} describe
@@ -59,7 +59,7 @@ lines of the program.
   \label{fig:example}
 \end{figure}
 
-\subsection{A type system for must-call obligations}
+\subsection{A Type System for Must-Call Obligations}
 \label{sec:must-call}
 
 \begin{figure}
@@ -167,7 +167,7 @@ resource, e.g., \<ByteArrayOutputStream>.
 % obligation.
 
 
-\subsection{A type system for called methods}
+\subsection{A Type System for Called Methods}
 \label{sec:called-methods}
 
 % \todo{Mike changed ``our types system for inferring'' to ``our type system
@@ -219,7 +219,7 @@ In \cref{fig:example} the type of \<s> is initially \<@CalledMethods(\{\})>,
 but it transitions to \<@CalledMethods("close")> after the call to \<close>.
 
 
-\subsection{Consistency checking}
+\subsection{Consistency Checking}
 \label{sec:must-call-invoked}
 
 Given \MustCall and \<@CalledMethods> types, the Must

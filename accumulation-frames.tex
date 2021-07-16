@@ -54,7 +54,7 @@ method is invoked within a method that has an \CreatesMustCallFor annotation
 with the same target---imposing the obligation on its caller---then
 the new obligation can be treated as satisfied immediately.\looseness=-1
 
-\subsection{Non-final, owning fields}
+\subsection{Non-Final, Owning Fields}
 \label{sec:non-final-owning}
 
 \CreatesMustCallFor allows \tool to verify uses of non-final fields
@@ -100,7 +100,7 @@ an \CreatesMustCallFor method like \<reconnect()> resets
 local type inferece for called methods, calls to \<close>
 before the last call to \<reconnect()> are disregarded.
 
-\subsection{Unconnected sockets}
+\subsection{Unconnected Sockets}
 \label{sec:unconnected-sockets}
 \CreatesMustCallFor can also handle cases where object creation
 does not allocate a resource, but the object will allocate a resource
