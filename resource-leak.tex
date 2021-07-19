@@ -120,8 +120,8 @@
 \usetikzlibrary{arrows,automata,positioning}
 
 % Change font and line spacing for figure captions
-\usepackage{setspace,caption}
-\captionsetup{labelfont={small,bf}, textfont={small,bf,stretch=0.8}, labelsep=colon, margin=0pt}
+% \usepackage{setspace,caption}
+% \captionsetup{labelfont={small,bf}, textfont={small,bf,stretch=0.8}, labelsep=colon, margin=0pt}
 
 \usepackage{balance} % balanced columns on last page
 
@@ -334,23 +334,22 @@ state-of-the-practice heuristic bug-finder.
 It reads and verifies user-written specifications; the annotation burden
 is about 1 annotation per 1,500 lines of code.
 
-In future work, we plan to develop
-improved inference techniques for lightweight ownership annotations.  Since
-these annotations can be added anywhere without impacting soundness (they
-are verified, not trusted), genetic
-search
-and machine-learning techniques could be used to introduce them, using the
-warnings emitted by \tool as the fitness function.
+%% In future work, we plan to develop
+%% improved inference techniques for lightweight ownership annotations.  Since
+%% these annotations can be added anywhere without impacting soundness (they
+%% are verified, not trusted), genetic
+%% search
+%% and machine-learning techniques could be used to introduce them, using the
+%% warnings emitted by \tool as the fitness function.
 
 
-\begin{acks}
+\section*{Acknowledgments}
 Thanks to Rashmi Mudduluru, Ben Kushigian, Chandrakana Nandi, and the anonymous
 reviewers for their comments on earlier versions of this paper.  This research
 was supported in part by the National Science Foundation under grants
 CCF-2005889 and CCF-2007024, and also by a gift from Oracle Labs and a Google
 Research Award.
 
-\end{acks}
 
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.

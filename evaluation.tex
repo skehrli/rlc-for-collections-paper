@@ -91,8 +91,7 @@ This section gives examples of warnings reported by \tool.
   \lstinputlisting{hadoop-bug.txt}
   \prefigcaption
   \caption{A resource leak that \tool found in Hadoop. Hadoop's developers
-    accepted our pull request
-    to fix it~\cite{hdfs-15791}.}
+    merged our fix~\cite{hdfs-15791}.}
   \label{fig:hadoop-bug}
 \end{figure}
 
@@ -218,9 +217,8 @@ This example is suggestive that the programmer effort to use our tool is reasona
 \newcommand{\abltablerow}[5]{\textbf{\smaller{#1}} & #2 & #3 & #4 & #5}
 
 \begin{table}
-  \caption{The number of false positives in our case studies (``RLC'') and
-    when disabling each
-    of
+  \caption{False positives in our case studies (``RLC'') and
+    without
     %% Cut for space.
     % the
     lightweight
@@ -366,7 +364,7 @@ it leverages novel path encodings and techniques from predecessor-system
 Graspan~\cite{wang2017graspan} to achieve both context- and path-sensitivity.  
 % Grapple, like all previous
 % typestate-based analyses, requires a whole-program alias analysis.
-Grapple contains four checkers, of which two are useful for detecting
+Grapple contains four checkers, of which two can detect
 resource leaks.  Unlike \tool, Grapple is unsound, as it performs a fixed bounded unrolling
 of loops to make path sensitivity tractable.
 \Tool reports violations of a user-supplied specification
@@ -374,7 +372,7 @@ of loops to make path sensitivity tractable.
 can ensure that a library is correct for all possible clients.  By
 contrast, Grapple checks a library in the context of one specific client; it
 only reports issues in methods reachable from entry points (like a \<main()>
-method) in a whole-program call graph~\cite{grapplepersonal}.
+method) in a whole-program call graph~\cite{grapplepersonal}.\looseness=-1
 
 The Grapple authors evaluated their tool on earlier versions of the first three
 case study programs in \cref{sec:case-studies}~\cite{zuo2019grapple}.
@@ -390,11 +388,11 @@ details of all warnings issued by Grapple in the versions of the benchmarks they
 analyzed.
 
 We used the following methodology to permit a head-to-head comparison.
-We started with all the warnings issued by either tool.
+We started with all warnings issued by either tool.
 We disregarded any warning about code that is not present identically in the other
-version of the target program (due to refactoring,
-added code, bug fixes, etc.).  We also disregarded warnings about code that
-is not checked by one of the tools.  For example, Grapple analyzed test
+version of the target program (due to refactoring, added code,
+bug fixes, etc.).  We also disregarded warnings about code that
+is not checked by both tools.  For example, Grapple analyzed test
 code, but our experiments did not write annotations in test code nor
 type-check it.  The remaining warnings pertain to resource leaks in identical code that both tools ought to report.
 For each remaining warning, we manually identified it as a true positive (a
@@ -402,7 +400,7 @@ real resource leak) or a false positive (correct code, but the tool cannot
 determine that fact).  \Cref{tab:tool-comparison} reports the precision
 and recall of Eclipse, Grapple, and \tool.  Some of
 Grapple's false positives are reports about types like
-\<java.io.StringWriter> that have no underlying resource that needs to be
+\<java.io.StringWriter> with no underlying resource that must be
 closed.
 (These reports were mis-classified as true positives in~\cite{zuo2019grapple},
 which is one reason the numbers there differ from \cref{tab:tool-comparison}.)

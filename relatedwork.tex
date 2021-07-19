@@ -5,7 +5,7 @@ Most prior work on resource leak detection either uses
 program analysis to detect leaks or adds language features to prevent
 them. Here we focus on the most relevant work from these categories.\looseness=-1
 
-\subsection{Analysis-based Approaches}\label{sec:rw-analysis}
+\subsection{Analysis-Based Approaches}\label{sec:rw-analysis}
 
 %\todo{Re-organize and edit the below in a way that makes sense.}
 
@@ -25,10 +25,10 @@ compared to \tool---exist in other heuristic bug-finding tools,
 including SpotBugs~\cite{spotbugs-resource-leak},
 PMD~\cite{pmd-resource-leak}, and Infer~\cite{infer-resource-leak}.
 \Cref{sec:eclipse} experimentally evaluates the Eclipse analysis.
-Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
-resource-leak detection approaches that are specialized to the Android framework
-with call graphs that model the framework's use of callbacks for
-releasing resources.
+%% Relda and Relda2~\cite{guo2013characterizing,wu2016relda2} are unsound
+%% resource-leak detection approaches that are specialized to the Android framework
+%% with call graphs that model the framework's use of callbacks for
+%% releasing resources.
 
 Typestate analysis~\cite{StromY86,FinkYDRG2008} can be used to
 find resource leaks.  Grapple~\cite{zuo2019grapple} is the most recent system to
@@ -77,7 +77,7 @@ developers consider resource leaks to be an important problem, and that previous
 static analysis tools are insufficient for preventing resource leaks.  We plan
 to apply \tool to more programs from their study.
 
-\subsection{Language-based Approaches}\label{sec:rw-language}
+\subsection{Language-Based Approaches}\label{sec:rw-language}
 
 \paragraph{Ownership types and Rust} Ownership type
 systems~\cite{clarke2013ownership} impose control over aliasing, which
