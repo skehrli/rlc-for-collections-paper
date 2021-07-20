@@ -20,18 +20,18 @@ Our evaluation has three parts:
 % \paragraph{Results}
 
 All code and data for our experiments described
-in this section, including \tool's implementation, our experimental
-machinery, and the annotated versions of our case study programs,
+in this section, including \tool's implementation, experimental
+machinery, and annotated versions of our case study programs,
 are publicly available at \url{https://doi.org/10.5281/zenodo.4902321}.
 
 \subsection{Case Studies on Open-Source Projects}
 \label{sec:case-studies}
 
-We selected 3 popular open-source projects that were analyzed by prior work~\cite{zuo2019grapple}.
+We selected 3 open-source projects that were analyzed by prior work~\cite{zuo2019grapple}.
 For each, we selected and analyzed one or two modules
 with many uses of leakable resources. We used
 the latest version of the source code that was available
-when we began. We also analyzed a smaller open-source project
+when we began. We also analyzed an open-source project
 maintained by one of the authors, to simulate \tool's
 expected use case, where the user is already familiar with the
 code under analysis (see \cref{sec:plume-util}).
@@ -406,8 +406,11 @@ closed.
 which is one reason the numbers there differ from \cref{tab:tool-comparison}.)
 Grapple's false negatives might be due to analysis unsoundness or gaps in API
 modeling (e.g., Grapple does not include FSM specifications for \<OutputStream>
-classes).  On the flip side, \tool has lower precision (more false positives)
-than Grapple, and it requires effort to annotate the source code.  
+classes).
+%% This doesn't really fit in the paragraph, which didn't directly compare
+%% the tools until this sentence.
+% On the flip side, \tool has lower precision (more false positives)
+% than Grapple, and it requires effort to annotate the source code.  
 
 \begin{table}
   \caption{Run times of resource leak checking tools.}
