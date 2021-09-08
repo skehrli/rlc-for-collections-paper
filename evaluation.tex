@@ -231,7 +231,7 @@ This example is suggestive that the programmer effort to use our tool is reasona
   \posttablecaption
   
   \begin{tabularx}{\columnwidth}{@{}Xrrrr@{}}
-    Project                              &    w/o LO & w/o RA & w/o OC & RLC     \\
+    Project                              &    w/o LO & w/o RA & w/o OC\dag & RLC     \\
     \hline
     \abltablerow{apache/zookeeper}              {117}            {158}             {47}      {48}                         \\
     \abltablerow{apache/hadoop}                   {97}            {184}             {58}    {49}                           \\
@@ -241,6 +241,10 @@ This example is suggestive that the programmer effort to use our tool is reasona
     \abltablerow{\textbf{Total}}                {300}            {446}             {133}    {121}                           \\
   \end{tabularx}
 \end{table}
+
+\marginnote{\footnotesize \dag
+  The ``w/o OC'' column differs slightly from the originally-published
+  version.}[-11.05cm]
 
 Lightweight ownership (\cref{sec:lightweight-ownership}),
 resource aliasing (\cref{sec:must-call-choice}), and
