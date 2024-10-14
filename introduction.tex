@@ -1,26 +1,36 @@
 \section{Introduction}
 \label{sec:intro}
 
-\todo{This paper outline gives the general structure of a conference paper about
-a new practical verification tool, in the style that is standard for a
-software engineering conference such as ICSE or FSE\@. Your paper
-may have more sections (or fewer) depending on its topic, but any
-SE paper will always have:
-\begin{itemize}
-\item an introduction, which lays out the problem to be solved, the new technique
-used to solve the problem, and brags about how successful we were
-(\cref{sec:intro});\footnote{The introduction should always end with a list
-of contributions structured like this one.}
-\item a description of the technique (\cref{sec:technique});
-\item an evaluation section, whose results justify the claims in the
-introduction (\cref{sec:evaluation});
-\item a limitations or threats to validity section that explains in what
-ways the experiments might be misleading, and what we've done to mitigate
-those threats (\cref{sec:limitations}); and
-\item a related work section that places the work in context (\cref{sec:relatedwork}).
-\item a conclusion that recaps the contributions of the paper.
-\item often, a short ``data availability'' statement that indicates whether and where
-  your data and experimental scripts are available.
-\end{itemize}
-}
+\todo{Make these real paragraphs.}
 
+Resource leaks are bad, but recent work has proposed
+lightweight verifiers that seem to actually work. Give some
+evidence that people are using the RLC and/or RLC\#.
+
+Lightweight verifiers for this problem are limited because they can't reason
+about collections of resources: no prior work supports proving that a collection
+of resources is safe. Give some data or evidence to argue that collections
+of resources really matter in practice. 
+
+Our core insight is that we're tackling a reduced form of the problem:
+treating collections as homogeneous objects, in that all elements are treated
+as having the same type. Argue that this restriction makes sense in practice.
+
+Discuss the challenging and novel things that we did, and why our solutions aren't
+obvious. Non-exhaustive list:
+\begin{itemize}
+  \item handling aliasing for collections (I went for rust-style, where there’s always exactly one owner. assigning an @OwningCollection to another takes away ownership from the RHS. Unlike Rust, passing to a function always transfers ownership to the receiver and makes call-site reference write-disabled,...)
+\item maintaining homogeneity of collection (solved with “certificed” loops where necessary)
+\item handling iterators, which introduce another form of aliasing entirely and require tracking of both iterators and calls to iter.next() and iter.remove()
+\end{itemize}
+
+Brag about the fact that we have a working tool, and give some numbers about our experiments.
+
+Our contributions are:
+\begin{itemize}
+\item novel approach that permits us to soundly check that collections of resources are safely disposed of,
+  by maintaining homogeneity (\cref{sec:homogeneity})
+\item some new aliasing techniques that are particularly useful for this problem (ownership rules, iterators, anything else?) (\cref{sec:aliasing})
+\item open-source implementation of sound resource leak analysis for collections in Java (\cref{sec:implementation})
+\item evaluation of our implementation that shows it's great (\cref{sec:evaluation})
+\end{itemize}
