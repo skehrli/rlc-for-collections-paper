@@ -134,18 +134,18 @@
 
 %%% The following is specific to ESEC/FSE '21 and the paper
 %%% 'Lightweight and Modular Resource Leak Verification'
-%%% by Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael D. Ernst.
+%%% by Martin Kellogg, Sascha Kehrli, Manu Sridharan, and Michael D. Ernst.
 %%%
 
 \setcopyright{rightsretained}
 \acmPrice{}
-\acmDOI{10.1145/3468264.3468576}
-\acmYear{2021}
-\copyrightyear{2021}
-\acmSubmissionID{fse21main-p307-p}
-\acmISBN{978-1-4503-8562-6/21/08}
-\acmConference[ESEC/FSE '21]{Proceedings of the 29th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering}{August 23--28, 2021}{Athens, Greece}
-\acmBooktitle{Proceedings of the 29th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE '21), August 23--28, 2021, Athens, Greece}
+\acmDOI{TODO}
+\acmYear{2025}
+\copyrightyear{2025}
+\acmSubmissionID{TODO}
+\acmISBN{TODO}
+\acmConference[ISSTA '25]{34'th ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA)}{TODO}{Trondheim, Norway}
+\acmBooktitle{TODO}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -156,7 +156,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Lightweight and Modular Resource Leak Verification}
+\title{Resource Leak Verification for Collections}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -164,18 +164,17 @@
 %% Of note is the shared affiliation of the first two authors, and the
 %% "authornote" and "authornotemark" commands
 %% used to denote shared contribution to the research.
+\author{Sascha Kehrli}
+\affiliation{ETH Zürich
+ \country{Switzerland}}
+\email{skehrli@ethz.ch}
+%\authornotemark[1]
 
 \author{Martin Kellogg}
-\affiliation{University of Washington, Seattle
+\affiliation{New Jersey Institute of Technology, Newark
  \country{USA}}
-\email{kelloggm@cs.washington.edu}
-\authornote{Both authors contributed equally to this research.}
-
-\author{Narges Shadab}
-\affiliation{University of California, Riverside
- \country{USA}}
-\email{nshad001@ucr.edu}
-\authornotemark[1]
+\email{martin.kellogg@njit.edu}
+%\authornote{Both authors contributed equally to this research.}
 
 \author{Manu Sridharan}
 \affiliation{University of California, Riverside
@@ -199,66 +198,60 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  A resource leak occurs when a program allocates a resource, such as a
-  socket or file handle, but fails to deallocate
-  it.  Resource leaks
-  % are an important, common problem that
-  cause resource
-  starvation, slowdowns, and crashes.  Previous techniques
-  to prevent resource leaks are either unsound,
-  imprecise, inapplicable to existing code, slow, or a combination
-  of these.
-  
-  Static detection of resource leaks requires checking that de-allocation methods
-  are always invoked on relevant objects before they become unreachable.
-  % We observe that detecting a resource leak for an object involves three
-  % parts: 1) tracking its \emph{must-call obligations},
-  % 2) tracking which methods have been called on it, and 3) comparing
-  % these to check if the obligations have been fulfilled.
-  Our key insight is that leak detection can be reduced to an
-  accumulation problem, a class of typestate problems amenable
-  to sound and modular checking without the need for a heavyweight,
-  whole-program alias analysis.
-  % We developed a
-  % baseline leak checker via this approach.
-  % Rashmi said the following was too negative, and I agree:
-  % , but found
-  % that it suffered from an excess of false positives.
-  The precision of an accumulation analysis can be improved by computing
-  targeted aliasing information, and we augmented our baseline checker with
-  three such novel techniques:
-  a lightweight ownership transfer system;
-  a specialized resource alias analysis;
-  and a system
-  to create a fresh obligation when a non-final resource field
-  is updated.
-  % check that re-assignments to non-final fields
-  % that hold a resource are safe.
-  %% MK: the below is too wordy - less jargon in the abstract, just the summary
-  %%
-  %% Lightweight ownership tracking is a
-  %% technique to help determine which alias is responsible for releasing
-  %% a resource.  Since our goal is only to prevent resource leaks, our
-  %% ownership tracking avoids many of the heavyweight aliasing
-  %% restrictions associated with other ownership type systems.
-  %% Resouce alias analysis is a specialized, lightweight must-alias analysis
-  %% that identifies program elements that definitely control the same resource.
-  %% Accumulation frames extend the theory of accumulation analysis to permit
-  %% certain kinds of cycles in the typestate automaton.
-
-  Our approach occupies a unique slice of the design space: it is sound
-  and runs relatively quickly
-  %\todo{mention ``unsound''?}
-  (taking minutes on programs that a
-  state-of-the-art approach
-  took hours to analyze).
-  We implemented our techniques for Java in an open-source tool
-  called \tool.
-  \Tool revealed 49 real resource leaks in widely-deployed software.
-  It scales well, has a manageable false positive rate
-  (comparable to the high-confidence
-  resource leak analysis built into the Eclipse IDE), and
-  imposes only a small annotation burden (1/1500 LoC) for developers.
+  % A resource leak occurs when a program allocates a resource, such as a
+  % socket or file handle, but fails to deallocate it.
+  % Resource leaks cause resource starvation, slowdowns, and crashes.
+  % 
+  % Static detection of resource leaks requires checking that de-allocation methods
+  % are always invoked on relevant objects before they become unreachable.
+  % % We observe that detecting a resource leak for an object involves three
+  % % parts: 1) tracking its \emph{must-call obligations},
+  % % 2) tracking which methods have been called on it, and 3) comparing
+  % % these to check if the obligations have been fulfilled.
+  % Our key insight is that leak detection can be reduced to an
+  % accumulation problem, a class of typestate problems amenable
+  % to sound and modular checking without the need for a heavyweight,
+  % whole-program alias analysis.
+  % % We developed a
+  % % baseline leak checker via this approach.
+  % % Rashmi said the following was too negative, and I agree:
+  % % , but found
+  % % that it suffered from an excess of false positives.
+  % The precision of an accumulation analysis can be improved by computing
+  % targeted aliasing information, and we augmented our baseline checker with
+  % three such novel techniques:
+  % a lightweight ownership transfer system;
+  % a specialized resource alias analysis;
+  % and a system
+  % to create a fresh obligation when a non-final resource field
+  % is updated.
+  % % check that re-assignments to non-final fields
+  % % that hold a resource are safe.
+  % %% MK: the below is too wordy - less jargon in the abstract, just the summary
+  % %%
+  % %% Lightweight ownership tracking is a
+  % %% technique to help determine which alias is responsible for releasing
+  % %% a resource.  Since our goal is only to prevent resource leaks, our
+  % %% ownership tracking avoids many of the heavyweight aliasing
+  % %% restrictions associated with other ownership type systems.
+  % %% Resouce alias analysis is a specialized, lightweight must-alias analysis
+  % %% that identifies program elements that definitely control the same resource.
+  % %% Accumulation frames extend the theory of accumulation analysis to permit
+  % %% certain kinds of cycles in the typestate automaton.
+  %
+  % Our approach occupies a unique slice of the design space: it is sound
+  % and runs relatively quickly
+  % %\todo{mention ``unsound''?}
+  % (taking minutes on programs that a
+  % state-of-the-art approach
+  % took hours to analyze).
+  % We implemented our techniques for Java in an open-source tool
+  % called \tool.
+  % \Tool revealed 49 real resource leaks in widely-deployed software.
+  % It scales well, has a manageable false positive rate
+  % (comparable to the high-confidence
+  % resource leak analysis built into the Eclipse IDE), and
+  % imposes only a small annotation burden (1/1500 LoC) for developers.
 \end{abstract}
 
 %%
