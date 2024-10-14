@@ -1,191 +1,26 @@
 \section{Introduction}
 \label{sec:intro}
 
-%% Resource leaks are a classic problem, and extant approaches to preventing
-%% them are either too expensive or unsound.
-
-A resource leak occurs when some finite resource managed by the
-programmer is not explicitly disposed of. In an unmanaged language
-like C, that explicit resource might be memory; in a managed language
-like Java, it might be a file descriptor, a socket, or a database
-connection.  Resource leaks continue to cause severe failures, even in
-modern, heavily-used Java applications~\cite{ghanavati2020memory}.
-This state-of-the-practice does not differ much from two decades
-ago~\cite{WeimerN04}.
-Microsoft engineers consider resource leaks to be one of the most
-significant development challenges~\cite{LoNZ2015}.
-% The fact that
-% resource leaks remain such a serious problem despite decades of
-% research and improvements in languages and tooling shows that
-Preventing resource leaks remains an urgent, difficult, open problem.
-
-%% An ideal tool for preventing resource leaks would be fast, sound, and precise.
-
-Ideally, a tool for preventing resource leaks would be:
+\todo{This paper outline gives the general structure of a conference paper about
+a new practical verification tool, in the style that is standard for a
+software engineering conference such as ICSE or FSE\@. Your paper
+may have more sections (or fewer) depending on its topic, but any
+SE paper will always have:
 \begin{itemize}
-\item \emph{applicable} to
-  % leakable resources in
-  existing code with few code changes,
-\item \emph{sound}, so that undetected resource leaks do not slip into
-  the program;
-\item \emph{precise}, so that developers are not bothered by excessive false positive
-  warnings; and
-\item \emph{fast}, so that it scales to real-world programs and
-  developers can use it regularly.
+\item an introduction, which lays out the problem to be solved, the new technique
+used to solve the problem, and brags about how successful we were
+(\cref{sec:intro});\footnote{The introduction should always end with a list
+of contributions structured like this one.}
+\item a description of the technique (\cref{sec:technique});
+\item an evaluation section, whose results justify the claims in the
+introduction (\cref{sec:evaluation});
+\item a limitations or threats to validity section that explains in what
+ways the experiments might be misleading, and what we've done to mitigate
+those threats (\cref{sec:limitations}); and
+\item a related work section that places the work in context (\cref{sec:relatedwork}).
+\item a conclusion that recaps the contributions of the paper.
+\item often, a short ``data availability'' statement that indicates whether and where
+  your data and experimental scripts are available.
 \end{itemize}
+}
 
-%% Extant approaches fail at least one of these: bug finders like the analysis
-%% in ecj are unsound; complex analyses based on typestate are either too slow
-%% (cite the Eurosys 2019 paper on Grapple, with numbers on run time), unsound, or both.
-\noindent
-Extant approaches fail at least one of these criteria.
-Language-based features may not apply to all uses of resource variables:
-Java's try-with-resources statement~\cite{try-with-resources}, for example, can
-only close resource types that implement the \<java.lang.AutoCloseable> interface,
-and cannot handle
-common resource usage patterns that span multiple procedures. 
-Heuristic bug-finding tools for leaks, such as those built into Java IDEs including
-Eclipse~\cite{ecj-resource-leak} and IntelliJ
-IDEA~\cite{idea-resource-leak}, 
-are fast and applicable to legacy
-code, but they are unsound.
-%% They are equally as imprecise as our tool, so don't bad-mouth them.
-% and can be highly imprecise (\cref{sec:compare}).
-Inter-procedural typestate or dataflow analyses~\cite{TorlakC10,zuo2019grapple}
-achieve more precise
-%% In our experiments, they found fewer defects, and we didn't compare complexity.
-% results---and can find more complex defects than bug-finders,
-results---though they usually remain unsound---but
-their whole-program analysis can require hours to analyze a large-scale Java program.
-Finally, ownership type
-systems~\cite{clarke2013ownership} as employed in languages like
-Rust~\cite{klabnik2018rust} can prevent nearly all resource leaks (see
-\cref{sec:rw-language}), but using them would require a significant rewrite for
-a legacy codebase, a substantial task which is often infeasible.
-% require
-% significantly rewriting the program, 
-% and prevents them from being applicable to legacy codebases and coding styles.
-
-The goal of a leak detector for a Java-like language is to ensure that required
-methods (such as \<close()>) are called on all relevant objects; we deem this
-a \emph{must-call} property.  Verifying a must-call property requires
-checking that required methods (or \emph{must-call obligations}) have been
-called at any point where an object may become unreachable.  A static
-verifier does this by computing an
-under-approximation of invoked methods.  Our key insight is that checking of
-must-call properties is an \emph{accumulation problem}, and hence does not
-require heavyweight whole-program analysis. Our contribution is a resource leak
-verifier that leverages this insight to satisfy all four requirements: it is
-applicable, sound, precise, and fast.\looseness=-1
-
-An accumulation analysis~\cite{KelloggRSSE2020}
-is a special-case of typestate analysis~\cite{StromY86}.
-Typestate analysis attaches a finite-state machine (FSM)
-to each program element of a given type, and transitions the state of the
-FSM whenever a relevant operation is performed.
-In an accumulation analysis,
-the order of operations performed cannot change what is subsequently
-permitted, and executing more operations cannot add additional
-restrictions.  Unlike arbitrary typestate analyses, accumulation analyses can
-be build in a sound, modular fashion without \emph{any} whole-program alias
-analysis, improving scalability and usability.
-
-Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
-verifying that certain methods are invoked on each object
-before a specific call (e.g., \<build()>).
-Resource leak checking is similar in that certain methods must be invoked
-on each object before it becomes unreachable.
-An object becomes unreachable when its references go out
-of scope or are overwritten.
-By making an analogy between object-unreachability points and
-method calls, we show that resource leak checking is an accumulation
-problem and hence is amenable to sound, modular, and lightweight analysis.
-
-%% Old version of the above paragraph.
-% Recent work~\cite{KelloggRSSE2020} presented an accumulation analysis for
-% verifying that certain methods are invoked on each object reference
-% before a specific call (e.g., \<build()>).
-% Conceptually,
-% we can build a resource leak verifier by extending this technique
-% to check that required methods are invoked before a reference goes out
-% of scope or is overwritten, either of which could cause an object to become unreachable.
-% This reduction of possible object-unreachability points to
-% method calls shows
-% that resource leak checking is an accumulation
-% problem and hence is amenable to sound, modular, and lightweight analysis.
-
-There are two key challenges for this leak-checking approach.  First,
-due to subtyping, the declared type of a reference may not accurately represent
-its must-call obligations; we devised a simple type system to soundly capture
-these obligations.  Second, the approach is sound, but highly imprecise (more so than in
-previous work~\cite{KelloggRSSE2020}) without targeted reasoning about
-aliasing.  The most important patterns to
-handle are:
-\begin{itemize}
-\item copying of resources via parameters and returns, or storing of resources in
-final fields (the RAII pattern~\cite{raii});
-\item wrapper types, which share their must-call obligations with one of their fields; and,
-\item storing resources in non-final fields, which might be lazily initialized or
-  written more than once.
-\end{itemize}
-To address this need,
-we introduced an intra-procedural
-dataflow analysis for alias tracking, and extended it with three sound
-techniques to improve precision:
-\begin{itemize}
-\item a lightweight ownership transfer system. This system
-  indicates which reference is responsible for resolving a must-call
-  obligation. Unlike typical ownership type systems, our approach does
-  not impact the privileges of non-owning references.
-\item resource aliasing, for cases
-  %% "in which" is better English, but "when" saves a line.
-  % in which
-  when
-  a resource's must-call obligations
-  can be resolved by closing one of multiple references.
-\item a system for creating new obligations at locations other than the
-  constructor, which allows our system to handle lazy initialization or re-initialization.
-\end{itemize}
-Variants of some of these ideas exist in previous work.  We bring
-them together in a general, modular manner, with full verification and
-the ability for programmers to easily extend checking to their own
-types and must-call properties.
-%
-Our approach occupies a novel point in the design space for a leak detector:
-unlike most prior work, it is sound; it is an order of magnitude faster than
-state-of-the-art whole-program analyses; it has a false positive rate similar
-to a state-of-the-practice heuristic bug-finder; and, though it does require manual
-annotations from the programmer, its annotation burden is reasonable: about
-1 annotation for every 1,500 lines of non-comment, non-blank code. 
-
-Our contributions are:
-\begin{itemize}
-\item the insight that the resource leak problem is an accumulation
-  problem, and
-  % a novel set of
-  an analysis approach based on
-  this fact (\cref{sec:base-type-systems}).
-\item three
-  % novel
-  innovations that improve the precision of our analysis via targeted reasoning about aliasing:
-  a lightweight ownership transfer system
-  (\cref{sec:lightweight-ownership}), a lightweight resource-alias
-  tracking analysis (\cref{sec:must-call-choice}), and a system for
-  handling lazy or multiple initialization (\cref{sec:reset-must-call}).
-\item an open-source implementation for Java,
-  called \tool (\cref{sec:implementation}).
-\item an empirical evaluation: case studies on heavily-used
-  Java programs (\cref{sec:case-studies}),
-  an ablation study that shows the contributions of each innovation to
-  \tool's precision (\cref{sec:ablation}), and a comparison to
-  other state-of-the-art approaches that demonstrates the unique strengths
-  of our approach (\cref{sec:compare}).
-%% \item a comparison to alternative approaches to resource leak
-%%   checking, that demonstrates that our approach occupies a unique
-%%   point in the design space: faster and more usable than heavy-weight
-%%   typestate systems, but sound and able to find even subtle bugs,
-%%   unlike heuristic bug-finders (\cref{sec:compare}).
-\end{itemize}
-  
-
-% LocalWords:  unmanaged leakable finalizers RAII

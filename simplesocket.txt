@@ -1,9 +1,0 @@
-Socket s = null;
-try {
-  s = new Socket(myHost, myPort);
-} catch (Exception e) { // do nothing
-} finally {
-  if (s != null) {
-    s.close();
-  }
-}
