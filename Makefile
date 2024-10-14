@@ -1,48 +1,98 @@
-all: rlc-collections.pdf
+# Put user-specific changes in your own Makefile.user.
+# Make will silently continue if that file does not exist.
+-include Makefile.user
 
-rlc-collections.pdf: bib-update
-	latexmk -pdf -interaction=nonstopmode -f rlc-collections.tex
+NAME	:= rlc-for-collections
 
-rlc-collections-notodos.pdf: rlc-collections.pdf
-	pdflatex "\def\notodocomments{}\input{rlc-collections}"
-	pdflatex "\def\notodocomments{}\input{rlc-collections}"
-	cp -pf rlc-collections.pdf $@
+default: all
 
-# Upload onefile.zip to the publisher website
+all: ${NAME}.pdf
+
+.PRECIOUS: %.pdf
+${NAME}.pdf: pdf-ignore-undefined
+  # Fail the build if there are undefined references or citations.
+	@ ! grep "Warning: There were undefined references." "${NAME}.log"
+	@ ! grep "Warning: There were undefined citations." "${NAME}.log"
+
+.PHONY: pdf-ignore-undefined
+pdf-ignore-undefined: plume-bib-update
+	latexmk -bibtex -pdf -shell-escape -synctex=1 -interaction=nonstopmode -f "${NAME}.tex"
+
+.PHONY: notodos
+notodos: ${NAME}-notodos.pdf
+${NAME}-notodos.pdf: pdf-ignore-undefined
+	pdflatex -shell-escape "\def\notodocomments{}\input{${NAME}}"
+	pdflatex -shell-escape "\def\notodocomments{}\input{${NAME}}"
+	cp -pf ${NAME}.pdf $@
+
+.PHONY: long
+long: ${NAME}-long.pdf
+${NAME}-long.pdf: pdf-ignore-undefined
+	pdflatex -shell-escape "\def\createlongversion{}\input{${NAME}}"
+	pdflatex -shell-escape "\def\createlongversion{}\input{${NAME}}"
+	cp -pf ${NAME}.pdf $@
+
+.PHONY: long-notodos
+long-notodos: ${NAME}-long-notodos.pdf
+${NAME}-long-notodos.pdf: pdf-ignore-undefined
+	pdflatex -shell-escape "\def\createlongversion{}\def\notodocomments{}\input{${NAME}}"
+	pdflatex -shell-escape "\def\createlongversion{}\def\notodocomments{}\input{${NAME}}"
+	cp -pf ${NAME}.pdf $@
+
+# You will upload onefile.zip to the publisher website after acceptance.
 onefile.zip: onefile.tex
 	zip onefile.zip onefile.tex acmart.cls ACM-Reference-Format.bst
-onefile.tex: $(filter-out onefile.tex, $(wildcard *.tex))
-	latex-process-inputs rlc-collections.tex > onefile.tex
+# The latex-process-inputs program is part of https://github.com/plume-lib/plume-scripts,
+# which is a collection of useful scripts. I recommend adding it to your PATH.
+onefile.tex:
+	latex-process-inputs ${NAME}.tex > onefile.tex
 
+# This target creates:
+#   https://homes.cs.washington.edu/~mernst/tmp678/${NAME}.pdf
+web: ${NAME}-notodos.pdf
+	cp -pf $^ ${HOME}/public_html/tmp678/${NAME}.pdf
 
-# # This target creates:
-# #   https://homes.cs.washington.edu/~mernst/tmp678/resource-leak.pdf
-# web: resource-leak-notodos.pdf
-# 	cp -pf $^ ${HOME}/public_html/tmp678/resource-leak.pdf
-# .PHONY: resource-leak-singlecolumn.pdf resource-leak-notodos.pdf
-#
-# martin: resource-leak.pdf
-# 	open $<
+view: ${NAME}.pdf
+	open $<
 
-export BIBINPUTS ?= .:bib
-bib:
+ispell: spell
+spell:
+	for file in `latex-process-inputs -list ${NAME}.tex`; do ispell $$file; done
+
+# Count words in the abstract, which some conferences limit.
+abs-words:
+	grep -v 'Abstract' abstract.tex | egrep -v '^%' | wc -w
+
+plume-bib:
 ifdef PLUMEBIB
 	ln -s ${PLUMEBIB} $@
 else
-	git clone https://github.com/mernst/plume-bib.git $@
+	git clone https://github.com/mernst/plume-bib.git
 endif
-.PHONY: bib-update
-bib-update: bib
-# Even if this command fails, it does not terminate the make job.
+.PHONY: plume-bib-update
+# Even if the plume-bib-update target fails, it does not terminate the make job.
 # However, to skip it, invoke make as:  make NOGIT=1 ...
+plume-bib-update: plume-bib
 ifndef NOGIT
-	-(cd bib && make)
+ifneq (,$(wildcard plume-bib/.git))
+	-(cd plume-bib && GIT_TERMINAL_PROMPT=0 git pull && make)
+endif
 endif
 
+plume-bib-copy:
+	rm -f master.zip
+	wget https://github.com/mernst/plume-bib/archive/refs/heads/master.zip
+	rm -rf plume-bib-master
+	unzip master.zip
+	rm -rf plume-bib
+	mv plume-bib-master plume-bib
+	sed -i 's/^plume-bib$$/# plume-bib/' .gitignore
+	rm -f master.zip
+
+.PHONY: tags
 TAGS: tags
 tags:
-	etags `latex-process-inputs -list rlc-collections.tex`
+	etags `latex-process-inputs -list ${NAME}.tex`
 
-## TODO: this should not delete ICSE2020-submission.pdf
 clean:
-	rm -f *.bbl *.aux *~ rlc-collections.pdf *.blg *.log TAGS
+	latexmk -C "${NAME}.tex"

@@ -1,19 +1,11 @@
 \section{Implementation}
-\label{sec:implementation}
+\label{sec:impl}
 
-We implemented \tool on top of the Checker Framework~\cite{PapiACPE2008},
-an industrial-strength framework for building pluggable type systems
-for Java. The checkers which propagate and infer \MustCall and
-\<@CalledMethods> annotations are implemented
-directly as Checker Framework type-checkers.  The Must Call Consistency
-Checker (\cref{alg:consistency-checker}) is
-implemented as a post-analysis pass over the control-flow graph
-produced by the Checker Framework's dataflow analysis, and is invoked
-when the other two checkers terminate. The framework provides the
-checkers with flow-sensitive local type
-inference, support for Java generics and qualifier polymorphism, and
-other conveniences. Our implementation is open-source and
-distributed as part of the Checker Framework (\url{https://checkerframework.org/})
-from version 3.15.0.
+\todo{Any paper that involves building a tool should include an ``implementation'' section.
+  It may discuss a new tool you have built and/or the experimental infrastructure.
+  Discuss the key non-obvious design decisions and complications.
+  You should also mention: 1) what language the tool targets, 2) any important libraries that
+  the tool relies on (\eg the Checker Framework), and 3) that the tool is
+  open-source.
 
-% LocalWords:  CalledMethods
+  Sometimes this section is very short.}
