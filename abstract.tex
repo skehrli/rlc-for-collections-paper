@@ -1,8 +1,24 @@
-\todo{This is an example paper outline.  It briefly describes the
-  problem, the key ideas of the solution, and the experimental results.}
+Resource leaks occur when a programmer-managed resource---like a socket or
+database connection in a language like Java, or memory in C---is not properly disposed.
+They are notoriously difficult to test for, and can cause serious problems such
+as resource starvation, denial-of-service, or even security vulnerabilities.
+There exist lightweight verification systems that, if they issue no
+warnings about a program, guarantee that that program does not leak any resources.
+However, these systems lack support for \emph{collections} of resources---that is,
+data structures like arrays, lists, or maps: extant tools will always issue a warning
+about storing a resource into such a data structure, because they lack the ability to
+prove that those data structures manage the resources properly. This limitation
+prevents them from verifying many real-world programs that manage resources in bulk.
 
-\todo{For more advice about writing a paper, see
-  \url{https://homes.cs.washington.edu/~mernst/advice/write-technical-paper.html}.}
-
+We propose a novel extension to prior resource leak analyses that permits them to verify
+that collections of resources are properly disposed. Our core approach assumes (and enforces) that
+collections of resources are \emph{homogenous}: each element of the collection must call
+the same methods to be disposed, and the elements are initialized and disposed en masse.
+We extend this core approach with two new kinds of limited alias analysis that are important
+for making the analysis useful in practice: a specialized variant of lightweight ownership,
+and a novel aliasing logic for iterators over collections that permits collections of resources
+to be modified via their iterators safely. We implemented these ideas as an extension of
+the Checker Framework's Resource Leak Checker for Java and conducted a set of case studies that shows
+their utility in practice \todo{give specific numbers}.
 
 \label{dummy-label-for-etags:abstract}
